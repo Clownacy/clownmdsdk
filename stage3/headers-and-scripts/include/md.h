@@ -568,7 +568,8 @@ namespace MD
 				accumulator |= accumulator << (1 << (bit_index_power + i));
 			return accumulator;
 		}
-/*
+
+		// Specialisations, because GCC's optimiser is stupid.
 		template<>
 		inline auto RepeatBits<unsigned short, 3>(const unsigned short value)
 		{
@@ -580,7 +581,7 @@ namespace MD
 		{
 			return value << 16 | value;
 		}
-*/
+
 		inline void SetAddressIncrement(const unsigned int increment)
 		{
 			Write(Register0F{.increment = increment});
@@ -651,11 +652,14 @@ namespace MD
 		{
 			SendCommand(ram, CommandAccess::WRITE, address);
 
+			const auto longword_value = DataValueLongword(RepeatBits<unsigned long, 4>(value));
+			const auto word_value = DataValueWord(value);
+
 			for (unsigned int i = 0; i < length / 2; ++i)
-				Write(DataValueLongword(RepeatBits<unsigned long, 4>(value)));
+				Write(longword_value);
 
 			if (length % 2 != 0)
-				Write(DataValueWord(value));
+				Write(word_value);
 		}
 
 		inline void WaitUntilDMAIsComplete()
