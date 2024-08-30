@@ -1,0 +1,45 @@
+diff -crb gcc-14.2.0/gcc/config/i386/x-mingw32-utf8 gcc-14.2.0-patched/gcc/config/i386/x-mingw32-utf8
+*** gcc-14.2.0/gcc/config/i386/x-mingw32-utf8	2024-08-01 09:17:14 +0000
+--- gcc-14.2.0-patched/gcc/config/i386/x-mingw32-utf8	2024-08-29 13:29:44 +0000
+***************
+*** 36,54 ****
+  sym-mingw32.o : $(srcdir)/config/i386/sym-mingw32.cc
+  	$(COMPILER) -c $<
+  
+- # Combine the two object files into one which has both the
+- # compiled utf8 resource and the HOST_EXTRA_OBJS_SYMBOL symbol.
+- # The resulting .o file gets added to host_extra_objs in
+- # config.host for mingw hosts and gets archived into
+- # libbackend.a which gets linked into the compiler proper.
+- # If nothing references it into libbackend.a, it will not
+- # get linked into the compiler proper eventually.
+- # Therefore we need to request the symbol at compiler link time.
+- # -nostdlib is required for supporting old gcc versions that
+- # don't apply it automatically with -r.
+- utf8-mingw32.o : utf8rc-mingw32.o sym-mingw32.o
+- 	$(COMPILER) -r -nostdlib utf8rc-mingw32.o sym-mingw32.o -o $@
+- 
+  # Force compilers to link against the utf8 resource by
+  # requiring the symbol to be defined.
+  # Otherwise the object file won't get linked in the compilers
+--- 36,41 ----
+diff -crb gcc-14.2.0/gcc/configure gcc-14.2.0-patched/gcc/configure
+*** gcc-14.2.0/gcc/configure	2024-08-01 09:18:42 +0000
+--- gcc-14.2.0-patched/gcc/configure	2024-08-29 13:29:20 +0000
+***************
+*** 13016,13022 ****
+  if test "x$enable_win32_utf8_manifest" != xno; then
+    host_xmake_mingw=i386/x-mingw32-utf8
+    host_extra_gcc_objs_mingw=utf8rc-mingw32.o
+!   host_extra_objs_mingw=utf8-mingw32.o
+  fi
+  
+  # --------------------------------------------------------
+--- 13016,13022 ----
+  if test "x$enable_win32_utf8_manifest" != xno; then
+    host_xmake_mingw=i386/x-mingw32-utf8
+    host_extra_gcc_objs_mingw=utf8rc-mingw32.o
+!   host_extra_objs_mingw="utf8rc-mingw32.o sym-mingw32.o"
+  fi
+  
+  # --------------------------------------------------------

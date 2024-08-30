@@ -1,0 +1,14 @@
+#ifndef CSTDLIB_H
+#define CSTDLIB_H
+
+#include <cstddef>
+
+namespace std
+{
+	int abs(int i);
+
+	void* memcpy(void *dest, const void *src, std::size_t count);
+	void* memset(void *dest, int ch, std::size_t count);
+}
+
+#endif /* CSTDLIB_H */
