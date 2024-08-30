@@ -15,19 +15,13 @@
 #define CLOWNSDK_MD_HEADER_GUARD
 
 #include <bit>
+#include <cassert>
 #include <cstdint>
 #include <limits>
 #include <span>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-
-// TODO: Proper assert handling.
-#ifdef NDEBUG
-#define assert(x)
-#else
-#define assert(x) do {if (!(x)) asm("illegal");} while(0)
-#endif
 
 // TODO: Is there any point in supporting C here?
 #ifdef __cplusplus
