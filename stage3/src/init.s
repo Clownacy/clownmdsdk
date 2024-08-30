@@ -15,6 +15,30 @@
 	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
 	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
 
+	.ascii	"SEGA MEGA DRIVE " | Console name
+	.ascii	"(C)NAME YEAR.MON" | Copyright
+	.ascii	"JAPANESE        " | Japanese name
+	.ascii	"  NAME GOES HERE"
+	.ascii	"                "
+	.ascii	"INTERNATIONAL   " | International name
+	.ascii	"  NAME GOES HERE"
+	.ascii	"                "
+	.ascii	"GM 00000000-00"   | Serial code and revision
+	dc.w	0x0000             | Checksum
+	.ascii	"J               " | IO support
+	dc.l	0x00000000         | Start of ROM
+	dc.l	0x003FFFFF         | End of ROM
+	dc.l	0x00FF0000         | Start of RAM
+	dc.l	0x00FFFFFF         | End of RAM
+	.ascii	"    "             | Backup RAM ID
+	dc.l	0x20202020         | Start of Backup RAM
+	dc.l	0x20202020         | End of Backup RAM
+	.ascii	"            "     | Modem
+	.ascii	"        "         | Notes
+	.ascii	"                "
+	.ascii	"                "
+	.ascii	"F               " | Region
+
 .Ldata:
 	dc.w	0x8000
 	dc.w	0x100
