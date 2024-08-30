@@ -456,7 +456,7 @@ namespace MD
 		{
 			T value;
 
-			ValueWrapper(const T value) : value(value) {}
+			constexpr ValueWrapper(const T value) : value(value) {}
 		};
 
 		struct DataValueWord : public ValueWrapper<unsigned short> {using ValueWrapper::ValueWrapper;};
@@ -467,7 +467,7 @@ namespace MD
 			using ValueWrapper::ValueWrapper;
 
 			template<Register T>
-			ControlValueWord(const T &reg) : ValueWrapper(std::bit_cast<unsigned short>(reg)) {}
+			constexpr ControlValueWord(const T &reg) : ValueWrapper(std::bit_cast<unsigned short>(reg)) {}
 		};
 
 		struct ControlValueLongword : public ValueWrapper<unsigned long>
@@ -475,7 +475,7 @@ namespace MD
 			using ValueWrapper::ValueWrapper;
 
 			template<Register T1, Register T2>
-			ControlValueLongword(const T1 &reg1, const T2 &reg2) : ValueWrapper(static_cast<unsigned long>(std::bit_cast<unsigned short>(reg1)) << 16 | std::bit_cast<unsigned short>(reg2)) {}
+			constexpr ControlValueLongword(const T1 &reg1, const T2 &reg2) : ValueWrapper(static_cast<unsigned long>(std::bit_cast<unsigned short>(reg1)) << 16 | std::bit_cast<unsigned short>(reg2)) {}
 		};
 
 		enum class CommandRAM : unsigned int
