@@ -135,7 +135,7 @@
 	| Use a DMA Fill to clear VRAM.
 	| Registers 8F, 93, 94, and 97 were set earlier.
 	move.l	#0x40000080,(%a4)
-	move.w	%d6,(%a2)
+	move.w	%d7,(%a2)
 
 	| Copy initial Z80 program.
 	moveq	#.Ldata_z80_end-.Ldata_z80-1,%d0
@@ -169,11 +169,11 @@
 	move.l	%a0,%usp
 
 	| Clear RAM.
-	lsr.w	#2,%d0 | Turn 0xFFFF to '64 * 1024 / 16 - 1'.
-1:	move.l	%d0,-(%a0)
-	move.l	%d0,-(%a0)
-	move.l	%d0,-(%a0)
-	move.l	%d0,-(%a0)
+	lsr.w	#4,%d0 | Turn 0xFFFF to 0xFFF (64 * 1024 / 16 - 1).
+1:	move.l	%d7,-(%a0)
+	move.l	%d7,-(%a0)
+	move.l	%d7,-(%a0)
+	move.l	%d7,-(%a0)
 	dbf	%d0,1b
 
 	| Load DATA section.
@@ -217,6 +217,10 @@
 	| Read the VDP control port to reset any operations that it may have
 	| been in the middle of when the console was reset.
 	tst.w	(0xC00004).l
+
+	| Wait for any in-progress DMA operations to end, to avoid race-conditions.
+1:	btst	#1,(0xC00004).l
+	beq.s	1b
 
 	| Jump into the user-code.
 	jmp	(EntryPoint).l
