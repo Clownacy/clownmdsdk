@@ -1,4 +1,4 @@
-	include /opt/clownsdk/rom.mk
+	include /opt/clownmdsdk/rom.mk
 
 CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -std=c++23 -fvisibility=hidden -flto
 LDFLAGS += -save-temps=obj
