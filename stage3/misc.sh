@@ -5,7 +5,7 @@ export PREFIX="/opt/clownmdsdk"
 cp -r headers-and-scripts/* $PREFIX
 
 # Build the libraries.
-make -C src
+make -C src -B
 
 # Copy the libraries to the install location.
 cp -r bin/* $PREFIX
