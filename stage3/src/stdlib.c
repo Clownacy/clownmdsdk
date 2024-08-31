@@ -11,6 +11,7 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <stdint.h>
 #include <stdlib.h>
 
 static unsigned long RepeatByteToUnsignedLong(const int ch)
@@ -33,44 +34,182 @@ __attribute__((visibility("default"))) int abs(const int i)
 	return i < 0 ? -i : i;
 }
 
-__attribute__((visibility("default"))) void* memcpy(void* const dest, const void* const src, const size_t count)
+__attribute__((visibility("default"))) void* memcpy(void* const dest, const void* const src, size_t count)
 {
-	const size_t total_longs = count / sizeof(unsigned long);
-	const size_t remainder_bytes = count % sizeof(unsigned long);
+	unsigned char *source = (unsigned char*)src;
+	unsigned char *destination = (unsigned char*)dest;
 
-	unsigned long *source_longs = (unsigned long*)src;
-	unsigned char *source_bytes = (unsigned char*)(source_longs + total_longs);
+	if (count == 0)
+		return dest;
 
-	unsigned long *destination_longs = (unsigned long*)dest;
-	const unsigned long* const destination_longs_end = destination_longs + total_longs;
-	unsigned char *destination_bytes = (unsigned char*)destination_longs_end;
-	const unsigned char* const destination_bytes_end = destination_bytes + remainder_bytes;
+	// Slow path where one is word-aligned but the other isn't.
+	if ((((uintptr_t)destination ^ (uintptr_t)source) & 1) != 0)
+	{
+		const unsigned char* const end = destination + count;
 
-	for (; destination_longs < destination_longs_end; ++destination_longs)
-		*destination_longs = *source_longs++;
+		asm volatile(
+			"1:\n"
+			"	move.b	(%1)+,(%0)+\n"
+			"	cmpa.l	%2,%0\n"
+			"	blo.s	1b\n"
+			: "+a" (destination), "+a" (source)
+			: "da" (end)
+			: "cc"
+		);
 
-	for (; destination_bytes < destination_bytes_end; ++destination_bytes)
-		*destination_bytes = *source_bytes++;
+		return dest;
+	}
 
+	// Process a single byte to put us on an even address, if necessary.
+	if (((uintptr_t)destination & 1) != 0)
+	{
+		asm volatile(
+			"move.b	(%1)+,(%0)+\n"
+			: "+a" (destination), "+a" (source)
+			:
+			: "cc"
+		);
+
+		--count;
+	}
+
+	if (count == 0)
+		return dest;
+
+	// Process the bulk of the data as a series of longwords.
+	const unsigned char* const end = destination + count - (4 - 1);
+
+	asm volatile(
+		"1:\n"
+		"	move.l	(%1)+,(%0)+\n"
+		"	cmpa.l	%2,%0\n"
+		"	blo.s	1b\n"
+		: "+a" (destination), "+a" (source)
+		: "da" (end)
+		: "cc"
+	);
+
+	// Process any trailing bytes.
+	if ((count & 2) != 0)
+	{
+		asm volatile(
+			"move.w	(%1)+,(%0)+\n"
+			: "+a" (destination), "+a" (source)
+			:
+			: "cc"
+		);
+	}
+
+	if ((count & 1) != 0)
+	{
+		asm volatile(
+			"move.b	(%1)+,(%0)+\n"
+			: "+a" (destination), "+a" (source)
+			:
+			: "cc"
+		);
+	}
+
+	// And we're done!
 	return dest;
 }
 
-__attribute__((visibility("default"))) void* memset(void* const dest, const int ch, const size_t count)
+__attribute__((visibility("default"))) void* memset(void* const dest, const int ch, size_t count)
 {
-	const unsigned long ch_long = RepeatByteToUnsignedLong(ch);
-	const size_t total_longs = count / sizeof(unsigned long);
-	const size_t remainder_bytes = count % sizeof(unsigned long);
+	unsigned char *destination = (unsigned char*)dest;
 
-	unsigned long *destination_longs = (unsigned long*)dest;
-	const unsigned long* const destination_longs_end = destination_longs + total_longs;
-	unsigned char *destination_bytes = (unsigned char*)destination_longs_end;
-	const unsigned char* const destination_bytes_end = destination_bytes + remainder_bytes;
+	if (count == 0)
+		return dest;
 
-	for (; destination_longs < destination_longs_end; ++destination_longs)
-		*destination_longs = ch_long;
+	const unsigned long value = RepeatByteToUnsignedLong(ch);
 
-	for (; destination_bytes < destination_bytes_end; ++destination_bytes)
-		*destination_bytes = ch;
+	// Process a single byte to put us on an even address, if necessary.
+	if (((uintptr_t)destination & 1) != 0)
+	{
+		asm volatile(
+			"move.b	%1,(%0)+\n"
+			: "+a" (destination)
+			: "d" (value)
+			: "cc"
+		);
 
+		--count;
+	}
+
+	if (count == 0)
+		return dest;
+
+	const unsigned char* const end = destination + count - (4 - 1);
+
+	// Process the bulk of the data as a series of longwords.
+	asm volatile(
+		"1:\n"
+		"	move.l	%2,(%0)+\n"
+		"	cmpa.l	%1,%0\n"
+		"	blo.s	1b\n"
+		: "+a" (destination)
+		: "da" (end), "d" (value)
+		: "cc"
+	);
+
+	// Process any trailing bytes.
+	if ((count & 2) != 0)
+	{
+		asm volatile(
+			"move.w	%1,(%0)+\n"
+			: "+a" (destination)
+			: "d" (value)
+			: "cc"
+		);
+	}
+
+	if ((count & 1) != 0)
+	{
+		asm volatile(
+			"move.b	%1,(%0)+\n"
+			: "+a" (destination)
+			: "d" (value)
+			: "cc"
+		);
+	}
+
+	// And we're done!
 	return dest;
 }
+
+/*
+	unsigned char *destination = (unsigned char*)dest;
+
+	size_t count_div_10 = count / 0x10;
+
+	asm volatile(
+			"jmp	1f(%%pc,%2.w)\n"
+		"0:\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"	move.b	%3,(%0)+\n"
+		"1:\n"
+		"	dbf	%1,0b\n"
+		"	clr.w	%1\n"
+		"	subq.l	#1,%1\n"
+		"	bcc.s	0b\n"
+		: "+a" (destination), "+d" (count_div_10)
+		: "da" (-((count % 0x10) * 2)), "d" (ch)
+		: "cc"
+	);
+
+	return dest;
+*/
