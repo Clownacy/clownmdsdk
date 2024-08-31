@@ -9,8 +9,8 @@ extern "C" {
 
 int abs(int i);
 
-void* memcpy(void *dest, const void *src, size_t count);
-void* memset(void *dest, int ch, size_t count);
+__attribute__((always_inline)) void* memcpy(void *dest, const void *src, size_t count);
+__attribute__((always_inline)) void* memset(void *dest, int ch, size_t count);
 
 #ifdef __cplusplus
 }

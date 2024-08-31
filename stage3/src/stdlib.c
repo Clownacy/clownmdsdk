@@ -45,15 +45,34 @@ __attribute__((visibility("default"))) void* memcpy(void* const dest, const void
 	// Slow path where one is word-aligned but the other isn't.
 	if ((((uintptr_t)destination ^ (uintptr_t)source) & 1) != 0)
 	{
-		const unsigned char* const end = destination + count;
+		size_t count_div_10 = count / 0x10;
 
 		asm volatile(
+				"jmp	1f(%%pc,%3.w)\n"
+			"0:\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
+			"	move.b	(%2)+,(%0)+\n"
 			"1:\n"
-			"	move.b	(%1)+,(%0)+\n"
-			"	cmpa.l	%2,%0\n"
-			"	blo.s	1b\n"
-			: "+a" (destination), "+a" (source)
-			: "da" (end)
+			"	dbf	%1,0b\n"
+			"	clr.w	%1\n"
+			"	subq.l	#1,%1\n"
+			"	bcc.s	0b\n"
+			: "+a" (destination), "+d" (count_div_10), "+a" (source)
+			: "da" (-((count % 0x10) * 2))
 			: "cc"
 		);
 
@@ -73,21 +92,28 @@ __attribute__((visibility("default"))) void* memcpy(void* const dest, const void
 		--count;
 	}
 
-	if (count == 0)
-		return dest;
+	if (count >= 4)
+	{
+		// Process the bulk of the data as a series of longwords.
+		size_t count_div_10 = count / 0x10;
 
-	// Process the bulk of the data as a series of longwords.
-	const unsigned char* const end = destination + count - (4 - 1);
-
-	asm volatile(
-		"1:\n"
-		"	move.l	(%1)+,(%0)+\n"
-		"	cmpa.l	%2,%0\n"
-		"	blo.s	1b\n"
-		: "+a" (destination), "+a" (source)
-		: "da" (end)
-		: "cc"
-	);
+		asm volatile(
+				"jmp	1f(%%pc,%3.w)\n"
+			"0:\n"
+			"	move.l	(%2)+,(%0)+\n"
+			"	move.l	(%2)+,(%0)+\n"
+			"	move.l	(%2)+,(%0)+\n"
+			"	move.l	(%2)+,(%0)+\n"
+			"1:\n"
+			"	dbf	%1,0b\n"
+			"	clr.w	%1\n"
+			"	subq.l	#1,%1\n"
+			"	bcc.s	0b\n"
+			: "+a" (destination), "+d" (count_div_10), "+a" (source)
+			: "da" (-((count % 0x10 / 4) * 2))
+			: "cc"
+		);
+	}
 
 	// Process any trailing bytes.
 	if ((count & 2) != 0)
@@ -136,21 +162,28 @@ __attribute__((visibility("default"))) void* memset(void* const dest, const int 
 		--count;
 	}
 
-	if (count == 0)
-		return dest;
+	if (count >= 4)
+	{
+		// Process the bulk of the data as a series of longwords.
+		size_t count_div_10 = count / 0x10;
 
-	const unsigned char* const end = destination + count - (4 - 1);
-
-	// Process the bulk of the data as a series of longwords.
-	asm volatile(
-		"1:\n"
-		"	move.l	%2,(%0)+\n"
-		"	cmpa.l	%1,%0\n"
-		"	blo.s	1b\n"
-		: "+a" (destination)
-		: "da" (end), "d" (value)
-		: "cc"
-	);
+		asm volatile(
+				"jmp	1f(%%pc,%2.w)\n"
+			"0:\n"
+			"	move.l	%3,(%0)+\n"
+			"	move.l	%3,(%0)+\n"
+			"	move.l	%3,(%0)+\n"
+			"	move.l	%3,(%0)+\n"
+			"1:\n"
+			"	dbf	%1,0b\n"
+			"	clr.w	%1\n"
+			"	subq.l	#1,%1\n"
+			"	bcc.s	0b\n"
+			: "+a" (destination), "+d" (count_div_10)
+			: "da" (-((count % 0x10 / 4) * 2)), "d" (ch)
+			: "cc"
+		);
+	}
 
 	// Process any trailing bytes.
 	if ((count & 2) != 0)
@@ -176,40 +209,3 @@ __attribute__((visibility("default"))) void* memset(void* const dest, const int 
 	// And we're done!
 	return dest;
 }
-
-/*
-	unsigned char *destination = (unsigned char*)dest;
-
-	size_t count_div_10 = count / 0x10;
-
-	asm volatile(
-			"jmp	1f(%%pc,%2.w)\n"
-		"0:\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"	move.b	%3,(%0)+\n"
-		"1:\n"
-		"	dbf	%1,0b\n"
-		"	clr.w	%1\n"
-		"	subq.l	#1,%1\n"
-		"	bcc.s	0b\n"
-		: "+a" (destination), "+d" (count_div_10)
-		: "da" (-((count % 0x10) * 2)), "d" (ch)
-		: "cc"
-	);
-
-	return dest;
-*/
