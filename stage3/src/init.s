@@ -232,8 +232,8 @@
 	tst.w	(0xC00004).l
 
 	| Wait for any in-progress DMA operations to end, to avoid race-conditions.
-1:	btst	#1,(0xC00004).l
-	beq.s	1b
+1:	btst	#1,(0xC00005).l
+	bne.s	1b
 
 	| Jump into the user-code.
 	jmp	(EntryPoint).l
