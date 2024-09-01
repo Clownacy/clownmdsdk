@@ -227,11 +227,9 @@
 	jsr	_init
 
 .Lsoft_reset:
-	| Read the VDP control port to reset any operations that it may have
-	| been in the middle of when the console was reset.
-	tst.w	(0xC00004).l
-
 	| Wait for any in-progress DMA operations to end, to avoid race-conditions.
+	| This has the nice side-effect of reading the VDP control port to reset any
+	| operations that it may have been in the middle of when the console was reset.
 1:	btst	#1,(0xC00005).l
 	bne.s	1b
 
