@@ -232,71 +232,6 @@ namespace MD
 			);
 			Unsafe::DeassertReset();
 		}
-
-		class Bus
-		{
-		private:
-			const unsigned int interrupt_mask;
-
-		public:
-			Bus(const bool wait_for_bus = true) : interrupt_mask(M68k::DisableInterrupts())
-			{
-				Unsafe::RequestBus();
-
-				if (wait_for_bus)
-					Unsafe::WaitUntilBusObtained();
-			}
-
-			~Bus()
-			{
-				Unsafe::ReleaseBus();
-
-				M68k::SetInterruptMask(interrupt_mask);
-			}
-
-			const std::span<volatile unsigned char, 0x2000> ram = std::span<volatile unsigned char, 0x2000>(Unsafe::ram, 0x2000);
-			volatile unsigned short* const io_data = MD::Unsafe::io_data;
-			volatile unsigned short* const io_ctrl = MD::Unsafe::io_ctrl;
-
-			bool IsConsolePAL()
-			{
-				return MD::Unsafe::IsPAL();
-			}
-
-			void WriteFMI(const unsigned char address, const unsigned char value)
-			{
-				asm(
-					"0:\n"
-					"	tst.b	(%0)\n"     // 8(2/0)
-					"	bmi.s	0b\n"       // 10(2/0) | 8(1/0)
-					"	move.b	%1,(%0)\n"  // 8(1/1)
-					"	move.b	%2,1(%0)\n" // 12(2/1)
-					"	nop\n"              // 4(1/0)
-					"	nop\n"              // 4(1/0)
-					"	nop\n"              // 4(1/0)
-					:
-					: "a" (FM::Unsafe::ports), "idQUm" (address), "idQUm" (value)
-					: "cc"
-				);
-			}
-
-			void WriteFMII(const unsigned char address, const unsigned char value)
-			{
-				asm(
-					"0:\n"
-					"	tst.b	(%0)\n"     // 8(2/0)
-					"	bmi.s	0b\n"       // 10(2/0) | 8(1/0)
-					"	move.b	%1,2(%0)\n" // 12(2/1)
-					"	move.b	%2,3(%0)\n" // 12(2/1)
-					"	nop\n"              // 4(1/0)
-					"	nop\n"              // 4(1/0)
-					"	nop\n"              // 4(1/0)
-					:
-					: "a" (FM::Unsafe::ports), "idQUm" (address), "idQUm" (value)
-					: "cc"
-				);
-			}
-		};
 	}
 
 	namespace PSG
@@ -598,39 +533,46 @@ namespace MD
 			Write(MakeDMALengthCommand(length));
 		}
 
-		inline constexpr auto MakeDMACopyCommands(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+		namespace Unsafe
 		{
-			// TODO: 128KiB boundary.
-			const auto source_address = std::bit_cast<std::intptr_t>(data);
+			// WARNING: Make sure to request the Z80 bus before sending these commands to the VDP,
+			// otherwise the VDP or Z80 may read garbage data.
+			inline constexpr auto MakeDMACopyCommands(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+			{
+				// TODO: 128KiB boundary.
+				const auto source_address = std::bit_cast<std::intptr_t>(data);
 
-			return std::make_tuple(
-				MakeDMALengthCommand(length),
-				Register15{.dma_source_low = source_address >> (8 * 0 + 1)},
-				Register16{.dma_source_middle = source_address >> (8 * 1 + 1)},
-				Register17{.dma_mode = 0, .dma_source_high = source_address >> (8 * 2 + 1)},
-				MakeCommand(ram, CommandAccess::DMA, address));
-		}
+				return std::make_tuple(
+					MakeDMALengthCommand(length),
+					Register15{.dma_source_low = source_address >> (8 * 0 + 1)},
+					Register16{.dma_source_middle = source_address >> (8 * 1 + 1)},
+					Register17{.dma_mode = 0, .dma_source_high = source_address >> (8 * 2 + 1)},
+					MakeCommand(ram, CommandAccess::DMA, address));
+			}
 
-		inline void CopyWordsWithDMA(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
-		{
-			// TODO: Use 'always_inline', like FillBytesWithDMA.
-			// TODO: 128KiB boundary.
-			const auto source_address = std::bit_cast<std::intptr_t>(data);
+			// WARNING: Make sure to request the Z80 bus before calling this function,
+			// otherwise the VDP or Z80 may read garbage data.
+			inline void CopyWordsWithDMA(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+			{
+				// TODO: Use 'always_inline', like FillBytesWithDMA.
+				// TODO: 128KiB boundary.
+				const auto source_address = std::bit_cast<std::intptr_t>(data);
 
-			SetDMALength(length);
-			Write(Register15{.dma_source_low = source_address >> (8 * 0 + 1)});
-			Write(Register16{.dma_source_middle = source_address >> (8 * 1 + 1)});
-			Write(Register17{.dma_mode = 0, .dma_source_high = source_address >> (8 * 2 + 1)});
+				SetDMALength(length);
+				Write(Register15{.dma_source_low = source_address >> (8 * 0 + 1)});
+				Write(Register16{.dma_source_middle = source_address >> (8 * 1 + 1)});
+				Write(Register17{.dma_mode = 0, .dma_source_high = source_address >> (8 * 2 + 1)});
 
-			// According to Sega's 'GENESIS SOFTWARE MANUAL', the write
-			// that triggers the DMA transfer must be from memory.
-			asm volatile(
-					"move.l	%1,-(%%sp)\n"
-				"	move.l	(%%sp)+,%0"
-				: "=Qm" (MD::VDP::control_port_word)
-				: "daim" (MakeCommand(ram, CommandAccess::DMA, address)) // TODO: Other holders?
-				: "cc"
-			);
+				// According to Sega's 'GENESIS SOFTWARE MANUAL', the write
+				// that triggers the DMA transfer must be from memory.
+				asm volatile(
+						"move.l	%1,-(%%sp)\n"
+					"	move.l	(%%sp)+,%0"
+					: "=Qm" (MD::VDP::control_port_word)
+					: "daim" (MakeCommand(ram, CommandAccess::DMA, address)) // TODO: Other holders?
+					: "cc"
+				);
+			}
 		}
 
 		inline void CopyWordsWithoutDMA(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
@@ -812,6 +754,79 @@ namespace MD
 				FillWordsWithoutDMA(CommandRAM::VSRAM, address, length, value);
 			}
 		}
+	}
+
+	namespace Z80
+	{
+		class Bus
+		{
+		private:
+			const unsigned int interrupt_mask;
+
+		public:
+			Bus(const bool wait_for_bus = true) : interrupt_mask(M68k::DisableInterrupts())
+			{
+				Unsafe::RequestBus();
+
+				if (wait_for_bus)
+					Unsafe::WaitUntilBusObtained();
+			}
+
+			~Bus()
+			{
+				Unsafe::ReleaseBus();
+
+				M68k::SetInterruptMask(interrupt_mask);
+			}
+
+			const std::span<volatile unsigned char, 0x2000> ram = std::span<volatile unsigned char, 0x2000>(Unsafe::ram, 0x2000);
+			volatile unsigned short* const io_data = MD::Unsafe::io_data;
+			volatile unsigned short* const io_ctrl = MD::Unsafe::io_ctrl;
+
+			bool IsConsolePAL()
+			{
+				return MD::Unsafe::IsPAL();
+			}
+
+			void WriteFMI(const unsigned char address, const unsigned char value)
+			{
+				asm(
+					"0:\n"
+					"	tst.b	(%0)\n"     // 8(2/0)
+					"	bmi.s	0b\n"       // 10(2/0) | 8(1/0)
+					"	move.b	%1,(%0)\n"  // 8(1/1)
+					"	move.b	%2,1(%0)\n" // 12(2/1)
+					"	nop\n"              // 4(1/0)
+					"	nop\n"              // 4(1/0)
+					"	nop\n"              // 4(1/0)
+					:
+					: "a" (FM::Unsafe::ports), "idQUm" (address), "idQUm" (value)
+					: "cc"
+				);
+			}
+
+			void WriteFMII(const unsigned char address, const unsigned char value)
+			{
+				asm(
+					"0:\n"
+					"	tst.b	(%0)\n"     // 8(2/0)
+					"	bmi.s	0b\n"       // 10(2/0) | 8(1/0)
+					"	move.b	%1,2(%0)\n" // 12(2/1)
+					"	move.b	%2,3(%0)\n" // 12(2/1)
+					"	nop\n"              // 4(1/0)
+					"	nop\n"              // 4(1/0)
+					"	nop\n"              // 4(1/0)
+					:
+					: "a" (FM::Unsafe::ports), "idQUm" (address), "idQUm" (value)
+					: "cc"
+				);
+			}
+
+			void CopyWordsToVDPWithDMA(const VDP::CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+			{
+				VDP::Unsafe::CopyWordsWithDMA(ram, address, data, length);
+			}
+		};
 	}
 }
 
