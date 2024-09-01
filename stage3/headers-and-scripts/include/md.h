@@ -496,6 +496,7 @@ namespace MD
 		static volatile unsigned long &data_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00000);
 		static volatile unsigned short &control_port_word = *reinterpret_cast<volatile unsigned short*>(0xC00004);
 		static volatile unsigned long &control_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00004);
+		static volatile unsigned char &control_port_low_byte = *reinterpret_cast<volatile unsigned char*>(0xC00004 + 1);
 
 		inline void Write(const DataValueWord value)
 		{
@@ -669,7 +670,7 @@ namespace MD
 				"	btst	%1,%0\n"
 				"	bne.s	0b\n"
 				:
-				: "Qm" (data_port_word), "di" (1)
+				: "Qm" (control_port_low_byte), "di" (1)
 				: "cc"
 			);
 		}
