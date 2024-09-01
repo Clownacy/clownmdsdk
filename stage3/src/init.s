@@ -196,14 +196,14 @@
 	move.w	%d0,%d1
 	lsr.l	#4,%d0
 	andi.w	#0xC,%d1
-	eori.w	#0xC,%d1
 	lsr.w	#1,%d1
+	neg.w	%d1
 	jmp	1f(%pc,%d1.w)
+	move.l	(%a0)+,(%a1)+
+	move.l	(%a0)+,(%a1)+
+	move.l	(%a0)+,(%a1)+
+	move.l	(%a0)+,(%a1)+
 1:
-	move.l	(%a0)+,(%a1)+
-	move.l	(%a0)+,(%a1)+
-	move.l	(%a0)+,(%a1)+
-	move.l	(%a0)+,(%a1)+
 	dbf	%d0,1b
 
 	| Run global constructors.
