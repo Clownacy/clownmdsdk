@@ -413,14 +413,14 @@ namespace MD
 			constexpr ControlValueLongword(const T1 &reg1, const T2 &reg2) : ValueWrapper(static_cast<unsigned long>(std::bit_cast<unsigned short>(reg1)) << 16 | std::bit_cast<unsigned short>(reg2)) {}
 		};
 
-		enum class CommandRAM : unsigned int
+		enum class RAM : unsigned int
 		{
 			VRAM  = 0x21,
 			CRAM  = 0x2B,
 			VSRAM = 0x25
 		};
 
-		enum class CommandAccess : unsigned int
+		enum class Access : unsigned int
 		{
 			READ  = 0x0C,
 			WRITE = 0x07,
@@ -485,13 +485,13 @@ namespace MD
 			Write(std::make_tuple(data1, data2, other_data...));
 		}
 
-		inline constexpr ControlValueLongword MakeCommand(const CommandRAM ram, const CommandAccess access, const unsigned int address)
+		inline constexpr ControlValueLongword MakeCommand(const RAM ram, const Access access, const unsigned int address)
 		{
 			const unsigned int cd = std::to_underlying(ram) & std::to_underlying(access);
 			return static_cast<unsigned long>(cd & 3) << 30 | static_cast<unsigned long>(address & 0x3FFF) << 16 | (cd & 0x3C) << 2 | (address & 0xC000) >> 14;
 		}
 
-		inline void SendCommand(const CommandRAM ram, const CommandAccess access, const unsigned int address)
+		inline void SendCommand(const RAM ram, const Access access, const unsigned int address)
 		{
 			Write(MakeCommand(ram, access, address));
 		}
@@ -537,7 +537,7 @@ namespace MD
 		{
 			// WARNING: Make sure to request the Z80 bus before sending these commands to the VDP,
 			// otherwise the VDP or Z80 may read garbage data.
-			inline constexpr auto MakeDMACopyCommands(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+			inline constexpr auto MakeDMACopyCommands(const RAM ram, const unsigned int address, const void* const data, const unsigned int length)
 			{
 				// TODO: 128KiB boundary.
 				const auto source_address = std::bit_cast<std::uintptr_t>(data);
@@ -547,12 +547,12 @@ namespace MD
 					Register15{.dma_source_low = source_address >> (8 * 0 + 1)},
 					Register16{.dma_source_middle = source_address >> (8 * 1 + 1)},
 					Register17{.dma_mode = 0, .dma_source_high = source_address >> (8 * 2 + 1)},
-					MakeCommand(ram, CommandAccess::DMA, address));
+					MakeCommand(ram, Access::DMA, address));
 			}
 
 			// WARNING: Make sure to request the Z80 bus before calling this function,
 			// otherwise the VDP or Z80 may read garbage data.
-			inline void CopyWordsWithDMA(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+			inline void CopyWordsWithDMA(const RAM ram, const unsigned int address, const void* const data, const unsigned int length)
 			{
 				// TODO: Use 'always_inline', like FillBytesWithDMA.
 				// TODO: 128KiB boundary.
@@ -569,15 +569,15 @@ namespace MD
 						"move.l	%1,-(%%sp)\n"
 					"	move.l	(%%sp)+,%0"
 					: "=Qm" (MD::VDP::control_port_word)
-					: "daim" (MakeCommand(ram, CommandAccess::DMA, address)) // TODO: Other holders?
+					: "daim" (MakeCommand(ram, Access::DMA, address)) // TODO: Other holders?
 					: "cc"
 				);
 			}
 		}
 
-		inline void CopyWordsWithoutDMA(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+		inline void CopyWordsWithoutDMA(const RAM ram, const unsigned int address, const void* const data, const unsigned int length)
 		{
-			SendCommand(ram, CommandAccess::WRITE, address);
+			SendCommand(ram, Access::WRITE, address);
 
 			const unsigned long *data_pointer = static_cast<const unsigned long*>(data);
 
@@ -591,9 +591,9 @@ namespace MD
 				Write(DataValueWord(*reinterpret_cast<const unsigned short*>(data_pointer)));
 		}
 
-		inline void FillWordsWithoutDMA(const CommandRAM ram, const unsigned int address, const unsigned int length, const unsigned int value)
+		inline void FillWordsWithoutDMA(const RAM ram, const unsigned int address, const unsigned int length, const unsigned int value)
 		{
-			SendCommand(ram, CommandAccess::WRITE, address);
+			SendCommand(ram, Access::WRITE, address);
 
 			const auto longword_value = DataValueLongword(RepeatBits<unsigned long, 4>(value));
 			const auto word_value = DataValueWord(value);
@@ -652,7 +652,7 @@ namespace MD
 
 			inline constexpr auto MakeDMAFillCommands(const unsigned int address, const unsigned int length, const unsigned int value)
 			{
-				return std::make_tuple(MakeDMALengthCommand(length - 1), Register17{.dma_mode = 1, .dma_source_high = 0}, MakeCommand(CommandRAM::VRAM, CommandAccess::DMA, address), DataValueWord(RepeatBits<unsigned short, 3>(value)));
+				return std::make_tuple(MakeDMALengthCommand(length - 1), Register17{.dma_mode = 1, .dma_source_high = 0}, MakeCommand(RAM::VRAM, Access::DMA, address), DataValueWord(RepeatBits<unsigned short, 3>(value)));
 			}
 
 			__attribute__((always_inline)) inline void FillBytesWithDMA(const unsigned int address, const unsigned int length, const unsigned int value)
@@ -663,7 +663,7 @@ namespace MD
 
 			inline void FillWordsWithoutDMA(const unsigned int address, const unsigned int length, const unsigned int value)
 			{
-				FillWordsWithoutDMA(CommandRAM::VRAM, address, length, value);
+				FillWordsWithoutDMA(RAM::VRAM, address, length, value);
 			}
 
 			inline void SetPlaneALocation(const unsigned int vram_address)
@@ -724,19 +724,19 @@ namespace MD
 			inline void Set(const unsigned int palette_line, const unsigned int colour_index, const Colour colour)
 			{
 				Write(
-					MakeCommand(CommandRAM::CRAM, CommandAccess::WRITE, PaletteLineAndIndexToOffset(palette_line, colour_index)),
+					MakeCommand(RAM::CRAM, Access::WRITE, PaletteLineAndIndexToOffset(palette_line, colour_index)),
 					DataValueWord(colour.GetRaw())
 				);
 			}
 
 			inline void FillWordsWithoutDMA(const unsigned int address, const unsigned int length, const unsigned int value)
 			{
-				FillWordsWithoutDMA(CommandRAM::CRAM, address, length, value);
+				FillWordsWithoutDMA(RAM::CRAM, address, length, value);
 			}
 
 			inline void FillWordsWithoutDMA(const unsigned int address, const unsigned int length, const Colour colour)
 			{
-				FillWordsWithoutDMA(CommandRAM::CRAM, address, length, colour.GetRaw());
+				FillWordsWithoutDMA(RAM::CRAM, address, length, colour.GetRaw());
 			}
 
 			inline void Fill(const Colour colour)
@@ -751,7 +751,7 @@ namespace MD
 
 			inline void FillWordsWithoutDMA(const unsigned int address, const unsigned int length, const unsigned int value)
 			{
-				FillWordsWithoutDMA(CommandRAM::VSRAM, address, length, value);
+				FillWordsWithoutDMA(RAM::VSRAM, address, length, value);
 			}
 		}
 	}
@@ -822,7 +822,7 @@ namespace MD
 				);
 			}
 
-			void CopyWordsToVDPWithDMA(const VDP::CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
+			void CopyWordsToVDPWithDMA(const VDP::RAM ram, const unsigned int address, const void* const data, const unsigned int length)
 			{
 				VDP::Unsafe::CopyWordsWithDMA(ram, address, data, length);
 			}

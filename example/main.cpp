@@ -221,7 +221,7 @@ void EntryPoint()
 	{
 		for (unsigned int y = 0; y < height; ++y)
 		{
-			MD::VDP::SendCommand(MD::VDP::CommandRAM::VRAM, MD::VDP::CommandAccess::WRITE, VRAM_PLANE_A + Plane64XYToOffset(offset_x, offset_y + y));
+			MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, VRAM_PLANE_A + Plane64XYToOffset(offset_x, offset_y + y));
 
 			for (unsigned int x = 0; x < width / 2; ++x)
 				MD::VDP::Write(MD::VDP::DataValueLongword(MD::VDP::RepeatBits<unsigned long, 4>(std::bit_cast<unsigned short>(tile_metadata))));
@@ -274,7 +274,7 @@ void EntryPoint()
 				{
 					const auto puyo_width_in_tiles = Puyo::Width() / MD::VDP::VRAM::TILE_WIDTH;
 
-					MD::VDP::SendCommand(MD::VDP::CommandRAM::VRAM, MD::VDP::CommandAccess::WRITE, VRAM_PLANE_A + Plane64XYToOffset(LEFT_GRID_X_IN_TILES + x * puyo_width_in_tiles, GRID_Y_IN_TILES + y * puyo_height_in_tiles + tile_y));
+					MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, VRAM_PLANE_A + Plane64XYToOffset(LEFT_GRID_X_IN_TILES + x * puyo_width_in_tiles, GRID_Y_IN_TILES + y * puyo_height_in_tiles + tile_y));
 
 					for (unsigned int tile_x = 0; tile_x < puyo_width_in_tiles; ++tile_x)
 					{
@@ -440,7 +440,7 @@ void Level6InterruptHandler()
 	waiting_for_v_int = false;
 
 	const MD::VDP::VRAM::Sprite sprite{.y = 0x80 + GRID_Y + puyo.y, .width = 1, .height = 1, .link = 0, .tile_metadata = {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = GridSlotToTileIndex(PuyoColourToGridSlot(puyo.colour))}, .x = 0x80 + LEFT_GRID_X + puyo.x};
-	MD::VDP::CopyWordsWithoutDMA(MD::VDP::CommandRAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
+	MD::VDP::CopyWordsWithoutDMA(MD::VDP::RAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
 
 	static constexpr auto ReadController = []()
 	{
