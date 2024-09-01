@@ -386,6 +386,24 @@ namespace MD
 			std::bit_cast<unsigned short>(reg);
 		};
 
+		namespace CRAM
+		{
+			class Colour
+			{
+				private:
+					unsigned short colour;
+
+				public:
+					Colour(const unsigned short colour) : colour(colour) {}
+					Colour(const unsigned int red, const unsigned int green, const unsigned int blue) : colour(blue << 9 | green << 5 | red << 1) {}
+					unsigned short GetRaw() const {return colour;}
+
+					static constexpr unsigned int Size() {return sizeof(colour);}
+			};
+
+			static_assert(std::is_standard_layout_v<Colour>); // Make sure that this is just a wrapped 'unsigned short'.
+		}
+
 		template<typename T>
 		struct ValueWrapper
 		{
@@ -394,8 +412,19 @@ namespace MD
 			constexpr ValueWrapper(const T value) : value(value) {}
 		};
 
-		struct DataValueWord : public ValueWrapper<unsigned short> {using ValueWrapper::ValueWrapper;};
-		struct DataValueLongword : public ValueWrapper<unsigned long> {using ValueWrapper::ValueWrapper;};
+		struct DataValueWord : public ValueWrapper<unsigned short>
+		{
+			using ValueWrapper::ValueWrapper;
+
+			constexpr DataValueWord(const CRAM::Colour colour) : ValueWrapper(colour.GetRaw()) {}
+		};
+
+		struct DataValueLongword : public ValueWrapper<unsigned long>
+		{
+			using ValueWrapper::ValueWrapper;
+
+			constexpr DataValueLongword(const CRAM::Colour colour1, const CRAM::Colour colour2) : ValueWrapper(static_cast<unsigned long>(colour1.GetRaw()) << 16 | colour2.GetRaw()) {}
+		};
 
 		struct ControlValueWord : public ValueWrapper<unsigned short>
 		{
@@ -451,6 +480,15 @@ namespace MD
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
+		}
+		inline void Write(const CRAM::Colour colour)
+		{
+			Write(DataValueWord(colour));
+		}
+
+		inline void Write(const CRAM::Colour colour1, const CRAM::Colour colour2)
+		{
+			Write(DataValueLongword(colour1, colour2));
 		}
 
 		inline void Write(const ControlValueWord value)
@@ -700,21 +738,6 @@ namespace MD
 			constexpr unsigned int PALETTE_LINE_LENGTH = 16;
 			constexpr unsigned int TOTAL_PALETTE_LINES = 4;
 			constexpr unsigned int total_words = TOTAL_PALETTE_LINES * PALETTE_LINE_LENGTH;
-			
-			class Colour
-			{
-				private:
-					unsigned short colour;
-
-				public:
-					Colour(const unsigned short colour) : colour(colour) {}
-					Colour(const unsigned int red, const unsigned int green, const unsigned int blue) : colour(blue << 9 | green << 5 | red << 1) {}
-					unsigned short GetRaw() const {return colour;}
-
-					static constexpr unsigned int Size() {return sizeof(colour);}
-			};
-
-			static_assert(std::is_standard_layout_v<Colour>); // Make sure that this is just a wrapped 'unsigned short'.
 
 			inline unsigned int PaletteLineAndIndexToOffset(const unsigned int palette_line, const unsigned int colour_index)
 			{

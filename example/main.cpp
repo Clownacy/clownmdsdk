@@ -183,21 +183,36 @@ void EntryPoint()
 	MD::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
 	MD::VDP::VRAM::SetSpriteTableLocation(VRAM_SPRITE_TABLE);
 
-	MD::VDP::CRAM::Set(0, 1, {0, 0, 0});
-	MD::VDP::CRAM::Set(0, 2, {1, 1, 1});
-	MD::VDP::CRAM::Set(0, 3, {0, 3, 7});
-	MD::VDP::CRAM::Set(0, 4, {0, 7, 0});
-	MD::VDP::CRAM::Set(0, 5, {7, 7, 0});
-	MD::VDP::CRAM::Set(0, 6, {7, 0, 0});
-	MD::VDP::CRAM::Set(0, 7, {4, 0, 7});
+	// Initialise IO ports.
+	{
+		MD::Z80::Bus z80_bus;
 
-	#define FillTiles(colour_index, tile_index, total_tiles) \
-		MD::VDP::VRAM::FillBytesWithDMA((tile_index) * MD::VDP::VRAM::TILE_SIZE_IN_BYTES, (total_tiles) * MD::VDP::VRAM::TILE_SIZE_IN_BYTES, MD::VDP::RepeatBits<unsigned int, 2>(colour_index)); \
-		MD::VDP::WaitUntilDMAIsComplete()
-		//MD::VDP::VRAM::FillWordsWithoutDMA(tile_index * MD::VDP::VRAM::TILE_SIZE_IN_BYTES, total_tiles * MD::VDP::VRAM::TILE_SIZE_IN_BYTES / 2, MD::VDP::RepeatBits<unsigned int, 2>(colour_index));
+		for (unsigned int i = 0; i < controllers.size(); ++i)
+		{
+			z80_bus.io_ctrl[i] = 0x40;
+			z80_bus.io_data[i] = 0x40;
+		}
+	}
 
-	#define FillTile(colour_index, tile_index) FillTiles(colour_index, tile_index, 1)
+	// Write colours to CRAM.
+	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, 2);
+	MD::VDP::Write({0, 0, 0}, {1, 1, 1});
+	MD::VDP::Write({0, 3, 7}, {0, 7, 0});
+	MD::VDP::Write({7, 7, 0}, {7, 0, 0});
+	MD::VDP::Write({4, 0, 7});
 
+	const auto FillTiles = [](const unsigned int colour_index, const unsigned int tile_index, const unsigned int total_tiles) __attribute__((always_inline))
+	{
+		MD::VDP::VRAM::FillBytesWithDMA((tile_index) * MD::VDP::VRAM::TILE_SIZE_IN_BYTES, (total_tiles) * MD::VDP::VRAM::TILE_SIZE_IN_BYTES, MD::VDP::RepeatBits<unsigned int, 2>(colour_index));
+		MD::VDP::WaitUntilDMAIsComplete();
+	};
+
+	const auto FillTile = [&FillTiles](const unsigned int colour_index, const unsigned int tile_index) __attribute__((always_inline))
+	{
+		FillTiles(colour_index, tile_index, 1);
+	};
+
+	// Usee DMA Fill to generate some coloured tiles.
 	MD::VDP::SetAddressIncrement(1);
 	FillTile(1, 1);
 	FillTile(2, 2);
@@ -207,10 +222,6 @@ void EntryPoint()
 	FillTiles(6, GridSlotToTileIndex(GridSlot::RED),    4);
 	FillTiles(7, GridSlotToTileIndex(GridSlot::PURPLE), 4);
 	MD::VDP::SetAddressIncrement(2);
-
-#ifndef NDEBUG
-	asm("nop"); // TODO: Get rid of this.
-#endif
 
 	static constexpr auto Plane64XYToOffset = [](const unsigned int x, const unsigned int y) constexpr
 	{
@@ -226,32 +237,26 @@ void EntryPoint()
 			for (unsigned int x = 0; x < width / 2; ++x)
 				MD::VDP::Write(MD::VDP::DataValueLongword(MD::VDP::RepeatBits<unsigned long, 4>(std::bit_cast<unsigned short>(tile_metadata))));
 
-//			if (width % 2 != 0)
-//				MD::VDP::WriteDataPortWord(std::bit_cast<unsigned short>(tile_metadata));
+			if (width % 2 != 0)
+				MD::VDP::Write(MD::VDP::DataValueWord(std::bit_cast<unsigned short>(tile_metadata)));
 		}
 	};
 
+	// Fill background.
 	DrawBox(0, 0, SCREEN_WIDTH / MD::VDP::VRAM::TILE_WIDTH, SCREEN_HEIGHT / MD::VDP::VRAM::TILE_HEIGHT, MD::VDP::VRAM::TileMetadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 1});
 
+	// Fill left box.
 	DrawBox(LEFT_GRID_X_IN_TILES, GRID_Y_IN_TILES, GRID_WIDTH_IN_TILES, GRID_HEIGHT_IN_TILES, MD::VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 2});
+
+	// Fill right box.
 	DrawBox(RIGHT_GRID_X_IN_TILES, GRID_Y_IN_TILES, GRID_WIDTH_IN_TILES, GRID_HEIGHT_IN_TILES, MD::VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 2});
 
-	// Initialise IO ports.
-	{
-		MD::Z80::Bus z80_bus;
-
-		for (unsigned int i = 0; i < controllers.size(); ++i)
-		{
-			z80_bus.io_ctrl[i] = 0x40;
-			z80_bus.io_data[i] = 0x40;
-		}
-	}
-
+	// Now that initialisation is complete, enable display.
 	vdp_register01.enable_display = true;
 	vdp_register01.enable_vertical_interrupt = true;
 	MD::VDP::Write(vdp_register01);
 
-	//MD::SetInterruptMask(0);
+	MD::M68k::SetInterruptMask(0);
 
 	for (;;)
 	{
