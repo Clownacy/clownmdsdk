@@ -439,12 +439,8 @@ void Level6InterruptHandler()
 
 	waiting_for_v_int = false;
 
-	MD::VDP::SendCommand(MD::VDP::CommandRAM::VRAM, MD::VDP::CommandAccess::WRITE, VRAM_SPRITE_TABLE);
-
 	const MD::VDP::VRAM::Sprite sprite{.y = 0x80 + GRID_Y + puyo.y, .width = 1, .height = 1, .link = 0, .tile_metadata = {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = GridSlotToTileIndex(PuyoColourToGridSlot(puyo.colour))}, .x = 0x80 + LEFT_GRID_X + puyo.x};
-
-	for (const auto &longword : std::bit_cast<std::array<unsigned long, sizeof(MD::VDP::VRAM::Sprite) / sizeof(unsigned long)>>(sprite))
-		MD::VDP::data_port_longword = longword;
+	MD::VDP::CopyWordsWithoutDMA(MD::VDP::CommandRAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
 
 	static constexpr auto ReadController = []()
 	{
