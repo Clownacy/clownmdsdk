@@ -192,18 +192,15 @@
 	| Load DATA section.
 	lea	(_DATA_ROM_START_).l,%a0
 	lea	(_DATA_RAM_START_).l,%a1
-	move.l	#_DATA_SIZE_,%d0
-	move.w	%d0,%d1
-	lsr.l	#4,%d0
-	andi.w	#0xC,%d1
-	lsr.w	#1,%d1
-	neg.w	%d1
-	jmp	1f(%pc,%d1.w)
+	move.w	#_DATA_LOOP_COUNT_,%d0
+	moveq	#_DATA_LOOP_OFFSET_,%d1
+	jmp	2f(%pc,%d1.w)
+
+1:	move.l	(%a0)+,(%a1)+
 	move.l	(%a0)+,(%a1)+
 	move.l	(%a0)+,(%a1)+
 	move.l	(%a0)+,(%a1)+
-	move.l	(%a0)+,(%a1)+
-1:
+2:
 	dbf	%d0,1b
 
 	| Run global constructors.
