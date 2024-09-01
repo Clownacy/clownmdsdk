@@ -540,7 +540,7 @@ namespace MD
 			inline constexpr auto MakeDMACopyCommands(const CommandRAM ram, const unsigned int address, const void* const data, const unsigned int length)
 			{
 				// TODO: 128KiB boundary.
-				const auto source_address = std::bit_cast<std::intptr_t>(data);
+				const auto source_address = std::bit_cast<std::uintptr_t>(data);
 
 				return std::make_tuple(
 					MakeDMALengthCommand(length),
@@ -556,7 +556,7 @@ namespace MD
 			{
 				// TODO: Use 'always_inline', like FillBytesWithDMA.
 				// TODO: 128KiB boundary.
-				const auto source_address = std::bit_cast<std::intptr_t>(data);
+				const auto source_address = std::bit_cast<std::uintptr_t>(data);
 
 				SetDMALength(length);
 				Write(Register15{.dma_source_low = source_address >> (8 * 0 + 1)});
@@ -583,7 +583,7 @@ namespace MD
 
 			for (unsigned int i = 0; i < length / 2; ++i)
 			{
-				Write(DataValueLongword(*reinterpret_cast<const unsigned long*>(data_pointer)));
+				Write(DataValueLongword(*data_pointer));
 				++data_pointer;
 			}
 
