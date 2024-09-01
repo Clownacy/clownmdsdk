@@ -160,6 +160,18 @@
 	move.w	%d7,(%a6)
 	move.w	%d6,(%a3)
 
+	| Clear USP.
+	movea.l	%d7,%a0
+	move.l	%a0,%usp
+
+	| Clear RAM.
+	move.w	#64*1024/16-1,%d0
+1:	move.l	%d7,-(%a0)
+	move.l	%d7,-(%a0)
+	move.l	%d7,-(%a0)
+	move.l	%d7,-(%a0)
+	dbf	%d0,1b
+
 	| Hopefully, the DMA Fill has completed by now.
 	| Disable DMA operations, and set the auto-increment to
 	| 2 bytes for the following clears.
@@ -175,18 +187,6 @@
 	move.l	#0x40000010,(%a4)
 	moveq	#40/2-1,%d0
 1:	move.l	%d7,(%a2)
-	dbf	%d0,1b
-
-	| Clear USP.
-	movea.l	%d7,%a0
-	move.l	%a0,%usp
-
-	| Clear RAM.
-	lsr.w	#4,%d0 | Turn 0xFFFF to 0xFFF (64 * 1024 / 16 - 1).
-1:	move.l	%d7,-(%a0)
-	move.l	%d7,-(%a0)
-	move.l	%d7,-(%a0)
-	move.l	%d7,-(%a0)
 	dbf	%d0,1b
 
 	| Load DATA section.
