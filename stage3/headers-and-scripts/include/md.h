@@ -25,51 +25,51 @@
 
 // TODO: Is there any point in supporting C here?
 #ifdef __cplusplus
-#define VISIBILITY extern "C"
+#define __VISIBILITY extern "C"
 #else
-#define VISIBILITY
+#define __VISIBILITY
 #endif
 
-#define ENTRY_POINT VISIBILITY [[noreturn]]
-#define INTERRUPT_HANDLER VISIBILITY __attribute__((interrupt))
+#define __ENTRY_POINT __VISIBILITY [[noreturn]]
+#define __INTERRUPT_HANDLER __VISIBILITY __attribute__((interrupt))
 
-ENTRY_POINT void EntryPoint();
-INTERRUPT_HANDLER void BusErrorHandler();
-INTERRUPT_HANDLER void AddressErrorHandler();
-INTERRUPT_HANDLER void IllegalInstructionHandler();
-INTERRUPT_HANDLER void DivisionByZeroHandler();
-INTERRUPT_HANDLER void CHKHandler();
-INTERRUPT_HANDLER void TRAPVHandler();
-INTERRUPT_HANDLER void PrivilegeViolationHandler();
-INTERRUPT_HANDLER void TraceHandler();
-INTERRUPT_HANDLER void UnimplementedInstructionLineAHandler();
-INTERRUPT_HANDLER void UnimplementedInstructionLineFHandler();
-INTERRUPT_HANDLER void UnassignedHandler();
-INTERRUPT_HANDLER void UninitialisedInterruptHandler();
-INTERRUPT_HANDLER void SpuriousInterruptHandler();
-INTERRUPT_HANDLER void Level1InterruptHandler();
-INTERRUPT_HANDLER void Level2InterruptHandler();
-INTERRUPT_HANDLER void Level3InterruptHandler();
-INTERRUPT_HANDLER void Level4InterruptHandler();
-INTERRUPT_HANDLER void Level5InterruptHandler();
-INTERRUPT_HANDLER void Level6InterruptHandler();
-INTERRUPT_HANDLER void Level7InterruptHandler();
-INTERRUPT_HANDLER void TRAP0Handler();
-INTERRUPT_HANDLER void TRAP1Handler();
-INTERRUPT_HANDLER void TRAP2Handler();
-INTERRUPT_HANDLER void TRAP3Handler();
-INTERRUPT_HANDLER void TRAP4Handler();
-INTERRUPT_HANDLER void TRAP5Handler();
-INTERRUPT_HANDLER void TRAP6Handler();
-INTERRUPT_HANDLER void TRAP7Handler();
-INTERRUPT_HANDLER void TRAP8Handler();
-INTERRUPT_HANDLER void TRAP9Handler();
-INTERRUPT_HANDLER void TRAP10Handler();
-INTERRUPT_HANDLER void TRAP11Handler();
-INTERRUPT_HANDLER void TRAP12Handler();
-INTERRUPT_HANDLER void TRAP13Handler();
-INTERRUPT_HANDLER void TRAP14Handler();
-INTERRUPT_HANDLER void TRAP15Handler();
+__ENTRY_POINT void EntryPoint();
+__INTERRUPT_HANDLER void BusErrorHandler();
+__INTERRUPT_HANDLER void AddressErrorHandler();
+__INTERRUPT_HANDLER void IllegalInstructionHandler();
+__INTERRUPT_HANDLER void DivisionByZeroHandler();
+__INTERRUPT_HANDLER void CHKHandler();
+__INTERRUPT_HANDLER void TRAPVHandler();
+__INTERRUPT_HANDLER void PrivilegeViolationHandler();
+__INTERRUPT_HANDLER void TraceHandler();
+__INTERRUPT_HANDLER void UnimplementedInstructionLineAHandler();
+__INTERRUPT_HANDLER void UnimplementedInstructionLineFHandler();
+__INTERRUPT_HANDLER void UnassignedHandler();
+__INTERRUPT_HANDLER void UninitialisedInterruptHandler();
+__INTERRUPT_HANDLER void SpuriousInterruptHandler();
+__INTERRUPT_HANDLER void Level1InterruptHandler();
+__INTERRUPT_HANDLER void Level2InterruptHandler();
+__INTERRUPT_HANDLER void Level3InterruptHandler();
+__INTERRUPT_HANDLER void Level4InterruptHandler();
+__INTERRUPT_HANDLER void Level5InterruptHandler();
+__INTERRUPT_HANDLER void Level6InterruptHandler();
+__INTERRUPT_HANDLER void Level7InterruptHandler();
+__INTERRUPT_HANDLER void TRAP0Handler();
+__INTERRUPT_HANDLER void TRAP1Handler();
+__INTERRUPT_HANDLER void TRAP2Handler();
+__INTERRUPT_HANDLER void TRAP3Handler();
+__INTERRUPT_HANDLER void TRAP4Handler();
+__INTERRUPT_HANDLER void TRAP5Handler();
+__INTERRUPT_HANDLER void TRAP6Handler();
+__INTERRUPT_HANDLER void TRAP7Handler();
+__INTERRUPT_HANDLER void TRAP8Handler();
+__INTERRUPT_HANDLER void TRAP9Handler();
+__INTERRUPT_HANDLER void TRAP10Handler();
+__INTERRUPT_HANDLER void TRAP11Handler();
+__INTERRUPT_HANDLER void TRAP12Handler();
+__INTERRUPT_HANDLER void TRAP13Handler();
+__INTERRUPT_HANDLER void TRAP14Handler();
+__INTERRUPT_HANDLER void TRAP15Handler();
 
 // TODO: Move this to its own translation unit? Optimisation can be handled by LTO.
 namespace MD
