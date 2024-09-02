@@ -75,7 +75,7 @@ __INTERRUPT_HANDLER void _TRAP15Handler(void);
 #include <utility>
 
 // TODO: Move this to its own translation unit? Optimisation can be handled by LTO.
-namespace MD
+namespace ClownMDSDK
 {
 	namespace Unsafe
 	{
@@ -469,7 +469,7 @@ namespace MD
 		{
 			asm volatile(
 				"move.w	%1,%0"
-				: "=Qm" (MD::VDP::data_port_word)
+				: "=Qm" (ClownMDSDK::VDP::data_port_word)
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -479,7 +479,7 @@ namespace MD
 		{
 			asm volatile(
 				"move.l	%1,%0"
-				: "=Qm" (MD::VDP::data_port_word) // I would use 'data_port_longword', but using 'data_port_word' makes the compiler share pointers with WriteDataPortWord.
+				: "=Qm" (ClownMDSDK::VDP::data_port_word) // I would use 'data_port_longword', but using 'data_port_word' makes the compiler share pointers with WriteDataPortWord.
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -498,7 +498,7 @@ namespace MD
 		{
 			asm volatile(
 				"move.w	%1,%0"
-				: "=Qm" (MD::VDP::control_port_word)
+				: "=Qm" (ClownMDSDK::VDP::control_port_word)
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -508,7 +508,7 @@ namespace MD
 		{
 			asm volatile(
 				"move.l	%1,%0"
-				: "=Qm" (MD::VDP::control_port_word) // I would use 'control_port_longword', but using 'control_port_word' makes the compiler share pointers with WriteControlPortWord.
+				: "=Qm" (ClownMDSDK::VDP::control_port_word) // I would use 'control_port_longword', but using 'control_port_word' makes the compiler share pointers with WriteControlPortWord.
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -609,7 +609,7 @@ namespace MD
 				asm volatile(
 						"move.l	%1,-(%%sp)\n"
 					"	move.l	(%%sp)+,%0"
-					: "=Qm" (MD::VDP::control_port_word)
+					: "=Qm" (ClownMDSDK::VDP::control_port_word)
 					: "daim" (MakeCommand(ram, Access::DMA, address)) // TODO: Other holders?
 					: "cc"
 				);
@@ -806,12 +806,12 @@ namespace MD
 			}
 
 			const std::span<volatile unsigned char, 0x2000> ram = std::span<volatile unsigned char, 0x2000>(Unsafe::ram, 0x2000);
-			volatile unsigned short* const io_data = MD::Unsafe::io_data;
-			volatile unsigned short* const io_ctrl = MD::Unsafe::io_ctrl;
+			volatile unsigned short* const io_data = ClownMDSDK::Unsafe::io_data;
+			volatile unsigned short* const io_ctrl = ClownMDSDK::Unsafe::io_ctrl;
 
 			bool IsConsolePAL()
 			{
-				return MD::Unsafe::IsPAL();
+				return ClownMDSDK::Unsafe::IsPAL();
 			}
 
 			void WriteFMI(const unsigned char address, const unsigned char value)
