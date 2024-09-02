@@ -11,6 +11,8 @@
 | OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 | PERFORMANCE OF THIS SOFTWARE.
 
+	.section  .text.entry
+
 	dc.l	0x00000000,.Lentry,_BusErrorHandler,_AddressErrorHandler
 	dc.l	_IllegalInstructionHandler,_DivisionByZeroHandler,_CHKHandler,_TRAPVHandler
 	dc.l	_PrivilegeViolationHandler,_TraceHandler,_UnimplementedInstructionLineAHandler,_UnimplementedInstructionLineFHandler
@@ -227,5 +229,4 @@
 	| Run global constructors.
 	jsr	_init
 
-	| Jump into the user-code.
-	jmp	(_EntryPoint).l
+	| Fall-through to EntryPoint...

@@ -22,7 +22,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #define __VISIBILITY
 #endif
 
-#define __ENTRY_POINT __VISIBILITY [[noreturn]]
+#define __ENTRY_POINT __VISIBILITY  __attribute__((section(".text.entry"))) [[noreturn]]
 #define __INTERRUPT_HANDLER __VISIBILITY __attribute__((interrupt))
 
 __ENTRY_POINT void _EntryPoint(void);

@@ -1,4 +1,7 @@
 STARTUP(../../../../init.o)
+ # This is needed so that _EntryPoint is not
+ # optimised-away due to being "unused".
+ENTRY(_EntryPoint)
 INPUT(
 	../../../../crti.o
 	../../../../lib/gcc/m68k-elf/14.2.0/crtbegin.o
@@ -16,6 +19,7 @@ MEMORY
 SECTIONS
 {
 	.rom() : {
+		*(.text.entry)
 		*(.text)
 		*(.text.*)
 		*(.rodata)
