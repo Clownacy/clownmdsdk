@@ -189,6 +189,7 @@
 1:	move.l	%d7,(%a2)
 	dbf	%d0,1b
 
+.Lsoft_reset:
 	| Load DATA section.
 	lea	(_DATA_ROM_START_).l,%a0
 	lea	(_DATA_RAM_START_).l,%a1
@@ -217,15 +218,14 @@
 2:
 	dbf	%d0,1b
 
-	| Run global constructors.
-	jsr	_init
-
-.Lsoft_reset:
 	| Wait for any in-progress DMA operations to end, to avoid race-conditions.
 	| This has the nice side-effect of reading the VDP control port to reset any
 	| operations that it may have been in the middle of when the console was reset.
 1:	btst	#1,(0xC00005).l
 	bne.s	1b
+
+	| Run global constructors.
+	jsr	_init
 
 	| Jump into the user-code.
 	jmp	(_EntryPoint).l
