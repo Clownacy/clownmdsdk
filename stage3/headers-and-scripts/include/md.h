@@ -1,29 +1,21 @@
-// Copyright (c) 2024 Clownacy
+/*
+Copyright (c) 2024 Clownacy
 
-// Permission to use, copy, modify, and/or distribute this software for any
-// purpose with or without fee is hereby granted.
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-// REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-// AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-// INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-// LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-// OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-// PERFORMANCE OF THIS SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+*/
 
 #ifndef CLOWNSDK_MD_HEADER_GUARD
 #define CLOWNSDK_MD_HEADER_GUARD
 
-#include <bit>
-#include <cassert>
-#include <cstdint>
-#include <limits>
-#include <span>
-#include <tuple>
-#include <type_traits>
-#include <utility>
-
-// TODO: Is there any point in supporting C here?
 #ifdef __cplusplus
 #define __VISIBILITY extern "C"
 #else
@@ -33,43 +25,54 @@
 #define __ENTRY_POINT __VISIBILITY [[noreturn]]
 #define __INTERRUPT_HANDLER __VISIBILITY __attribute__((interrupt))
 
-__ENTRY_POINT void _EntryPoint();
-__INTERRUPT_HANDLER void _BusErrorHandler();
-__INTERRUPT_HANDLER void _AddressErrorHandler();
-__INTERRUPT_HANDLER void _IllegalInstructionHandler();
-__INTERRUPT_HANDLER void _DivisionByZeroHandler();
-__INTERRUPT_HANDLER void _CHKHandler();
-__INTERRUPT_HANDLER void _TRAPVHandler();
-__INTERRUPT_HANDLER void _PrivilegeViolationHandler();
-__INTERRUPT_HANDLER void _TraceHandler();
-__INTERRUPT_HANDLER void _UnimplementedInstructionLineAHandler();
-__INTERRUPT_HANDLER void _UnimplementedInstructionLineFHandler();
-__INTERRUPT_HANDLER void _UnassignedHandler();
-__INTERRUPT_HANDLER void _UninitialisedInterruptHandler();
-__INTERRUPT_HANDLER void _SpuriousInterruptHandler();
-__INTERRUPT_HANDLER void _Level1InterruptHandler();
-__INTERRUPT_HANDLER void _Level2InterruptHandler();
-__INTERRUPT_HANDLER void _Level3InterruptHandler();
-__INTERRUPT_HANDLER void _Level4InterruptHandler();
-__INTERRUPT_HANDLER void _Level5InterruptHandler();
-__INTERRUPT_HANDLER void _Level6InterruptHandler();
-__INTERRUPT_HANDLER void _Level7InterruptHandler();
-__INTERRUPT_HANDLER void _TRAP0Handler();
-__INTERRUPT_HANDLER void _TRAP1Handler();
-__INTERRUPT_HANDLER void _TRAP2Handler();
-__INTERRUPT_HANDLER void _TRAP3Handler();
-__INTERRUPT_HANDLER void _TRAP4Handler();
-__INTERRUPT_HANDLER void _TRAP5Handler();
-__INTERRUPT_HANDLER void _TRAP6Handler();
-__INTERRUPT_HANDLER void _TRAP7Handler();
-__INTERRUPT_HANDLER void _TRAP8Handler();
-__INTERRUPT_HANDLER void _TRAP9Handler();
-__INTERRUPT_HANDLER void _TRAP10Handler();
-__INTERRUPT_HANDLER void _TRAP11Handler();
-__INTERRUPT_HANDLER void _TRAP12Handler();
-__INTERRUPT_HANDLER void _TRAP13Handler();
-__INTERRUPT_HANDLER void _TRAP14Handler();
-__INTERRUPT_HANDLER void _TRAP15Handler();
+__ENTRY_POINT void _EntryPoint(void);
+__INTERRUPT_HANDLER void _BusErrorHandler(void);
+__INTERRUPT_HANDLER void _AddressErrorHandler(void);
+__INTERRUPT_HANDLER void _IllegalInstructionHandler(void);
+__INTERRUPT_HANDLER void _DivisionByZeroHandler(void);
+__INTERRUPT_HANDLER void _CHKHandler(void);
+__INTERRUPT_HANDLER void _TRAPVHandler(void);
+__INTERRUPT_HANDLER void _PrivilegeViolationHandler(void);
+__INTERRUPT_HANDLER void _TraceHandler(void);
+__INTERRUPT_HANDLER void _UnimplementedInstructionLineAHandler(void);
+__INTERRUPT_HANDLER void _UnimplementedInstructionLineFHandler(void);
+__INTERRUPT_HANDLER void _UnassignedHandler(void);
+__INTERRUPT_HANDLER void _UninitialisedInterruptHandler(void);
+__INTERRUPT_HANDLER void _SpuriousInterruptHandler(void);
+__INTERRUPT_HANDLER void _Level1InterruptHandler(void);
+__INTERRUPT_HANDLER void _Level2InterruptHandler(void);
+__INTERRUPT_HANDLER void _Level3InterruptHandler(void);
+__INTERRUPT_HANDLER void _Level4InterruptHandler(void);
+__INTERRUPT_HANDLER void _Level5InterruptHandler(void);
+__INTERRUPT_HANDLER void _Level6InterruptHandler(void);
+__INTERRUPT_HANDLER void _Level7InterruptHandler(void);
+__INTERRUPT_HANDLER void _TRAP0Handler(void);
+__INTERRUPT_HANDLER void _TRAP1Handler(void);
+__INTERRUPT_HANDLER void _TRAP2Handler(void);
+__INTERRUPT_HANDLER void _TRAP3Handler(void);
+__INTERRUPT_HANDLER void _TRAP4Handler(void);
+__INTERRUPT_HANDLER void _TRAP5Handler(void);
+__INTERRUPT_HANDLER void _TRAP6Handler(void);
+__INTERRUPT_HANDLER void _TRAP7Handler(void);
+__INTERRUPT_HANDLER void _TRAP8Handler(void);
+__INTERRUPT_HANDLER void _TRAP9Handler(void);
+__INTERRUPT_HANDLER void _TRAP10Handler(void);
+__INTERRUPT_HANDLER void _TRAP11Handler(void);
+__INTERRUPT_HANDLER void _TRAP12Handler(void);
+__INTERRUPT_HANDLER void _TRAP13Handler(void);
+__INTERRUPT_HANDLER void _TRAP14Handler(void);
+__INTERRUPT_HANDLER void _TRAP15Handler(void);
+
+#if defined(__cplusplus) && __cplusplus >= 202302L
+
+#include <bit>
+#include <cassert>
+#include <cstdint>
+#include <limits>
+#include <span>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 // TODO: Move this to its own translation unit? Optimisation can be handled by LTO.
 namespace MD
@@ -852,5 +855,7 @@ namespace MD
 		};
 	}
 }
+
+#endif /* defined(__cplusplus) && __cplusplus >= 202302L */
 
 #endif /* CLOWNSDK_MD_HEADER_GUARD */
