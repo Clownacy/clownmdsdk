@@ -11,7 +11,7 @@ scripts, and libraries.
   and makes the Makefile that invoked it use the toolchain. By including this
   file, a Makefile can be made to produce bare-metal code that runs on the
   Sega Mega Drive. This is used for compiling the libraries.
-- `rom.mk` - A Makefile script that provides additional compiler flags for
+- `rom.mk` - A Makefile script that provides additional linker flags for
   producing executables. By including this file, a Makefile can be made to
   produce Sega Mega Drive executables (A.K.A. "ROMs").
 - `rom.ld` - A linker script that defines the Sega Mega Drive's basic memory
@@ -20,11 +20,10 @@ scripts, and libraries.
 ### Headers
 - `assert.h`, `cassert` - Implementation of the `assert` macro.
 - `stdlib.h`, `cstdlib` - Declarations for `abs`, `memcpy`, and `memset`. 
-- `md.h` - Helper functions for accessing the Sega Mega Drive's hardware.
+- `clownmdsdk.h` - Helper functions for accessing the Sega Mega Drive's
+  hardware.
 
 ### Libraries
-- `crti.s`, `crtn.s` - Stubs for supporting global constructors and
-  destructors.
 - `init.s` - Bootstrapper that initialises the hardware and runs the global
   constructors.
 
