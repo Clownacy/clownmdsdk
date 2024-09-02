@@ -469,7 +469,7 @@ namespace ClownMDSDK
 		{
 			asm volatile(
 				"move.w	%1,%0"
-				: "=Qm" (ClownMDSDK::VDP::data_port_word)
+				: "=Qm" (data_port_word)
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -479,7 +479,7 @@ namespace ClownMDSDK
 		{
 			asm volatile(
 				"move.l	%1,%0"
-				: "=Qm" (ClownMDSDK::VDP::data_port_word) // I would use 'data_port_longword', but using 'data_port_word' makes the compiler share pointers with WriteDataPortWord.
+				: "=Qm" (data_port_word) // I would use 'data_port_longword', but using 'data_port_word' makes the compiler share pointers with WriteDataPortWord.
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -498,7 +498,7 @@ namespace ClownMDSDK
 		{
 			asm volatile(
 				"move.w	%1,%0"
-				: "=Qm" (ClownMDSDK::VDP::control_port_word)
+				: "=Qm" (VDP::control_port_word)
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -508,7 +508,7 @@ namespace ClownMDSDK
 		{
 			asm volatile(
 				"move.l	%1,%0"
-				: "=Qm" (ClownMDSDK::VDP::control_port_word) // I would use 'control_port_longword', but using 'control_port_word' makes the compiler share pointers with WriteControlPortWord.
+				: "=Qm" (VDP::control_port_word) // I would use 'control_port_longword', but using 'control_port_word' makes the compiler share pointers with WriteControlPortWord.
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
@@ -609,7 +609,7 @@ namespace ClownMDSDK
 				asm volatile(
 						"move.l	%1,-(%%sp)\n"
 					"	move.l	(%%sp)+,%0"
-					: "=Qm" (ClownMDSDK::VDP::control_port_word)
+					: "=Qm" (control_port_word)
 					: "daim" (MakeCommand(ram, Access::DMA, address)) // TODO: Other holders?
 					: "cc"
 				);
