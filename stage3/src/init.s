@@ -206,18 +206,15 @@
 	| Clear BSS section.
 	moveq	#0,%d2
 	lea	(_BSS_START_).l,%a1
-	move.l	#_BSS_SIZE_,%d0
-	move.w	%d0,%d1
-	lsr.l	#4,%d0
-	andi.w	#0xC,%d1
-	eori.w	#0xC,%d1
-	lsr.w	#1,%d1
-	jmp	1f(%pc,%d1.w)
+	move.w	#_BSS_LOOP_COUNT_,%d0
+	moveq	#_BSS_LOOP_OFFSET_,%d1
+	jmp	2f(%pc,%d1.w)
 1:
 	move.l	%d2,(%a1)+
 	move.l	%d2,(%a1)+
 	move.l	%d2,(%a1)+
 	move.l	%d2,(%a1)+
+2:
 	dbf	%d0,1b
 
 	| Run global constructors.
