@@ -176,7 +176,7 @@ static void WaitForVInt()
 	} while (waiting_for_v_int);
 }
 
-void EntryPoint()
+void _EntryPoint()
 {
 	vdp_register01 = {.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false};
 	MD::VDP::Write(vdp_register01);
@@ -347,97 +347,97 @@ void EntryPoint()
 		asm("stop #0x2700");
 }
 
-void BusErrorHandler()
+void _BusErrorHandler()
 {
 	ErrorTrap();
 }
 
-void AddressErrorHandler()
+void _AddressErrorHandler()
 {
 	ErrorTrap();
 }
 
-void IllegalInstructionHandler()
+void _IllegalInstructionHandler()
 {
 	ErrorTrap();
 }
 
-void DivisionByZeroHandler()
+void _DivisionByZeroHandler()
 {
 	ErrorTrap();
 }
 
-void CHKHandler()
+void _CHKHandler()
 {
 	ErrorTrap();
 }
 
-void TRAPVHandler()
+void _TRAPVHandler()
 {
 	ErrorTrap();
 }
 
-void PrivilegeViolationHandler()
+void _PrivilegeViolationHandler()
 {
 	ErrorTrap();
 }
 
-void TraceHandler()
+void _TraceHandler()
 {
 	ErrorTrap();
 }
 
-void UnimplementedInstructionLineAHandler()
+void _UnimplementedInstructionLineAHandler()
 {
 	ErrorTrap();
 }
 
-void UnimplementedInstructionLineFHandler()
+void _UnimplementedInstructionLineFHandler()
 {
 	ErrorTrap();
 }
 
-void UnassignedHandler()
+void _UnassignedHandler()
 {
 	ErrorTrap();
 }
 
-void UninitialisedInterruptHandler()
+void _UninitialisedInterruptHandler()
 {
 	ErrorTrap();
 }
 
-void SpuriousInterruptHandler()
+void _SpuriousInterruptHandler()
 {
 	ErrorTrap();
 }
 
-void Level1InterruptHandler()
+void _Level1InterruptHandler()
 {
 
 }
 
-void Level2InterruptHandler()
+void _Level2InterruptHandler()
 {
 
 }
 
-void Level3InterruptHandler()
+void _Level3InterruptHandler()
 {
 
 }
 
-void Level4InterruptHandler()
+void _Level4InterruptHandler()
 {
 
 }
 
-void Level5InterruptHandler()
+void _Level5InterruptHandler()
 {
 
 }
 
-void Level6InterruptHandler()
+void _Level6InterruptHandler()
 {
 	if (!waiting_for_v_int)
 		return;
@@ -477,87 +477,87 @@ void Level6InterruptHandler()
 	}
 }
 
-void Level7InterruptHandler()
+void _Level7InterruptHandler()
 {
 
 }
 
-void TRAP0Handler()
+void _TRAP0Handler()
 {
 
 }
 
-void TRAP1Handler()
+void _TRAP1Handler()
 {
 
 }
 
-void TRAP2Handler()
+void _TRAP2Handler()
 {
 
 }
 
-void TRAP3Handler()
+void _TRAP3Handler()
 {
 
 }
 
-void TRAP4Handler()
+void _TRAP4Handler()
 {
 
 }
 
-void TRAP5Handler()
+void _TRAP5Handler()
 {
 
 }
 
-void TRAP6Handler()
+void _TRAP6Handler()
 {
 
 }
 
-void TRAP7Handler()
+void _TRAP7Handler()
 {
 
 }
 
-void TRAP8Handler()
+void _TRAP8Handler()
 {
 
 }
 
-void TRAP9Handler()
+void _TRAP9Handler()
 {
 
 }
 
-void TRAP10Handler()
+void _TRAP10Handler()
 {
 
 }
 
-void TRAP11Handler()
+void _TRAP11Handler()
 {
 
 }
 
-void TRAP12Handler()
+void _TRAP12Handler()
 {
 
 }
 
-void TRAP13Handler()
+void _TRAP13Handler()
 {
 
 }
 
-void TRAP14Handler()
+void _TRAP14Handler()
 {
 
 }
 
-void TRAP15Handler()
+void _TRAP15Handler()
 {
 
 }

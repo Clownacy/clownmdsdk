@@ -11,22 +11,22 @@
 | OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 | PERFORMANCE OF THIS SOFTWARE.
 
-	dc.l	0x00000000,.Lentry,BusErrorHandler,AddressErrorHandler
-	dc.l	IllegalInstructionHandler,DivisionByZeroHandler,CHKHandler,TRAPVHandler
-	dc.l	PrivilegeViolationHandler,TraceHandler,UnimplementedInstructionLineAHandler,UnimplementedInstructionLineFHandler
-	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UninitialisedInterruptHandler
-	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
-	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
-	dc.l	SpuriousInterruptHandler,Level1InterruptHandler,Level2InterruptHandler,Level3InterruptHandler
-	dc.l	Level4InterruptHandler,Level5InterruptHandler,Level6InterruptHandler,Level7InterruptHandler
-	dc.l	TRAP0Handler,TRAP1Handler,TRAP2Handler,TRAP3Handler
-	dc.l	TRAP4Handler,TRAP5Handler,TRAP6Handler,TRAP7Handler
-	dc.l	TRAP8Handler,TRAP9Handler,TRAP10Handler,TRAP11Handler
-	dc.l	TRAP12Handler,TRAP13Handler,TRAP14Handler,TRAP15Handler
-	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
-	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
-	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
-	dc.l	UnassignedHandler,UnassignedHandler,UnassignedHandler,UnassignedHandler
+	dc.l	0x00000000,.Lentry,_BusErrorHandler,_AddressErrorHandler
+	dc.l	_IllegalInstructionHandler,_DivisionByZeroHandler,_CHKHandler,_TRAPVHandler
+	dc.l	_PrivilegeViolationHandler,_TraceHandler,_UnimplementedInstructionLineAHandler,_UnimplementedInstructionLineFHandler
+	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UninitialisedInterruptHandler
+	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
+	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
+	dc.l	_SpuriousInterruptHandler,_Level1InterruptHandler,_Level2InterruptHandler,_Level3InterruptHandler
+	dc.l	_Level4InterruptHandler,_Level5InterruptHandler,_Level6InterruptHandler,_Level7InterruptHandler
+	dc.l	_TRAP0Handler,_TRAP1Handler,_TRAP2Handler,_TRAP3Handler
+	dc.l	_TRAP4Handler,_TRAP5Handler,_TRAP6Handler,_TRAP7Handler
+	dc.l	_TRAP8Handler,_TRAP9Handler,_TRAP10Handler,_TRAP11Handler
+	dc.l	_TRAP12Handler,_TRAP13Handler,_TRAP14Handler,_TRAP15Handler
+	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
+	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
+	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
+	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
 
 	.ascii	"SEGA MEGA DRIVE " | Console name
 	.ascii	"(C)NAME YEAR.MON" | Copyright
@@ -214,4 +214,4 @@
 	bne.s	1b
 
 	| Jump into the user-code.
-	jmp	(EntryPoint).l
+	jmp	(_EntryPoint).l
