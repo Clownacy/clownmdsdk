@@ -2,7 +2,7 @@
 
 CFLAGS += -O3 -flto -DNDEBUG -Wall -Wextra -Wpedantic -fvisibility=hidden
 
-all: ../bin/lib/libc.o ../bin/crti.o ../bin/crtn.o ../bin/init.o
+all: ../bin/lib/libc.o ../bin/init.o
 
 ../bin/lib/libc.o: stdlib.c
 	mkdir -p $(@D)

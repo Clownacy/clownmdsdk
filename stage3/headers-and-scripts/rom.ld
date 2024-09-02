@@ -3,10 +3,8 @@ STARTUP(../../../../init.o)
  # optimised-away due to being "unused".
 ENTRY(_EntryPoint)
 INPUT(
-	../../../../crti.o
 	../../../../lib/gcc/m68k-elf/14.2.0/crtbegin.o
 	../../../../lib/gcc/m68k-elf/14.2.0/crtend.o
-	../../../../crtn.o
 )
 OUTPUT_FORMAT(binary)
 
@@ -19,7 +17,9 @@ MEMORY
 SECTIONS
 {
 	.rom() : {
-		*(.text.entry)
+		*(.text.init)  # init.s
+		*(.init)       # Global constructors
+		*(.text.entry) # _EntryPoint
 		*(.text)
 		*(.text.*)
 		*(.rodata)
@@ -27,7 +27,6 @@ SECTIONS
 		. = ALIGN(4);
 		*(.ctors)
 		. = ALIGN(4);
-		*(.init)
 	} > ROM
 
 	.ram : {

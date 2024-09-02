@@ -11,7 +11,7 @@
 | OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 | PERFORMANCE OF THIS SOFTWARE.
 
-	.section  .text.entry
+	.section  .text.init
 
 	dc.l	0x00000000,.Lentry,_BusErrorHandler,_AddressErrorHandler
 	dc.l	_IllegalInstructionHandler,_DivisionByZeroHandler,_CHKHandler,_TRAPVHandler
@@ -226,7 +226,4 @@
 1:	btst	#1,(0xC00005).l
 	bne.s	1b
 
-	| Run global constructors.
-	jsr	_init
-
-	| Fall-through to EntryPoint...
+	| Fall-through to global constructors and _EntryPoint...
