@@ -212,7 +212,7 @@ void _EntryPoint()
 		FillTiles(colour_index, tile_index, 1);
 	};
 
-	// Usee DMA Fill to generate some coloured tiles.
+	// Use DMA Fill to generate some coloured tiles.
 	MD::VDP::SetAddressIncrement(1);
 	FillTile(1, 1);
 	FillTile(2, 2);
