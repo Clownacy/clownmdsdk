@@ -14,7 +14,7 @@
 #include <array>
 #include <atomic>
 
-#include <md.h>
+#include <clownmdsdk.h>
 
 static constexpr unsigned int SCREEN_WIDTH = 320;
 static constexpr unsigned int SCREEN_HEIGHT = 224;
