@@ -2,9 +2,9 @@
 
 CFLAGS += -O3 -flto -DNDEBUG -Wall -Wextra -Wpedantic -fvisibility=hidden
 
-all: ../bin/lib/libc.o ../bin/init.o
+all: ../bin/lib/libc.a ../bin/init.o
 
-../bin/lib/libc.o: stdlib.c
+../bin/lib/libc.a: stdlib.c
 	mkdir -p $(@D)
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
