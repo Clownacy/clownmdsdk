@@ -798,6 +798,9 @@ namespace ClownMDSDK
 					Unsafe::WaitUntilBusObtained();
 			}
 
+			Bus(const Bus &other) = delete;
+			Bus& operator=(const Bus &other) = delete;
+
 			~Bus()
 			{
 				Unsafe::ReleaseBus();
