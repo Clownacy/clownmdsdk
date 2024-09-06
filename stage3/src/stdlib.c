@@ -13,7 +13,7 @@
 
 #include <stdlib.h>
 
-inline int abs(const int i);
+extern inline int abs(const int i);
 
-inline void* memcpy(void* const dest, const void* const src, size_t count);
-inline void* memset(void* const dest, const int ch, size_t count);
+extern inline void* memcpy(void* const dest, const void* const src, size_t count);
+extern inline void* memset(void* const dest, const int ch, size_t count);
