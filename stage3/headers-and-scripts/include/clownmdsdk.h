@@ -786,11 +786,8 @@ namespace ClownMDSDK
 	{
 		class Bus
 		{
-		private:
-			const unsigned int interrupt_mask;
-
 		public:
-			Bus(const bool wait_for_bus = true) : interrupt_mask(M68k::DisableInterrupts())
+			Bus(const bool wait_for_bus = true)
 			{
 				Unsafe::RequestBus();
 
@@ -804,8 +801,6 @@ namespace ClownMDSDK
 			~Bus()
 			{
 				Unsafe::ReleaseBus();
-
-				M68k::SetInterruptMask(interrupt_mask);
 			}
 
 			const std::span<volatile unsigned char, 0x2000> ram = std::span<volatile unsigned char, 0x2000>(Unsafe::ram, 0x2000);
@@ -854,6 +849,23 @@ namespace ClownMDSDK
 			void CopyWordsToVDPWithDMA(const VDP::RAM ram, const unsigned int address, const void* const data, const unsigned int length)
 			{
 				VDP::Unsafe::CopyWordsWithDMA(ram, address, data, length);
+			}
+		};
+
+		class BusInterruptSafe : public Bus
+		{
+		private:
+			const unsigned int interrupt_mask;
+
+		public:
+			BusInterruptSafe(const bool wait_for_bus = true)
+				: interrupt_mask(M68k::DisableInterrupts())
+				, Bus(wait_for_bus)
+			{}
+
+			~BusInterruptSafe()
+			{
+				M68k::SetInterruptMask(interrupt_mask);
 			}
 		};
 	}
