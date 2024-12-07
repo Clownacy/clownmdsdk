@@ -290,6 +290,15 @@ namespace ClownMDSDK
 			bool bit0 : 1 = false;
 		};
 
+		struct Register03
+		{
+			unsigned int id : 8 = 0x83;
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			unsigned int window_plane_location : 5;
+			bool bit0 : 1 = false;
+		};
+
 		struct Register04
 		{
 			unsigned int id : 8 = 0x84;
@@ -712,6 +721,13 @@ namespace ClownMDSDK
 				constexpr unsigned int divisor = 0x2000;
 				assert(vram_address % divisor == 0);
 				Write(Register02{.plane_a_location = vram_address / divisor});
+			}
+
+			inline void SetWindowPlaneLocation(const unsigned int vram_address)
+			{
+				constexpr unsigned int divisor = 0x800;
+				assert(vram_address % divisor == 0);
+				Write(Register03{.window_plane_location = vram_address / divisor});
 			}
 
 			inline void SetPlaneBLocation(const unsigned int vram_address)
