@@ -360,6 +360,24 @@ namespace ClownMDSDK
 			unsigned int horizontal_size : 2;
 		};
 
+		struct Register11
+		{
+			unsigned int id : 8 = 0x91;
+			bool window_align_right : 1;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			unsigned int window_width : 5;
+		};
+
+		struct Register12
+		{
+			unsigned int id : 8 = 0x92;
+			bool window_align_bottom : 1;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			unsigned int window_height : 5;
+		};
+
 		struct Register13
 		{
 			unsigned int id : 8 = 0x93;
