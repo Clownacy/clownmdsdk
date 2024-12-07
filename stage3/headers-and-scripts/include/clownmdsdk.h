@@ -416,6 +416,20 @@ namespace ClownMDSDK
 			static_assert(std::is_standard_layout_v<Colour>); // Make sure that this is just a wrapped 'unsigned short'.
 		}
 
+		namespace VRAM
+		{
+			struct TileMetadata
+			{
+				bool priority : 1;
+				unsigned int palette_line : 2;
+				bool y_flip : 1;
+				bool x_flip : 1;
+				unsigned int tile_index : 11;
+			};
+
+			static_assert(std::is_standard_layout_v<TileMetadata> && sizeof(TileMetadata) == 2); // Make sure that this has no hidden data.
+		}
+
 		template<typename T>
 		struct ValueWrapper
 		{
@@ -429,6 +443,7 @@ namespace ClownMDSDK
 			using ValueWrapper::ValueWrapper;
 
 			constexpr DataValueWord(const CRAM::Colour colour) : ValueWrapper(colour.GetRaw()) {}
+			constexpr DataValueWord(const VRAM::TileMetadata tile_metadata) : ValueWrapper(std::bit_cast<unsigned short>(tile_metadata)) {}
 		};
 
 		struct DataValueLongword : public ValueWrapper<unsigned long>
@@ -492,15 +507,6 @@ namespace ClownMDSDK
 				: "daim" (value) // TODO: Other holders?
 				: "cc"
 			);
-		}
-		inline void Write(const CRAM::Colour colour)
-		{
-			Write(DataValueWord(colour));
-		}
-
-		inline void Write(const CRAM::Colour colour1, const CRAM::Colour colour2)
-		{
-			Write(DataValueLongword(colour1, colour2));
 		}
 
 		inline void Write(const ControlValueWord value)
@@ -669,17 +675,6 @@ namespace ClownMDSDK
 
 		namespace VRAM
 		{
-			struct TileMetadata
-			{
-				bool priority : 1;
-				unsigned int palette_line : 2;
-				bool y_flip : 1;
-				bool x_flip : 1;
-				unsigned int tile_index : 11;
-			};
-
-			static_assert(std::is_standard_layout_v<TileMetadata> && sizeof(TileMetadata) == 2); // Make sure that this has no hidden data.
-
 			struct Sprite
 			{
 				unsigned int : 6;
