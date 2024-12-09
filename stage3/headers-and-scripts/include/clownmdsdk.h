@@ -336,6 +336,18 @@ namespace ClownMDSDK
 			unsigned int horizontal_scroll_mode : 2;
 		};
 
+		struct Register0C
+		{
+			unsigned int id : 8 = 0x8C;
+			bool enable_h40_cell_mode_1 : 1;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			bool bit4 : 1 = false;
+			bool enable_shadow_highlight_mode : 1;
+			unsigned int interlace_mode : 2;
+			bool enable_h40_cell_mode_2 : 1;
+		};
+
 		struct Register0D
 		{
 			unsigned int id : 8 = 0x8D;
