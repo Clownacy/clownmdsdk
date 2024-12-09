@@ -710,8 +710,10 @@ namespace ClownMDSDK
 			static_assert(std::is_standard_layout_v<Sprite> && sizeof(Sprite) == 8); // Make sure that this has no hidden data.
 
 			static constexpr unsigned int TILE_WIDTH = 8;
-			static constexpr unsigned int TILE_HEIGHT = 8;
-			static constexpr unsigned int TILE_SIZE_IN_BYTES = TILE_WIDTH * TILE_HEIGHT / 2;
+			static constexpr unsigned int TILE_HEIGHT_NORMAL = 8;
+			static constexpr unsigned int TILE_HEIGHT_INTERLACE_MODE_2 = TILE_HEIGHT_NORMAL * 2;
+			static constexpr unsigned int TILE_SIZE_IN_BYTES_NORMAL = TILE_WIDTH * TILE_HEIGHT_NORMAL / 2;
+			static constexpr unsigned int TILE_SIZE_IN_BYTES_INTERLACE_MODE_2 = TILE_WIDTH * TILE_HEIGHT_INTERLACE_MODE_2 / 2;
 
 			inline constexpr auto MakeDMAFillCommands(const unsigned int address, const unsigned int length, const unsigned int value)
 			{
