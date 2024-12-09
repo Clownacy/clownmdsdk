@@ -324,6 +324,12 @@ namespace ClownMDSDK
 			unsigned int palette_index : 4;
 		};
 
+		struct Register0A
+		{
+			unsigned int id : 8 = 0x8A;
+			unsigned int horiziontal_interrupt_interval : 8;
+		};
+
 		struct Register0B
 		{
 			unsigned int id : 8 = 0x8B;
