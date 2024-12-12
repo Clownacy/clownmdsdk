@@ -30,7 +30,8 @@ scripts, and libraries.
 
 ## Building
 
-To build and install these, run `misc.sh`.
+To build and install these, first run `src/z80/build.lua` (or `build.bat` if
+using Windows), then run `misc.sh`.
 
 With that done, clownmdsdk is completely installed and ready for use. The
 toolchain can be tested by compiling the example program in the `example`
