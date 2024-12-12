@@ -456,8 +456,12 @@ void _Level6InterruptHandler()
 		for (unsigned int i = 0; i < data.size(); ++i)
 		{
 			z80_bus.io_data[i] = 0x00;
+			asm("nop");
+			asm("nop");
 			data[i] = z80_bus.io_data[i] << 2 & 0xC0;
 			z80_bus.io_data[i] = 0x40;
+			asm("nop");
+			asm("nop");
 			data[i] |= z80_bus.io_data[i] & 0x3F;
 		}
 
