@@ -275,7 +275,7 @@ namespace ClownMDSDK
 			bool enable_vertical_interrupt : 1;
 			bool enable_dma_transfer : 1;
 			bool enable_v30_cell_mode : 1;
-			bool bit2 : 1 = true;
+			bool enable_mega_drive_mode : 1;
 			bool bit1 : 1 = false;
 			bool bit0 : 1 = false;
 		};
