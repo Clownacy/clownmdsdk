@@ -16,6 +16,8 @@
 
 #include <clownmdsdk.h>
 
+using namespace ClownMDSDK;
+
 static constexpr unsigned int SCREEN_WIDTH = 320;
 static constexpr unsigned int SCREEN_HEIGHT = 224;
 
@@ -93,21 +95,21 @@ static constexpr unsigned int GRID_HEIGHT_IN_PUYOS = 12;
 static constexpr unsigned int LEFT_GRID_X_IN_TILES = 2;
 static constexpr unsigned int RIGHT_GRID_X_IN_TILES = 26;
 static constexpr unsigned int GRID_Y_IN_TILES = 2;
-static constexpr unsigned int GRID_WIDTH_IN_TILES = GRID_WIDTH_IN_PUYOS * Puyo::Width() / ClownMDSDK::VDP::VRAM::TILE_WIDTH;
-static constexpr unsigned int GRID_HEIGHT_IN_TILES = GRID_HEIGHT_IN_PUYOS * Puyo::Height() / ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
+static constexpr unsigned int GRID_WIDTH_IN_TILES = GRID_WIDTH_IN_PUYOS * Puyo::Width() / VDP::VRAM::TILE_WIDTH;
+static constexpr unsigned int GRID_HEIGHT_IN_TILES = GRID_HEIGHT_IN_PUYOS * Puyo::Height() / VDP::VRAM::TILE_HEIGHT_NORMAL;
 
-static constexpr unsigned int LEFT_GRID_X = LEFT_GRID_X_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_WIDTH;
-static constexpr unsigned int RIGHT_GRID_X = RIGHT_GRID_X_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_WIDTH;
-static constexpr unsigned int GRID_Y = GRID_Y_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
-static constexpr unsigned int GRID_WIDTH = GRID_WIDTH_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_WIDTH;
-static constexpr unsigned int GRID_HEIGHT = GRID_HEIGHT_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
+static constexpr unsigned int LEFT_GRID_X = LEFT_GRID_X_IN_TILES * VDP::VRAM::TILE_WIDTH;
+static constexpr unsigned int RIGHT_GRID_X = RIGHT_GRID_X_IN_TILES * VDP::VRAM::TILE_WIDTH;
+static constexpr unsigned int GRID_Y = GRID_Y_IN_TILES * VDP::VRAM::TILE_HEIGHT_NORMAL;
+static constexpr unsigned int GRID_WIDTH = GRID_WIDTH_IN_TILES * VDP::VRAM::TILE_WIDTH;
+static constexpr unsigned int GRID_HEIGHT = GRID_HEIGHT_IN_TILES * VDP::VRAM::TILE_HEIGHT_NORMAL;
 
 static constexpr unsigned int VRAM_PLANE_A = 0xC000;
 static constexpr unsigned int VRAM_SPRITE_TABLE = 0xD800;
 
 static Puyo puyo{.x = 0, .y = 0, .colour = Puyo::RandomColour()};
 static std::array<std::array<GridSlot, GRID_WIDTH_IN_PUYOS>, GRID_HEIGHT_IN_PUYOS> left_grid;
-static ClownMDSDK::VDP::Register01 vdp_register01;
+static VDP::Register01 vdp_register01;
 
 static unsigned int RandomNumber()
 {
@@ -179,13 +181,13 @@ static void WaitForVInt()
 void _EntryPoint()
 {
 	vdp_register01 = {.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
-	ClownMDSDK::VDP::Write(vdp_register01);
-	ClownMDSDK::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
-	ClownMDSDK::VDP::VRAM::SetSpriteTableLocation(VRAM_SPRITE_TABLE);
+	VDP::Write(vdp_register01);
+	VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
+	VDP::VRAM::SetSpriteTableLocation(VRAM_SPRITE_TABLE);
 
 	// Initialise IO ports.
 	{
-		ClownMDSDK::Z80::Bus z80_bus;
+		Z80::Bus z80_bus;
 
 		for (unsigned int i = 0; i < controllers.size(); ++i)
 		{
@@ -195,16 +197,16 @@ void _EntryPoint()
 	}
 
 	// Write colours to CRAM.
-	ClownMDSDK::VDP::SendCommand(ClownMDSDK::VDP::RAM::CRAM, ClownMDSDK::VDP::Access::WRITE, 2);
-	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{0, 0, 0}, ClownMDSDK::VDP::CRAM::Colour{1, 1, 1});
-	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{0, 3, 7}, ClownMDSDK::VDP::CRAM::Colour{0, 7, 0});
-	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{7, 7, 0}, ClownMDSDK::VDP::CRAM::Colour{7, 0, 0});
-	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{4, 0, 7});
+	VDP::SendCommand(VDP::RAM::CRAM, VDP::Access::WRITE, 2);
+	VDP::Write(VDP::CRAM::Colour{0, 0, 0}, VDP::CRAM::Colour{1, 1, 1});
+	VDP::Write(VDP::CRAM::Colour{0, 3, 7}, VDP::CRAM::Colour{0, 7, 0});
+	VDP::Write(VDP::CRAM::Colour{7, 7, 0}, VDP::CRAM::Colour{7, 0, 0});
+	VDP::Write(VDP::CRAM::Colour{4, 0, 7});
 
 	const auto FillTiles = [](const unsigned int colour_index, const unsigned int tile_index, const unsigned int total_tiles) __attribute__((always_inline))
 	{
-		ClownMDSDK::VDP::VRAM::FillBytesWithDMA((tile_index) * ClownMDSDK::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, (total_tiles) * ClownMDSDK::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, ClownMDSDK::VDP::RepeatBits<unsigned int, 2>(colour_index));
-		ClownMDSDK::VDP::WaitUntilDMAIsComplete();
+		VDP::VRAM::FillBytesWithDMA((tile_index) * VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, (total_tiles) * VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, VDP::RepeatBits<unsigned int, 2>(colour_index));
+		VDP::WaitUntilDMAIsComplete();
 	};
 
 	const auto FillTile = [&FillTiles](const unsigned int colour_index, const unsigned int tile_index) __attribute__((always_inline))
@@ -213,7 +215,7 @@ void _EntryPoint()
 	};
 
 	// Use DMA Fill to generate some coloured tiles.
-	ClownMDSDK::VDP::SetAddressIncrement(1);
+	VDP::SetAddressIncrement(1);
 	FillTile(1, 1);
 	FillTile(2, 2);
 	FillTiles(3, GridSlotToTileIndex(GridSlot::BLUE),   4);
@@ -221,42 +223,42 @@ void _EntryPoint()
 	FillTiles(5, GridSlotToTileIndex(GridSlot::YELLOW), 4);
 	FillTiles(6, GridSlotToTileIndex(GridSlot::RED),    4);
 	FillTiles(7, GridSlotToTileIndex(GridSlot::PURPLE), 4);
-	ClownMDSDK::VDP::SetAddressIncrement(2);
+	VDP::SetAddressIncrement(2);
 
 	static constexpr auto Plane64XYToOffset = [](const unsigned int x, const unsigned int y) constexpr
 	{
-		return (y * 64 + x) * sizeof(ClownMDSDK::VDP::VRAM::TileMetadata);
+		return (y * 64 + x) * sizeof(VDP::VRAM::TileMetadata);
 	};
 
-	static constexpr auto DrawBox = [](const unsigned int offset_x, const unsigned int offset_y, const unsigned int width, const unsigned int height, const ClownMDSDK::VDP::VRAM::TileMetadata &tile_metadata)
+	static constexpr auto DrawBox = [](const unsigned int offset_x, const unsigned int offset_y, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
 	{
 		for (unsigned int y = 0; y < height; ++y)
 		{
-			ClownMDSDK::VDP::SendCommand(ClownMDSDK::VDP::RAM::VRAM, ClownMDSDK::VDP::Access::WRITE, VRAM_PLANE_A + Plane64XYToOffset(offset_x, offset_y + y));
+			VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, VRAM_PLANE_A + Plane64XYToOffset(offset_x, offset_y + y));
 
 			for (unsigned int x = 0; x < width / 2; ++x)
-				ClownMDSDK::VDP::Write(ClownMDSDK::VDP::DataValueLongword(ClownMDSDK::VDP::RepeatBits<unsigned long, 4>(std::bit_cast<unsigned short>(tile_metadata))));
+				VDP::Write(VDP::DataValueLongword(VDP::RepeatBits<unsigned long, 4>(std::bit_cast<unsigned short>(tile_metadata))));
 
 			if (width % 2 != 0)
-				ClownMDSDK::VDP::Write(ClownMDSDK::VDP::DataValueWord(std::bit_cast<unsigned short>(tile_metadata)));
+				VDP::Write(VDP::DataValueWord(std::bit_cast<unsigned short>(tile_metadata)));
 		}
 	};
 
 	// Fill background.
-	DrawBox(0, 0, SCREEN_WIDTH / ClownMDSDK::VDP::VRAM::TILE_WIDTH, SCREEN_HEIGHT / ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL, ClownMDSDK::VDP::VRAM::TileMetadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 1});
+	DrawBox(0, 0, SCREEN_WIDTH / VDP::VRAM::TILE_WIDTH, SCREEN_HEIGHT / VDP::VRAM::TILE_HEIGHT_NORMAL, VDP::VRAM::TileMetadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 1});
 
 	// Fill left box.
-	DrawBox(LEFT_GRID_X_IN_TILES, GRID_Y_IN_TILES, GRID_WIDTH_IN_TILES, GRID_HEIGHT_IN_TILES, ClownMDSDK::VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 2});
+	DrawBox(LEFT_GRID_X_IN_TILES, GRID_Y_IN_TILES, GRID_WIDTH_IN_TILES, GRID_HEIGHT_IN_TILES, VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 2});
 
 	// Fill right box.
-	DrawBox(RIGHT_GRID_X_IN_TILES, GRID_Y_IN_TILES, GRID_WIDTH_IN_TILES, GRID_HEIGHT_IN_TILES, ClownMDSDK::VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 2});
+	DrawBox(RIGHT_GRID_X_IN_TILES, GRID_Y_IN_TILES, GRID_WIDTH_IN_TILES, GRID_HEIGHT_IN_TILES, VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 2});
 
 	// Now that initialisation is complete, enable display.
 	vdp_register01.enable_display = true;
 	vdp_register01.enable_vertical_interrupt = true;
-	ClownMDSDK::VDP::Write(vdp_register01);
+	VDP::Write(vdp_register01);
 
-	ClownMDSDK::M68k::SetInterruptMask(0);
+	M68k::SetInterruptMask(0);
 
 	for (;;)
 	{
@@ -273,18 +275,18 @@ void _EntryPoint()
 				const GridSlot grid_slot = left_grid[y][x];
 				const auto tile_index = GridSlotToTileIndex(grid_slot);
 
-				const auto puyo_height_in_tiles = Puyo::Height() / ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
+				const auto puyo_height_in_tiles = Puyo::Height() / VDP::VRAM::TILE_HEIGHT_NORMAL;
 
 				for (unsigned int tile_y = 0; tile_y < puyo_height_in_tiles; ++tile_y)
 				{
-					const auto puyo_width_in_tiles = Puyo::Width() / ClownMDSDK::VDP::VRAM::TILE_WIDTH;
+					const auto puyo_width_in_tiles = Puyo::Width() / VDP::VRAM::TILE_WIDTH;
 
-					ClownMDSDK::VDP::SendCommand(ClownMDSDK::VDP::RAM::VRAM, ClownMDSDK::VDP::Access::WRITE, VRAM_PLANE_A + Plane64XYToOffset(LEFT_GRID_X_IN_TILES + x * puyo_width_in_tiles, GRID_Y_IN_TILES + y * puyo_height_in_tiles + tile_y));
+					VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, VRAM_PLANE_A + Plane64XYToOffset(LEFT_GRID_X_IN_TILES + x * puyo_width_in_tiles, GRID_Y_IN_TILES + y * puyo_height_in_tiles + tile_y));
 
 					for (unsigned int tile_x = 0; tile_x < puyo_width_in_tiles; ++tile_x)
 					{
 						const auto offset = grid_slot == GridSlot::NOTHING ? 0 : tile_x * puyo_height_in_tiles + tile_y;
-						ClownMDSDK::VDP::Write(ClownMDSDK::VDP::DataValueWord(std::bit_cast<unsigned short>(ClownMDSDK::VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = tile_index + offset})));
+						VDP::Write(VDP::DataValueWord(std::bit_cast<unsigned short>(VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = tile_index + offset})));
 					}
 				}
 			};
@@ -341,7 +343,7 @@ void _EntryPoint()
 
 [[noreturn]] static void ErrorTrap()
 {
-	ClownMDSDK::VDP::CRAM::Fill({7, 0, 0});
+	VDP::CRAM::Fill({7, 0, 0});
 
 	for (;;)
 		asm("stop #0x2700");
@@ -444,14 +446,14 @@ void _Level6InterruptHandler()
 
 	waiting_for_v_int = false;
 
-	const ClownMDSDK::VDP::VRAM::Sprite sprite{.y = 0x80 + GRID_Y + puyo.y, .width = 1, .height = 1, .link = 0, .tile_metadata = {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = GridSlotToTileIndex(PuyoColourToGridSlot(puyo.colour))}, .x = 0x80 + LEFT_GRID_X + puyo.x};
-	ClownMDSDK::VDP::CopyWordsWithoutDMA(ClownMDSDK::VDP::RAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
+	const VDP::VRAM::Sprite sprite{.y = 0x80 + GRID_Y + puyo.y, .width = 1, .height = 1, .link = 0, .tile_metadata = {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = GridSlotToTileIndex(PuyoColourToGridSlot(puyo.colour))}, .x = 0x80 + LEFT_GRID_X + puyo.x};
+	VDP::CopyWordsWithoutDMA(VDP::RAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
 
 	static constexpr auto ReadController = []()
 	{
 		std::array<unsigned char, controllers.size()> data;
 
-		ClownMDSDK::Z80::Bus z80_bus;
+		Z80::Bus z80_bus;
 
 		for (unsigned int i = 0; i < data.size(); ++i)
 		{
