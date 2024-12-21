@@ -206,19 +206,7 @@
 2:
 	dbf	%d0,1b
 
-	| Clear BSS section.
-	moveq	#0,%d2
-	lea	(_BSS_START_).l,%a1
-	move.w	#_BSS_LOOP_COUNT_,%d0
-	moveq	#_BSS_LOOP_OFFSET_,%d1
-	jmp	2f(%pc,%d1.w)
-1:
-	move.l	%d2,(%a1)+
-	move.l	%d2,(%a1)+
-	move.l	%d2,(%a1)+
-	move.l	%d2,(%a1)+
-2:
-	dbf	%d0,1b
+	.include "clear-bss.s"
 
 	| Wait for any in-progress DMA operations to end, to avoid race-conditions.
 	| This has the nice side-effect of reading the VDP control port to reset any

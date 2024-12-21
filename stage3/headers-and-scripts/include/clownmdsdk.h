@@ -63,6 +63,11 @@ __INTERRUPT_HANDLER void _TRAP13Handler(void);
 __INTERRUPT_HANDLER void _TRAP14Handler(void);
 __INTERRUPT_HANDLER void _TRAP15Handler(void);
 
+__VISIBILITY __attribute__((section(".text.entry"))) void _SP_Init(void);
+__VISIBILITY [[noreturn]] void _SP_Main(void);
+__VISIBILITY void _SP_VerticalInterrupt(void);
+__VISIBILITY void _SP_User(void);
+
 #if defined(__cplusplus) && __cplusplus >= 202302L
 
 #include <bit>
@@ -917,6 +922,20 @@ namespace ClownMDSDK
 				M68k::SetInterruptMask(interrupt_mask);
 			}
 		};
+	}
+
+	namespace MegaCD
+	{
+		
+	}
+
+	namespace SubCPU
+	{
+		namespace PCM
+		{
+			static volatile unsigned char* const ram_window = reinterpret_cast<volatile unsigned char*>(0xFFFF2000);
+			static volatile unsigned char* const ram_window_end = ram_window + 0x2000;
+		}
 	}
 }
 

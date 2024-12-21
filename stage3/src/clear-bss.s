@@ -1,0 +1,26 @@
+| Copyright (c) 2024 Clownacy
+
+| Permission to use, copy, modify, and/or distribute this software for any
+| purpose with or without fee is hereby granted.
+
+| THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+| REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+| AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+| INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+| LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+| OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+| PERFORMANCE OF THIS SOFTWARE.
+
+	| Clear BSS section.
+	lea	(_BSS_START_).l,%a1
+	move.w	#_BSS_LOOP_COUNT_,%d0
+	moveq	#_BSS_LOOP_OFFSET_,%d1
+	moveq	#0,%d2
+	jmp	2f(%pc,%d1.w)
+1:
+	move.l	%d2,(%a1)+
+	move.l	%d2,(%a1)+
+	move.l	%d2,(%a1)+
+	move.l	%d2,(%a1)+
+2:
+	dbf	%d0,1b
