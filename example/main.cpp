@@ -94,13 +94,13 @@ static constexpr unsigned int LEFT_GRID_X_IN_TILES = 2;
 static constexpr unsigned int RIGHT_GRID_X_IN_TILES = 26;
 static constexpr unsigned int GRID_Y_IN_TILES = 2;
 static constexpr unsigned int GRID_WIDTH_IN_TILES = GRID_WIDTH_IN_PUYOS * Puyo::Width() / ClownMDSDK::VDP::VRAM::TILE_WIDTH;
-static constexpr unsigned int GRID_HEIGHT_IN_TILES = GRID_HEIGHT_IN_PUYOS * Puyo::Height() / ClownMDSDK::VDP::VRAM::TILE_HEIGHT;
+static constexpr unsigned int GRID_HEIGHT_IN_TILES = GRID_HEIGHT_IN_PUYOS * Puyo::Height() / ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
 
 static constexpr unsigned int LEFT_GRID_X = LEFT_GRID_X_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_WIDTH;
 static constexpr unsigned int RIGHT_GRID_X = RIGHT_GRID_X_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_WIDTH;
-static constexpr unsigned int GRID_Y = GRID_Y_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_HEIGHT;
+static constexpr unsigned int GRID_Y = GRID_Y_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
 static constexpr unsigned int GRID_WIDTH = GRID_WIDTH_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_WIDTH;
-static constexpr unsigned int GRID_HEIGHT = GRID_HEIGHT_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_HEIGHT;
+static constexpr unsigned int GRID_HEIGHT = GRID_HEIGHT_IN_TILES * ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
 
 static constexpr unsigned int VRAM_PLANE_A = 0xC000;
 static constexpr unsigned int VRAM_SPRITE_TABLE = 0xD800;
@@ -178,7 +178,7 @@ static void WaitForVInt()
 
 void _EntryPoint()
 {
-	vdp_register01 = {.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false};
+	vdp_register01 = {.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
 	ClownMDSDK::VDP::Write(vdp_register01);
 	ClownMDSDK::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
 	ClownMDSDK::VDP::VRAM::SetSpriteTableLocation(VRAM_SPRITE_TABLE);
@@ -196,14 +196,14 @@ void _EntryPoint()
 
 	// Write colours to CRAM.
 	ClownMDSDK::VDP::SendCommand(ClownMDSDK::VDP::RAM::CRAM, ClownMDSDK::VDP::Access::WRITE, 2);
-	ClownMDSDK::VDP::Write({0, 0, 0}, {1, 1, 1});
-	ClownMDSDK::VDP::Write({0, 3, 7}, {0, 7, 0});
-	ClownMDSDK::VDP::Write({7, 7, 0}, {7, 0, 0});
-	ClownMDSDK::VDP::Write({4, 0, 7});
+	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{0, 0, 0}, ClownMDSDK::VDP::CRAM::Colour{1, 1, 1});
+	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{0, 3, 7}, ClownMDSDK::VDP::CRAM::Colour{0, 7, 0});
+	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{7, 7, 0}, ClownMDSDK::VDP::CRAM::Colour{7, 0, 0});
+	ClownMDSDK::VDP::Write(ClownMDSDK::VDP::CRAM::Colour{4, 0, 7});
 
 	const auto FillTiles = [](const unsigned int colour_index, const unsigned int tile_index, const unsigned int total_tiles) __attribute__((always_inline))
 	{
-		ClownMDSDK::VDP::VRAM::FillBytesWithDMA((tile_index) * ClownMDSDK::VDP::VRAM::TILE_SIZE_IN_BYTES, (total_tiles) * ClownMDSDK::VDP::VRAM::TILE_SIZE_IN_BYTES, ClownMDSDK::VDP::RepeatBits<unsigned int, 2>(colour_index));
+		ClownMDSDK::VDP::VRAM::FillBytesWithDMA((tile_index) * ClownMDSDK::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, (total_tiles) * ClownMDSDK::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, ClownMDSDK::VDP::RepeatBits<unsigned int, 2>(colour_index));
 		ClownMDSDK::VDP::WaitUntilDMAIsComplete();
 	};
 
@@ -243,7 +243,7 @@ void _EntryPoint()
 	};
 
 	// Fill background.
-	DrawBox(0, 0, SCREEN_WIDTH / ClownMDSDK::VDP::VRAM::TILE_WIDTH, SCREEN_HEIGHT / ClownMDSDK::VDP::VRAM::TILE_HEIGHT, ClownMDSDK::VDP::VRAM::TileMetadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 1});
+	DrawBox(0, 0, SCREEN_WIDTH / ClownMDSDK::VDP::VRAM::TILE_WIDTH, SCREEN_HEIGHT / ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL, ClownMDSDK::VDP::VRAM::TileMetadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 1});
 
 	// Fill left box.
 	DrawBox(LEFT_GRID_X_IN_TILES, GRID_Y_IN_TILES, GRID_WIDTH_IN_TILES, GRID_HEIGHT_IN_TILES, ClownMDSDK::VDP::VRAM::TileMetadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 2});
@@ -273,7 +273,7 @@ void _EntryPoint()
 				const GridSlot grid_slot = left_grid[y][x];
 				const auto tile_index = GridSlotToTileIndex(grid_slot);
 
-				const auto puyo_height_in_tiles = Puyo::Height() / ClownMDSDK::VDP::VRAM::TILE_HEIGHT;
+				const auto puyo_height_in_tiles = Puyo::Height() / ClownMDSDK::VDP::VRAM::TILE_HEIGHT_NORMAL;
 
 				for (unsigned int tile_y = 0; tile_y < puyo_height_in_tiles; ++tile_y)
 				{
