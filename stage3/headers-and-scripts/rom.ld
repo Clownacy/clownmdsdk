@@ -7,12 +7,12 @@ OUTPUT_FORMAT(binary)
 MEMORY
 {
 	ROM (rx) : ORIGIN = 0x00000000, LENGTH = 4M
-	RAM (wx) : ORIGIN = 0xFFFF0000, LENGTH = 64K
+	RAM (rwx) : ORIGIN = 0xFFFF0000, LENGTH = 64K
 }
 
 SECTIONS
 {
-	.rom() : {
+	.rom : {
 		*(.text.init)  # init.s
 		*(.init)       # Global constructors
 		*(.text.entry) # _EntryPoint
