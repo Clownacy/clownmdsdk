@@ -24,5 +24,7 @@ void _EntryPoint()
 	VDP::Write(VDP::DataValueLongword(VDP::CRAM::Colour{7, 0, 0}, VDP::CRAM::Colour{0, 7, 0}));
 	VDP::Write(VDP::CRAM::Colour{0, 0, 7});
 
+	MegaCD::subcpu.bus_request = true;
+
 	for (;;);
 }

@@ -926,11 +926,259 @@ namespace ClownMDSDK
 
 	namespace MegaCD
 	{
-		
+		struct SubCPU
+		{
+			bool interrupt_level_2_mask : 1;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool bit9 : 1 = false;
+			bool raise_interrupt_level_2 : 1;
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			bool bit4 : 1 = false;
+			bool bit3 : 1 = false;
+			bool bit2 : 1 = false;
+			bool bus_request : 1;
+			bool reset : 1;
+		};
+
+		static volatile auto &subcpu = *reinterpret_cast<volatile SubCPU*>(0xA12000);
+
+		struct MemoryMode
+		{
+			unsigned int write_protect : 8;
+			unsigned int prg_ram_bank : 2;
+			bool bit5 : 1 = false;
+			bool bit4 : 1 = false;
+			bool bit3 : 1 = false;
+			bool mode : 1;
+			bool dmna : 1;
+			bool ret : 1;
+		};
+
+		static volatile auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xA12002);
+
+		struct CDCMode
+		{
+			bool end_of_data_transfer : 1;
+			bool data_set_ready : 1;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			unsigned int device_destination : 3;
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			bool bit4 : 1 = false;
+			bool bit3 : 1 = false;
+			bool bit2 : 1 = false;
+			bool bit1 : 1 = false;
+			bool bit0 : 1 = false;
+		};
+
+		static volatile auto &cdc_mode = *reinterpret_cast<volatile CDCMode*>(0xA12004);
+
+		static volatile auto &horizontal_interrupt_vector = *reinterpret_cast<volatile unsigned short*>(0xA12006);
+		static volatile auto &cdc_host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
+		static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xA1200C);
+		static volatile auto &communication_flag = *reinterpret_cast<volatile unsigned short*>(0xA1200E);
+		static volatile auto &communication_command = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xA12010);
+		static volatile auto &communication_status = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xA12020);
 	}
 
 	namespace SubCPU
 	{
+		struct Status
+		{
+			bool bit15 : 1 = false;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool led_green : 1;
+			bool led_red : 1;
+			unsigned int version : 4;
+			bool bit3 : 1 = false;
+			bool bit2 : 1 = false;
+			bool bit1 : 1 = false;
+			bool reset : 1; /* Active low */
+		};
+
+		static volatile auto &status = *reinterpret_cast<volatile Status*>(0xFFFF8000);
+
+		struct MemoryMode
+		{
+			unsigned int write_protect : 8;
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			unsigned int priority_mode : 2; /* TODO: Priority mode enum. */
+			bool mode : 1;
+			bool dmna : 1;
+			bool ret : 1;
+		};
+
+		static volatile auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xFFFF8002);
+
+		struct CDCMode
+		{
+			bool end_of_data_transfer : 1;
+			bool data_set_ready : 1;
+			bool upper_byte_read : 1;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			unsigned int device_destination : 3; /* TODO: Destination enum. */
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			bool bit4 : 1 = false;
+			unsigned int register_address : 4;
+		};
+
+		static volatile auto &cdc_mode = *reinterpret_cast<volatile CDCMode*>(0xFFFF8004);
+
+		static volatile auto &cdc_register_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8006);
+		static volatile auto &cdc_host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
+		static volatile auto &cdc_dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
+		static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xFFFF800C);
+		static volatile auto &communication_flag = *reinterpret_cast<volatile unsigned short*>(0xFFFF800E);
+		static volatile auto &communication_command = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xFFFF8010);
+		static volatile auto &communication_status = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xFFFF8020);
+		static volatile auto &timer_interrupt_level_3 = *reinterpret_cast<volatile unsigned short*>(0xFFFF8030);
+
+		struct InterruptMaskControl
+		{
+			bool bit15 : 1 = false;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool bit9 : 1 = false;
+			bool bit8 : 1 = false;
+			bool bit7 : 1 = false;
+			bool level_6_subcode : 1;
+			bool level_5_cdc : 1;
+			bool level_4_cdd : 1;
+			bool level_3_timer : 1;
+			bool level_2_md : 1;
+			bool level_1_graphics : 1;
+			bool bit0 : 1 = false;
+		};
+
+		static volatile auto &interrupt_mask_control = *reinterpret_cast<volatile InterruptMaskControl*>(0xFFFF8032);
+
+		struct CDFader
+		{
+			bool end_of_data_transfer : 1;
+			unsigned int volume_data : 11;
+			unsigned int deemphasis_flag : 2; /* TODO: Enum. */
+			bool bit1 : 1 = false;
+			bool bit0 : 1 = false;
+		};
+
+		static volatile auto &cd_fader = *reinterpret_cast<volatile CDFader*>(0xFFFF8034);
+
+		struct CDDControl
+		{
+			bool bit15 : 1 = false;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool bit9 : 1 = false;
+			bool data_or_music : 1;
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			bool bit4 : 1 = false;
+			bool bit3 : 1 = false;
+			bool host_clock : 1; /* By setting this, commands are automatically fed to the CDD. */
+			bool data_receiving_status : 1;
+			bool data_transmission_status : 1;
+		};
+
+		static volatile auto &cdd_control = *reinterpret_cast<volatile CDDControl*>(0xFFFF8036);
+
+		static volatile auto &cdd_receiving_status = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8038);
+		static volatile auto &cdd_transmission_command = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8042);
+
+		struct FontColour
+		{
+			bool bit15 : 1 = false;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool bit9 : 1 = false;
+			bool bit8 : 1 = false;
+			unsigned int source_colour_data_0 : 4;
+			unsigned int source_colour_data_1 : 4;
+		};
+
+		static volatile auto &font_colour = *reinterpret_cast<volatile FontColour*>(0xFFFF804C);
+
+		static volatile auto &font_bit = *reinterpret_cast<volatile unsigned short*>(0xFFFF804E);
+		static volatile auto &font_data = *reinterpret_cast<volatile std::array<unsigned short, 4>*>(0xFFFF8050);
+
+		struct StampDataSize
+		{
+			bool graphics_operation_in_progress : 1;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool bit9 : 1 = false;
+			bool bit8 : 1 = false;
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			bool bit5 : 1 = false;
+			bool bit4 : 1 = false;
+			bool bit3 : 1 = false;
+			unsigned int stamp_map_size : 1; /* TODO: Enum. */
+			unsigned int stamp_size : 1; /* TODO: Enum. */
+			bool repeat : 1;
+		};
+
+		static volatile auto &stamp_data_size = *reinterpret_cast<volatile StampDataSize*>(0xFFFF8058);
+
+		/* TODO: This has various restrictions based on the current mode. Maybe make a function for doing all settings at once with asserts? */
+		static volatile auto &stamp_map_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805A);
+		static volatile auto &image_buffer_vertical_cell_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF805C);
+		static volatile auto &image_buffer_start_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805E);
+		static volatile auto &image_buffer_offset = *reinterpret_cast<volatile unsigned short*>(0xFFFF8060);
+		static volatile auto &image_buffer_horizontal_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8062);
+		static volatile auto &image_buffer_vertical_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8064);
+		static volatile auto &trace_vector_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF8066);
+
+		struct SubcodeAddress
+		{
+			bool bit15 : 1 = false;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool bit9 : 1 = false;
+			bool bit8 : 1 = false;
+			bool subcode_address_overrun : 1;
+			unsigned int subcode_top_address : 6;
+			bool bit0 : 1 = false;
+		};
+
+		static volatile auto &subcode_address = *reinterpret_cast<volatile SubcodeAddress*>(0xFFFF8068);
+
+		static volatile auto &subcode_buffer = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8100);
+		static volatile auto &subcode_buffer_image = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8180);
+
 		namespace PCM
 		{
 			static volatile unsigned char* const ram_window = reinterpret_cast<volatile unsigned char*>(0xFFFF2000);
