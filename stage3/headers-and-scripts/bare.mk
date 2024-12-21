@@ -7,7 +7,6 @@ CXX := $(CLOWNMDSDK_PREFIX)g++
 CPP := $(CLOWNMDSDK_PREFIX)cpp
 LD := $(CLOWNMDSDK_PREFIX)ld
 
-CLOWNMDSDK_CANDCXXFLAGS := -mshort -D__MEGA_DRIVE__ -ffreestanding -nostdlib -fno-ident -isystem $(CLOWNMDSDK_LOCATION)/include -L $(CLOWNMDSDK_LOCATION)/lib
+CLOWNMDSDK_CANDCXXFLAGS := -mshort -D__MEGA_DRIVE__ -ffreestanding -nodefaultlibs -fno-ident -isystem $(CLOWNMDSDK_LOCATION)/include -L $(CLOWNMDSDK_LOCATION)/lib
 CFLAGS := $(CLOWNMDSDK_CANDCXXFLAGS)
 CXXFLAGS := $(CLOWNMDSDK_CANDCXXFLAGS) -fno-exceptions -fno-rtti
-LDFLAGS := -lgcc

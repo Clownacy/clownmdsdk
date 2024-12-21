@@ -2,10 +2,6 @@ STARTUP(../../../../init.o)
  # This is needed so that _EntryPoint is not
  # optimised-away due to being "unused".
 ENTRY(_EntryPoint)
-INPUT(
-	../../../../lib/gcc/m68k-elf/14.2.0/crtbegin.o
-	../../../../lib/gcc/m68k-elf/14.2.0/crtend.o
-)
 OUTPUT_FORMAT(binary)
 
 MEMORY
