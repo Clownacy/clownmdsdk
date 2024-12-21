@@ -37,6 +37,9 @@ _DATA_SIZE_ = ABSOLUTE(_DATA_RAM_END_ - _DATA_RAM_START_);
 _DATA_LOOP_COUNT_ = ABSOLUTE(_DATA_SIZE_ / 16);
 _DATA_LOOP_OFFSET_ = ABSOLUTE(-(_DATA_SIZE_ % 16 / 4 * 2));
 		. = ALIGN(2);
+	} > RAM AT> ROM
+
+	.bss : {
 _BSS_START_ = .;
 		*(.bss)
 		*(.bss.*)
@@ -45,7 +48,7 @@ _BSS_END_ = .;
 _BSS_SIZE_ = ABSOLUTE(_BSS_END_ - _BSS_START_);
 _BSS_LOOP_COUNT_ = ABSOLUTE(_BSS_SIZE_ / 16);
 _BSS_LOOP_OFFSET_ = ABSOLUTE(-(_BSS_SIZE_ % 16 / 4 * 2));
-	} > RAM AT> ROM
+	} > RAM
 
 	/DISCARD/ : {
 		*(.dtors)
