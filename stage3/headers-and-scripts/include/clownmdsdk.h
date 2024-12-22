@@ -1007,7 +1007,7 @@ namespace ClownMDSDK
 			bool bit3 : 1 = false;
 			bool bit2 : 1 = false;
 			bool bit1 : 1 = false;
-			bool reset : 1; /* Active low */
+			bool reset : 1; // Active low.
 		};
 
 		static volatile auto &status = *reinterpret_cast<volatile Status*>(0xFFFF8000);
@@ -1018,7 +1018,7 @@ namespace ClownMDSDK
 			bool bit7 : 1 = false;
 			bool bit6 : 1 = false;
 			bool bit5 : 1 = false;
-			unsigned int priority_mode : 2; /* TODO: Priority mode enum. */
+			unsigned int priority_mode : 2; // TODO: Priority mode enum.
 			bool mode : 1;
 			bool dmna : 1;
 			bool ret : 1;
@@ -1033,7 +1033,7 @@ namespace ClownMDSDK
 			bool upper_byte_read : 1;
 			bool bit12 : 1 = false;
 			bool bit11 : 1 = false;
-			unsigned int device_destination : 3; /* TODO: Destination enum. */
+			unsigned int device_destination : 3; // TODO: Destination enum.
 			bool bit7 : 1 = false;
 			bool bit6 : 1 = false;
 			bool bit5 : 1 = false;
@@ -1078,7 +1078,7 @@ namespace ClownMDSDK
 		{
 			bool end_of_data_transfer : 1;
 			unsigned int volume_data : 11;
-			unsigned int deemphasis_flag : 2; /* TODO: Enum. */
+			unsigned int deemphasis_flag : 2; // TODO: Enum.
 			bool bit1 : 1 = false;
 			bool bit0 : 1 = false;
 		};
@@ -1100,7 +1100,7 @@ namespace ClownMDSDK
 			bool bit5 : 1 = false;
 			bool bit4 : 1 = false;
 			bool bit3 : 1 = false;
-			bool host_clock : 1; /* By setting this, commands are automatically fed to the CDD. */
+			bool host_clock : 1; // By setting this, commands are automatically fed to the CDD.
 			bool data_receiving_status : 1;
 			bool data_transmission_status : 1;
 		};
@@ -1144,14 +1144,14 @@ namespace ClownMDSDK
 			bool bit5 : 1 = false;
 			bool bit4 : 1 = false;
 			bool bit3 : 1 = false;
-			unsigned int stamp_map_size : 1; /* TODO: Enum. */
-			unsigned int stamp_size : 1; /* TODO: Enum. */
+			unsigned int stamp_map_size : 1; // TODO: Enum.
+			unsigned int stamp_size : 1; // TODO: Enum.
 			bool repeat : 1;
 		};
 
 		static volatile auto &stamp_data_size = *reinterpret_cast<volatile StampDataSize*>(0xFFFF8058);
 
-		/* TODO: This has various restrictions based on the current mode. Maybe make a function for doing all settings at once with asserts? */
+		// TODO: This has various restrictions based on the current mode. Maybe make a function for doing all settings at once with asserts?
 		static volatile auto &stamp_map_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805A);
 		static volatile auto &image_buffer_vertical_cell_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF805C);
 		static volatile auto &image_buffer_start_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805E);
@@ -1188,6 +1188,8 @@ namespace ClownMDSDK
 
 		namespace BIOS
 		{
+			// TODO: Document everything here.
+
 			#define CLOWNMDSDK_READ_REGISTER(REGISTER, TYPE, OUTPUT) \
 			[]() -> TYPE \
 			{ \
