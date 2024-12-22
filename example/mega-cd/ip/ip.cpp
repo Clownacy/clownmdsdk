@@ -13,18 +13,18 @@
 
 #include <clownmdsdk.h>
 
-using namespace ClownMDSDK;
+namespace MD = ClownMDSDK::MainCPU;
 
 void _EntryPoint()
 {
-	VDP::Write(VDP::Register01{.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true});
+	MD::VDP::Write(MD::VDP::Register01{.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true});
 
 	// Write colours to CRAM.
-	VDP::SendCommand(VDP::RAM::CRAM, VDP::Access::WRITE, 2);
-	VDP::Write(VDP::DataValueLongword(VDP::CRAM::Colour{7, 0, 0}, VDP::CRAM::Colour{0, 7, 0}));
-	VDP::Write(VDP::CRAM::Colour{0, 0, 7});
+	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, 2);
+	MD::VDP::Write(MD::VDP::DataValueLongword(MD::VDP::CRAM::Colour{7, 0, 0}, MD::VDP::CRAM::Colour{0, 7, 0}));
+	MD::VDP::Write(MD::VDP::CRAM::Colour{0, 0, 7});
 
-	MegaCD::subcpu.bus_request = true;
+	MD::MegaCD::subcpu.bus_request = true;
 
 	for (;;);
 }
