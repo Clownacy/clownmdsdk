@@ -21,7 +21,38 @@ void _SP_User() {}
 
 void _SP_Main()
 {
-	std::fill(PCM::ram_window, PCM::ram_window_end, 0xFA);
+	BIOS::Drive::Initialise({0, 0xFF});
+
+	const auto &status = BIOS::Misc::Status();
+
+	std::fill(PCM::ram_window, PCM::ram_window_end, status.led);
+
+	const auto entry = BIOS::Misc::ReadTableOfContents(1);
+	std::fill(PCM::ram_window, PCM::ram_window_end, entry.is_rom_track);
+
+	static const unsigned long toc[] = {0x12345678, 0x87654321, 0xFFFFFFFF};
+	BIOS::Misc::WriteTableOfContents(toc);
+
+	BIOS::CDROM::ReadN({0, 1});
+
+	cdc_mode.device_destination = 3;
+
+	while (!BIOS::CDC::SectorsAvailableForReading());
+
+	if (!BIOS::CDC::Read())
+		std::fill(PCM::ram_window, PCM::ram_window_end, 0xBA);
+
+	unsigned long header;
+	unsigned char* const data = reinterpret_cast<unsigned char*>(0x20000);
+	void *data_pointer = data;
+	void *header_pointer = &header;
+	if (!BIOS::CDC::Transfer(data_pointer, header_pointer))
+		std::fill(PCM::ram_window, PCM::ram_window_end, 0xBB);
+
+	BIOS::CDC::Acknowledge();
+
+	if (data[0] == 0x53)
+		BIOS::Music::PlayRepeat(4);
 
 	for (;;);
 }

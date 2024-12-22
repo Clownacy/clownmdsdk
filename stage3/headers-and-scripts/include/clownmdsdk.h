@@ -74,6 +74,7 @@ __VISIBILITY void _SP_User(void);
 #include <cassert>
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <span>
 #include <tuple>
 #include <type_traits>
@@ -1183,6 +1184,314 @@ namespace ClownMDSDK
 		{
 			static volatile unsigned char* const ram_window = reinterpret_cast<volatile unsigned char*>(0xFFFF2000);
 			static volatile unsigned char* const ram_window_end = ram_window + 0x2000;
+		}
+
+		namespace BIOS
+		{
+			#define CLOWNMDSDK_READ_REGISTER(REGISTER, TYPE, OUTPUT) \
+			[]() -> TYPE \
+			{ \
+				register TYPE reg asm(REGISTER); \
+				asm("" : OUTPUT (reg)); \
+				return reg; \
+			}()
+
+			#define CLOWNMDSDK_READ_DATA_REGISTER(REGISTER, TYPE) CLOWNMDSDK_READ_REGISTER(REGISTER, TYPE, "=d")
+			#define CLOWNMDSDK_READ_ADDRESS_REGISTER(REGISTER, TYPE) CLOWNMDSDK_READ_REGISTER(REGISTER, TYPE, "=a")
+
+			#define CLOWNMDSDK_WRITE_DATA_REGISTER(REGISTER, VALUE) \
+			do \
+			{ \
+				register const auto reg asm(REGISTER) = VALUE; \
+				asm("" : : "d" (reg)); \
+			} while(0)
+
+			#define CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER(REGISTER, VALUE) \
+			do \
+			{ \
+				register const auto reg asm(REGISTER) = &VALUE; \
+				asm("" : : "a" (reg), "m" (*reg)); \
+			} while(0)
+
+			#define CLOWNMDSDK_WRITE_OUTPUT_ADDRESS_REGISTER(REGISTER, VALUE) \
+			do \
+			{ \
+				register const auto reg asm(REGISTER) = VALUE; \
+				asm("" : : "a" (reg)); \
+			} while(0)
+
+			static inline bool Call(const unsigned short code)
+			{
+				register const auto d0 asm("d0") = code;
+				asm(
+					"jsr	(0x5F22).w"
+					:
+					: "d" (d0)
+					: "cc", "d1", "a0", "a1" // According to 'Mega-CD BIOS Manual', these are the only registers that get clobbered.
+				);
+
+				// If the result is unused, this code will be stripped-out by the compiler.
+				bool result;
+				asm("scc.b	%0" : "=dm" (result));
+				return result;
+			}
+
+			namespace Drive
+			{
+				struct InitialiseParameters
+				{
+					unsigned char first_track, last_track;
+				};
+
+				static inline void Initialise(const InitialiseParameters &parameters)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", parameters);
+					Call(0x10);
+				}
+
+				static inline void Open()
+				{
+					Call(0xA);
+				}
+			}
+
+			namespace Music
+			{
+				static inline void Stop()
+				{
+					Call(2);
+				}
+
+				static inline void Play(const unsigned short &track_number)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", track_number);
+					Call(0x11);
+				}
+
+				static inline void PlayOnce(const unsigned short &track_number)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", track_number);
+					Call(0x12);
+				}
+
+				static inline void PlayRepeat(const unsigned short &track_number)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", track_number);
+					Call(0x13);
+				}
+
+				static inline void PlayTime(const unsigned long &time)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", time);
+					Call(0x14);
+				}
+
+				static inline void Seek(const unsigned long &track_number)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", track_number);
+					Call(0x15);
+				}
+
+				static inline void SeekOnce(const unsigned long &track_number)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", track_number);
+					Call(0x19);
+				}
+
+				static inline void SeekTime(const unsigned long &time)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", time);
+					Call(0x16);
+				}
+
+				static inline void PauseOn()
+				{
+					Call(3);
+				}
+
+				static inline void PauseOff()
+				{
+					Call(4);
+				}
+
+				static inline void ScanFastForward()
+				{
+					Call(5);
+				}
+
+				static inline void ScanFastReverse()
+				{
+					Call(6);
+				}
+
+				static inline void ScanOff()
+				{
+					Call(7);
+				}
+			}
+
+			namespace CDROM
+			{
+				static inline void Read(const unsigned long &sector_number)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", sector_number);
+					Call(0x17);
+				}
+
+				struct ReadNParameters
+				{
+					unsigned long first_sector_number, total_sectors;
+				};
+
+				static inline void ReadN(const ReadNParameters &parameters)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", parameters);
+					Call(0x20);
+				}
+
+				struct ReadEParameters
+				{
+					unsigned long first_sector_number, last_sector_number;
+				};
+
+				static inline void ReadE(const ReadEParameters &parameters)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", parameters);
+					Call(0x21);
+				}
+
+				static inline void Seek(const unsigned long &sector_number)
+				{
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", sector_number);
+					Call(0x18);
+				}
+
+				static inline void PauseOn()
+				{
+					Call(8);
+				}
+
+				static inline void PauseOff()
+				{
+					Call(9);
+				}
+			}
+
+			namespace Misc
+			{
+				static inline bool WasCommandExecuted()
+				{
+					return Call(0x80);
+				}
+
+				struct StatusTable
+				{
+					unsigned short bios_status;
+					unsigned short led;
+					std::array<unsigned char, 20> cdd_status;
+					unsigned long volume;
+					unsigned long header;
+				};
+
+				static inline const StatusTable& Status()
+				{
+					Call(0x81);
+					return *CLOWNMDSDK_READ_ADDRESS_REGISTER("a0", const StatusTable*);
+				}
+
+				struct TableOfContentsEntry
+				{
+					unsigned char minutes, seconds, frames;
+					bool is_rom_track;
+				};
+
+				static inline TableOfContentsEntry ReadTableOfContents(const unsigned short track_number)
+				{
+					CLOWNMDSDK_WRITE_DATA_REGISTER("d1", track_number);
+					Call(0x83);
+					return {CLOWNMDSDK_READ_DATA_REGISTER("d0", unsigned long), CLOWNMDSDK_READ_DATA_REGISTER("d1", unsigned char)};
+				}
+
+				static inline void WriteTableOfContents(const unsigned long* const track_number)
+				{
+					// This hack is necessary so that GCC knows that we use the array that 'track_number' points to.
+					// https://stackoverflow.com/questions/56432259/how-can-i-indicate-that-the-memory-pointed-to-by-an-inline-asm-argument-may-be
+					CLOWNMDSDK_WRITE_INPUT_ADDRESS_REGISTER("a0", *reinterpret_cast<const unsigned long(*)[]>(track_number));
+					Call(0x82);
+				}
+
+				static inline void Pause(const unsigned short delay)
+				{
+					CLOWNMDSDK_WRITE_DATA_REGISTER("d1", delay);
+					Call(0x84);
+				}
+			}
+
+			namespace Fader
+			{
+				static inline void Set(const unsigned short volume)
+				{
+					CLOWNMDSDK_WRITE_DATA_REGISTER("d1", volume);
+					Call(0x85);
+				}
+
+				static inline void Change(const unsigned long volume_and_rate)
+				{
+					CLOWNMDSDK_WRITE_DATA_REGISTER("d1", volume_and_rate);
+					Call(0x86);
+				}
+			}
+
+			namespace CDC
+			{
+				static inline void Start()
+				{
+					Call(0x87);
+				}
+
+				static inline void Stop()
+				{
+					Call(0x89);
+				}
+
+				static inline bool SectorsAvailableForReading()
+				{
+					return Call(0x8A);
+				}
+
+				// Returns an BCD timecode.
+				// TODO: Make a BCD class?
+				static inline std::optional<unsigned long> Read()
+				{
+					if (!Call(0x8B))
+						return std::nullopt;
+
+					return CLOWNMDSDK_READ_DATA_REGISTER("d0", unsigned long);
+				}
+
+				static inline bool Transfer(void *&data_buffer, void *&header_buffer)
+				{
+					CLOWNMDSDK_WRITE_OUTPUT_ADDRESS_REGISTER("a0", data_buffer);
+					CLOWNMDSDK_WRITE_OUTPUT_ADDRESS_REGISTER("a1", header_buffer);
+					const bool success = Call(0x8C);
+					data_buffer = CLOWNMDSDK_READ_ADDRESS_REGISTER("a0", void*);
+					header_buffer = CLOWNMDSDK_READ_ADDRESS_REGISTER("a1", void*);
+					return success;
+				}
+
+				static inline bool Acknowledge()
+				{
+					return Call(0x8D);
+				}
+
+				static inline bool SetMode(const unsigned short mode) // TODO: Enum for the mode.
+				{
+					CLOWNMDSDK_WRITE_DATA_REGISTER("d1", mode);
+					return Call(0x96);
+				}
+			}
+
+			// TODO: Subcodes, LEDs, and BuRAM.
 		}
 	}
 }
