@@ -1,14 +1,19 @@
 	include /opt/clownmdsdk/bare.mk
 
+CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -std=c++23 -fvisibility=hidden -flto -DNDEBUG
+LDFLAGS += -save-temps=obj
+
 all: bin/disc.iso
 
-ip/bin/ip.bin:
-	$(MAKE) -C ip
+bin/ip.bin: ip.cpp
+	mkdir -p $(@D)
+	$(CXX) $< -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/ip.ld
 
-sp/bin/sp.bin:
-	$(MAKE) -C sp
+bin/sp.bin: sp.cpp
+	mkdir -p $(@D)
+	$(CXX) $< -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/sp.ld
 
-bin/disc.o: disc.s ip/bin/ip.bin sp/bin/sp.bin
+bin/disc.o: disc.s bin/ip.bin bin/sp.bin
 	mkdir -p $(@D)
 	$(AS) $< -o $@
 
