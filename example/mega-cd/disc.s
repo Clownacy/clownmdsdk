@@ -24,13 +24,13 @@
 	dc.w	0
 	dc.w	0
 	| Initial program
-	dc.l	0x200		| Start
+	dc.l	0x800		| Start
 	dc.l	0x8000		| Length
 	dc.l	0		| Offset
 	dc.l	0		| Work RAM
 	| Sub program
 	dc.l	0x8800		| Start
-	dc.l	0x40000		| Length
+	dc.l	0x7800		| Length
 	dc.l	0		| Offset
 	dc.l	0		| Work RAM
 	| Filler

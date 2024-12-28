@@ -21,37 +21,79 @@ void _SP_User() {}
 
 void _SP_Main()
 {
+	MCD::communication_flag_ours = 0x87;
+	while (MCD::communication_flag_theirs != 0x87);
+
 	MCD::BIOS::Drive::Initialise({0, 0xFF});
 
-	const auto &status = MCD::BIOS::Misc::Status();
+//	const auto &status = MCD::BIOS::Misc::Status();
 
-	std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, status.led);
+//	std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, status.led);
 
-	const auto entry = MCD::BIOS::Misc::ReadTableOfContents(1);
-	std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, entry.is_rom_track);
+//	const auto entry = MCD::BIOS::Misc::ReadTableOfContents(1);
+//	std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, entry.is_rom_track);
 
-	static const unsigned long toc[] = {0x12345678, 0x87654321, 0xFFFFFFFF};
-	MCD::BIOS::Misc::WriteTableOfContents(toc);
+//	static const unsigned long toc[] = {0x12345678, 0x87654321, 0xFFFFFFFF};
+//	MCD::BIOS::Misc::WriteTableOfContents(toc);
 
-	MCD::BIOS::CDROM::ReadN({0, 1});
+	MCD::BIOS::CDC::Stop();
 
-	MCD::cdc_mode.device_destination = 3;
+	for (unsigned int i = 0; i < 100; ++i)
+	{
+		static constexpr auto WaitForSectorAvailable = []()
+		{
+			for (unsigned int i = 0; i < 10000; ++i)
+				if (MCD::BIOS::CDC::SectorsAvailableForReading())
+					return true;
 
-	while (!MCD::BIOS::CDC::SectorsAvailableForReading());
+			return false;
+		};
 
-	if (!MCD::BIOS::CDC::Read())
-		std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, 0xBA);
+		MCD::BIOS::CDROM::ReadN({0, 1});
 
-	unsigned long header;
-	unsigned char* const data = reinterpret_cast<unsigned char*>(0x20000);
-	void *data_pointer = data;
-	void *header_pointer = &header;
-	if (!MCD::BIOS::CDC::Transfer(data_pointer, header_pointer))
-		std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, 0xBB);
+		if (!WaitForSectorAvailable())
+			continue;
 
-	MCD::BIOS::CDC::Acknowledge();
+		MCD::cdc_mode.device_destination = 2;
 
-	if (data[0] == 0x53)
+		if (!MCD::BIOS::CDC::Read())
+			continue;
+
+	#if 0
+		static std::array<unsigned short, 0x400> sector_buffer;
+
+	#if 1
+		unsigned short *sector_buffer_pointer = sector_buffer.data();
+
+		while (!MCD::cdc_mode.data_set_ready);
+
+		// Read header junk.
+		*sector_buffer_pointer = MCD::cdc_host_data;
+		*sector_buffer_pointer = MCD::cdc_host_data;
+
+		do
+			*sector_buffer_pointer++ = MCD::cdc_host_data;
+		while (!MCD::cdc_mode.end_of_data_transfer);
+	#else
+		unsigned long header;
+		void *data_pointer = sector_buffer.data();
+		void *header_pointer = &header;
+		if (!MCD::BIOS::CDC::Transfer(data_pointer, header_pointer))
+			continue;
+	#endif
+
+		MCD::BIOS::Music::PlayRepeat(sector_buffer[0] == 0x5345 ? 4 : 5);
+		for (;;);
+	#endif
+
+		MCD::communication_flag_ours = 0x97;
+		while (MCD::communication_flag_theirs != 0x97);
+
+		MCD::BIOS::CDC::Acknowledge();
+		break;
+	}
+
+//	if (data[0] == 0x53)
 		MCD::BIOS::Music::PlayRepeat(4);
 
 	for (;;);

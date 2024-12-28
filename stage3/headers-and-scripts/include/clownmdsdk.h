@@ -989,8 +989,35 @@ namespace ClownMDSDK
 			static volatile auto &cdc_host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
 			static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xA1200C);
 			static volatile auto &communication_flag = *reinterpret_cast<volatile unsigned short*>(0xA1200E);
+			static volatile auto &communication_flag_ours = *reinterpret_cast<volatile unsigned char*>(0xA1200E);
+			static volatile auto &communication_flag_theirs = *reinterpret_cast<volatile unsigned char*>(0xA1200F);
 			static volatile auto &communication_command = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xA12010);
 			static volatile auto &communication_status = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xA12020);
+
+			struct JumpTable
+			{
+				struct Entry
+				{
+					unsigned short jmp_opcode;
+					void (*address)();
+				};
+
+				Entry reset;
+				Entry level_6;
+				Entry level_4;
+				Entry level_2;
+				std::array<Entry, 0x10> trap;
+				Entry chk;
+				Entry address_error;
+				Entry divide_by_zero;
+				Entry trap_v;
+				Entry illegal_instruction_1;
+				Entry illegal_instruction_2;
+				Entry supervisor_error;
+				Entry trace;
+			};
+
+			static volatile auto &jump_table = *reinterpret_cast<volatile JumpTable*>(0xFFFFFD00);
 		}
 	}
 
@@ -1051,6 +1078,8 @@ namespace ClownMDSDK
 		static volatile auto &cdc_dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
 		static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xFFFF800C);
 		static volatile auto &communication_flag = *reinterpret_cast<volatile unsigned short*>(0xFFFF800E);
+		static volatile auto &communication_flag_theirs = *reinterpret_cast<volatile unsigned char*>(0xFFFF800E);
+		static volatile auto &communication_flag_ours = *reinterpret_cast<volatile unsigned char*>(0xFFFF800F);
 		static volatile auto &communication_command = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xFFFF8010);
 		static volatile auto &communication_status = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xFFFF8020);
 		static volatile auto &timer_interrupt_level_3 = *reinterpret_cast<volatile unsigned short*>(0xFFFF8030);
@@ -1227,17 +1256,17 @@ namespace ClownMDSDK
 
 			static inline bool Call(const unsigned short code)
 			{
-				register const auto d0 asm("d0") = code;
-				asm(
+				register auto d0 asm("d0") = code;
+				asm volatile(
 					"jsr	(0x5F22).w"
-					:
-					: "d" (d0)
+					: "+d" (d0)
+					: 
 					: "cc", "d1", "a0", "a1" // According to 'Mega-CD BIOS Manual', these are the only registers that get clobbered.
 				);
 
 				// If the result is unused, this code will be stripped-out by the compiler.
 				bool result;
-				asm("scc.b	%0" : "=dm" (result));
+				asm("scc.b	%0" : "=dm" (result) : "d" (d0));
 				return result;
 			}
 
@@ -1464,7 +1493,7 @@ namespace ClownMDSDK
 					return Call(0x8A);
 				}
 
-				// Returns an BCD timecode.
+				// Returns a BCD timecode.
 				// TODO: Make a BCD class?
 				static inline std::optional<unsigned long> Read()
 				{
