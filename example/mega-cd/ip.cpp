@@ -18,6 +18,18 @@ namespace MD = ClownMDSDK::MainCPU;
 static std::array<unsigned short, 0x400> sector_buffer;
 
 static constexpr unsigned int VRAM_PLANE_A = 0xC000;
+static constexpr unsigned int PLANE_WIDTH = 64;
+
+static void SetupPlaneWrite(const unsigned int x, unsigned int y)
+{
+	MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, VRAM_PLANE_A + (y * PLANE_WIDTH + x) * 2);
+}
+
+static void DrawString(const char* const string, const unsigned int palette_line = 0)
+{
+	for (const char* character = string; *character != '\0'; ++character)
+		MD::VDP::Write(MD::VDP::VRAM::TileMetadata{false, palette_line, false, false, static_cast<unsigned int>(*character)});
+}
 
 static void DrawHexViewer()
 {
@@ -41,12 +53,11 @@ static void DrawHexViewer()
 		}
 	};
 
-	static constexpr unsigned int PLANE_WIDTH = 64;
 	auto sector_buffer_pointer = sector_buffer.data();
 
-	for (unsigned int y = 1; y < 224 / 8 - 1; ++y)
+	for (unsigned int y = 0; y < 224 / 8 - 3; ++y)
 	{
-		MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, VRAM_PLANE_A + (y * PLANE_WIDTH + 2) * 2);
+		SetupPlaneWrite(2, 2 + y);
 		DrawHexWord(y * 0x10, 2);
 
 		bool flipflop = false;
@@ -115,8 +126,12 @@ void _EntryPoint()
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, (32 + 1) * 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{2, 2, 7});
 
+	SetupPlaneWrite(2, 1);
+	DrawString("Test");
+
+	DrawHexViewer();
+
 	for (;;)
 	{
-		DrawHexViewer();
 	}
 }

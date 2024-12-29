@@ -26,16 +26,6 @@ void _SP_Main()
 
 	MCD::BIOS::Drive::Initialise({0, 0xFF});
 
-//	const auto &status = MCD::BIOS::Misc::Status();
-
-//	std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, status.led);
-
-//	const auto entry = MCD::BIOS::Misc::ReadTableOfContents(1);
-//	std::fill(MCD::PCM::ram_window, MCD::PCM::ram_window_end, entry.is_rom_track);
-
-//	static const unsigned long toc[] = {0x12345678, 0x87654321, 0xFFFFFFFF};
-//	MCD::BIOS::Misc::WriteTableOfContents(toc);
-
 	MCD::BIOS::CDC::Stop();
 
 	for (unsigned int i = 0; i < 100; ++i)
@@ -92,9 +82,6 @@ void _SP_Main()
 		MCD::BIOS::CDC::Acknowledge();
 		break;
 	}
-
-//	if (data[0] == 0x53)
-		MCD::BIOS::Music::PlayRepeat(4);
 
 	for (;;);
 }
