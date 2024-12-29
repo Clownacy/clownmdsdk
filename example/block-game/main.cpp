@@ -16,28 +16,12 @@
 
 #include <clownmdsdk.h>
 
+#include "../common/joypad-manager.h"
+
 namespace MD = ClownMDSDK::MainCPU;
 
 static constexpr unsigned int SCREEN_WIDTH = 320;
 static constexpr unsigned int SCREEN_HEIGHT = 224;
-
-struct Controller
-{
-	struct Buttons
-	{
-		bool start : 1;
-		bool a : 1;
-		bool c : 1;
-		bool b : 1;
-		bool right : 1;
-		bool left : 1;
-		bool down : 1;
-		bool up : 1;
-	};
-
-	Buttons held;
-	Buttons pressed;
-};
 
 static unsigned int RandomNumber();
 
@@ -87,7 +71,9 @@ enum class GridSlot : unsigned char
 };
 
 static std::atomic<bool> waiting_for_v_int;
-static std::array<Controller, 2> controllers;
+
+static JoypadManager<1> joypad_manager;
+static const auto &joypads = joypad_manager.GetJoypads();
 
 static constexpr unsigned int GRID_WIDTH_IN_PUYOS = 6;
 static constexpr unsigned int GRID_HEIGHT_IN_PUYOS = 12;
@@ -185,17 +171,6 @@ void _EntryPoint()
 	MD::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
 	MD::VDP::VRAM::SetSpriteTableLocation(VRAM_SPRITE_TABLE);
 
-	// Initialise IO ports.
-	{
-		MD::Z80::Bus z80_bus;
-
-		for (unsigned int i = 0; i < controllers.size(); ++i)
-		{
-			z80_bus.io_ctrl[i] = 0x40;
-			z80_bus.io_data[i] = 0x40;
-		}
-	}
-
 	// Write colours to CRAM.
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{0, 0, 0}, MD::VDP::CRAM::Colour{1, 1, 1});
@@ -264,7 +239,7 @@ void _EntryPoint()
 	{
 		WaitForVInt();
 
-		puyo.y += controllers[0].held.down ? 3 : 1;
+		puyo.y += joypads[0].held.down ? 3 : 1;
 
 		if (puyo.Bottom() >= GRID_HEIGHT || left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width()] != GridSlot::NOTHING)
 		{
@@ -334,9 +309,9 @@ void _EntryPoint()
 						DrawGridSlot(x, y);
 		}
 
-		if (controllers[0].pressed.left && puyo.Left() != 0 && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() - 1] == GridSlot::NOTHING)
+		if (joypads[0].pressed.left && puyo.Left() != 0 && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() - 1] == GridSlot::NOTHING)
 			puyo.x -= Puyo::Width();
-		if (controllers[0].pressed.right && puyo.Right() != GRID_WIDTH && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() + 1] == GridSlot::NOTHING)
+		if (joypads[0].pressed.right && puyo.Right() != GRID_WIDTH && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() + 1] == GridSlot::NOTHING)
 			puyo.x += Puyo::Width();
 	}
 }
@@ -449,38 +424,7 @@ void _Level6InterruptHandler()
 	const MD::VDP::VRAM::Sprite sprite{.y = 0x80 + GRID_Y + puyo.y, .width = 1, .height = 1, .link = 0, .tile_metadata = {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = GridSlotToTileIndex(PuyoColourToGridSlot(puyo.colour))}, .x = 0x80 + LEFT_GRID_X + puyo.x};
 	MD::VDP::CopyWordsWithoutDMA(MD::VDP::RAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
 
-	static constexpr auto ReadController = []()
-	{
-		std::array<unsigned char, controllers.size()> data;
-
-		MD::Z80::Bus z80_bus;
-
-		for (unsigned int i = 0; i < data.size(); ++i)
-		{
-			z80_bus.io_data[i] = 0x00;
-			asm("nop");
-			asm("nop");
-			data[i] = z80_bus.io_data[i] << 2 & 0xC0;
-			z80_bus.io_data[i] = 0x40;
-			asm("nop");
-			asm("nop");
-			data[i] |= z80_bus.io_data[i] & 0x3F;
-		}
-
-		return data;
-	};
-
-	const auto controller_data = ReadController();
-
-	for (unsigned int i = 0; i < controllers.size(); ++i)
-	{
-		const unsigned char new_held = ~controller_data[i];
-		const unsigned char old_held = std::bit_cast<unsigned char>(controllers[i].held);
-		const unsigned char new_pressed = new_held & ~old_held;
-
-		controllers[i].held = std::bit_cast<Controller::Buttons>(new_held);
-		controllers[i].pressed = std::bit_cast<Controller::Buttons>(new_pressed);
-	}
+	joypad_manager.Update();
 }
 
 void _Level7InterruptHandler()

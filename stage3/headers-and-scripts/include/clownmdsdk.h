@@ -89,6 +89,7 @@ namespace ClownMDSDK
 		{
 			static volatile unsigned char &version_register = *reinterpret_cast<volatile unsigned char*>(0xA10001);
 
+			static constexpr unsigned int total_io_ports = 3;
 			static volatile unsigned short* const io_data = reinterpret_cast<volatile unsigned short*>(0xA10002);
 			static volatile unsigned short* const io_ctrl = reinterpret_cast<volatile unsigned short*>(0xA10008);
 
@@ -906,6 +907,53 @@ namespace ClownMDSDK
 				void CopyWordsToVDPWithDMA(const VDP::RAM ram, const unsigned int address, const void* const data, const unsigned int length)
 				{
 					VDP::Unsafe::CopyWordsWithDMA(ram, address, data, length);
+				}
+
+				struct Joypad3Button
+				{
+					bool start : 1;
+					bool a : 1;
+					bool c : 1;
+					bool b : 1;
+					bool right : 1;
+					bool left : 1;
+					bool down : 1;
+					bool up : 1;
+				};
+
+				void InitialiseIOPortAsJoypad3Button(const unsigned int port_index)
+				{
+					assert(port_index < total_io_ports);
+
+					io_ctrl[port_index] = 0x40;
+					io_data[port_index] = 0x40;
+				}
+
+				Joypad3Button ReadIOPortAsJoypad3Button(const unsigned int port_index)
+				{
+					assert(port_index < total_io_ports);
+
+					auto &data_port = io_data[port_index];
+
+					const auto SetAndRead = [&data_port](const unsigned int value)
+					{
+						data_port = value;
+						// It is necessary to wait for the data to latch.
+						asm("nop");
+						asm("nop");
+						return data_port;
+					};
+
+					// Invert the values so that 'true' means 'held'.
+					unsigned char output = 0xFF;
+
+					// Read A and start.
+					output ^= SetAndRead(0x00) << 2 & 0xC0;
+
+					// Read up, down, left, right, C, and B.
+					output ^= SetAndRead(0x40) << 0 & 0x3F;
+
+					return std::bit_cast<Joypad3Button>(output);
 				}
 			};
 
