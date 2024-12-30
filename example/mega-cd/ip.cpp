@@ -11,14 +11,40 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <atomic>
+#include <span>
+#include <utility>
+
 #include <clownmdsdk.h>
+
+#include "../common/joypad-manager.h"
+
+#include "command.h"
 
 namespace MD = ClownMDSDK::MainCPU;
 
-static std::array<unsigned short, 0x400> sector_buffer;
+struct Mode
+{
+	const char *label;
+	Command command;
+};
+
+static const auto modes = std::to_array<Mode>({
+	{"None"                  , Command::NONE                    },
+	{"BIOS CDCTRN"           , Command::BEGIN_TRANSFER_BIOS     },
+	{"Host Register Main-CPU", Command::BEGIN_TRANSFER_HOST_MAIN},
+	{"Host Register Sub-CPU" , Command::BEGIN_TRANSFER_HOST_SUB },
+});
 
 static constexpr unsigned int VRAM_PLANE_A = 0xC000;
 static constexpr unsigned int PLANE_WIDTH = 64;
+
+static JoypadManager<1> joypad_manager;
+static const auto &joypads = joypad_manager.GetJoypads();
+
+static unsigned int hex_viewer_starting_position = 0;
+static const std::span<std::atomic<unsigned short>, 0x400> sector_buffer(MD::MegaCD::word_ram_2m<unsigned short>.data(), 0x400);
+static unsigned int current_mode = 0;
 
 static void SetupPlaneWrite(const unsigned int x, unsigned int y)
 {
@@ -30,6 +56,10 @@ static void DrawString(const char* const string, const unsigned int palette_line
 	for (const char* character = string; *character != '\0'; ++character)
 		MD::VDP::Write(MD::VDP::VRAM::TileMetadata{false, palette_line, false, false, static_cast<unsigned int>(*character)});
 }
+
+static constexpr unsigned int HEX_VIEWER_TOTAL_WORDS_PER_ROW = 8;
+static constexpr unsigned int HEX_VIEWER_TOTAL_ROWS = 224 / 8 - 2 - 1;
+static constexpr unsigned int HEX_VIEWER_TOTAL_WORDS_VISIBLE = HEX_VIEWER_TOTAL_WORDS_PER_ROW * HEX_VIEWER_TOTAL_ROWS;
 
 static void DrawHexViewer()
 {
@@ -53,16 +83,16 @@ static void DrawHexViewer()
 		}
 	};
 
-	auto sector_buffer_pointer = sector_buffer.data();
+	auto sector_buffer_pointer = sector_buffer.data() + hex_viewer_starting_position;
 
-	for (unsigned int y = 0; y < 224 / 8 - 3; ++y)
+	for (unsigned int y = 0; y < HEX_VIEWER_TOTAL_ROWS; ++y)
 	{
 		SetupPlaneWrite(2, 2 + y);
-		DrawHexWord(y * 0x10, 2);
+		DrawHexWord((hex_viewer_starting_position + y * HEX_VIEWER_TOTAL_WORDS_PER_ROW) * 2, 2);
 
 		bool flipflop = false;
 
-		for (unsigned int x = 0; x < 8; ++x)
+		for (unsigned int x = 0; x < HEX_VIEWER_TOTAL_WORDS_PER_ROW; ++x)
 		{
 			DrawHexWord(*sector_buffer_pointer++, flipflop);
 
@@ -74,46 +104,61 @@ static void DrawHexViewer()
 __attribute__((interrupt)) static void VerticalInterrupt()
 {
 	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;
+
+	joypad_manager.Update();
+}
+
+static void SubmitSubCPUCommand(const Command command)
+{
+	static constexpr auto Internal = [](const Command command)
+	{
+		MD::MegaCD::communication_flag_ours = std::to_underlying(command);
+		while (MD::MegaCD::communication_flag_theirs != std::to_underlying(command));
+	};
+
+	Internal(command);
+	Internal(Command::NONE);
+}
+
+static void DoTransfer(const Command command)
+{
+	std::fill(std::begin(sector_buffer), std::end(sector_buffer), 0);
+
+	if (command == Command::NONE)
+		return;
+
+	MD::MegaCD::GiveWordRAMToSubCPU();
+
+	// Start transfer.
+	SubmitSubCPUCommand(command);
+
+	if (command == Command::BEGIN_TRANSFER_HOST_MAIN)
+	{
+		while (!MD::MegaCD::cdc_mode.data_set_ready);
+
+		auto *sector_buffer_pointer = sector_buffer.data();
+
+		// Read header junk.
+		*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
+		*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
+
+		// Read actual sector data.
+		while (!MD::MegaCD::cdc_mode.end_of_data_transfer)
+			*sector_buffer_pointer++ = MD::MegaCD::cdc_host_data;
+	}
+
+	// Finish transfer.
+	SubmitSubCPUCommand(Command::END_TRANSFER);
 }
 
 void _EntryPoint()
 {
-	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, 0);
-	for (unsigned int i = 0; i < 64; ++i)
-		MD::VDP::Write(MD::VDP::CRAM::Colour{7, 0, 0});
+	auto vdp_register01 = MD::VDP::Register01{.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
+	MD::VDP::Write(vdp_register01);
 
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 
-	MD::MegaCD::communication_flag_ours = 0x87;
-	while (MD::MegaCD::communication_flag_theirs != 0x87);
-
-	for (unsigned int i = 0; i < 64; ++i)
-		MD::VDP::Write(MD::VDP::CRAM::Colour{0, 7, 0});
-
-	auto vdp_register01 = MD::VDP::Register01{.enable_display = true, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
-	MD::VDP::Write(vdp_register01);
-
 	MD::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
-
-//	MD::MegaCD::subcpu.bus_request = true;
-
-	while (MD::MegaCD::communication_flag_theirs != 0x97);
-
-	for (unsigned int i = 0; i < 64; ++i)
-		MD::VDP::Write(MD::VDP::CRAM::Colour{0, 0, 7});
-
-	unsigned short *sector_buffer_pointer = sector_buffer.data();
-
-	while (!MD::MegaCD::cdc_mode.data_set_ready);
-
-	// Read header junk.
-	*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
-	*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
-
-	while (!MD::MegaCD::cdc_mode.end_of_data_transfer)
-		*sector_buffer_pointer++ = MD::MegaCD::cdc_host_data;
-
-	MD::MegaCD::communication_flag_ours = 0x97;
 
 	// Write colours to CRAM.
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, 0);
@@ -126,12 +171,63 @@ void _EntryPoint()
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, (32 + 1) * 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{2, 2, 7});
 
-	SetupPlaneWrite(2, 1);
-	DrawString("Test");
+	vdp_register01.enable_display = true;
+	vdp_register01.enable_vertical_interrupt = true;
+	MD::VDP::Write(vdp_register01);
 
-	DrawHexViewer();
+	SetupPlaneWrite(2, 1);
+	DrawString("Method: ");
+
+	static constexpr auto DoEverything = []()
+	{
+		static constexpr auto DrawHeader = [](const char* const string)
+		{
+			SetupPlaneWrite(10, 1);
+			DrawString(string);
+		};
+
+		DrawHeader("                      ");
+		DrawHeader(modes[current_mode].label);
+		DoTransfer(modes[current_mode].command);
+		DrawHexViewer();
+	};
+
+	DoEverything();
 
 	for (;;)
 	{
+		// Wait for vertical interrupt.
+		asm("stop #0x2000");
+
+		const auto old_hex_viewer_starting_position = hex_viewer_starting_position;
+		static constexpr unsigned int scroll_amount = 8;
+
+		if (joypads[0].held.up)
+			hex_viewer_starting_position -= std::min<unsigned int>(scroll_amount, hex_viewer_starting_position);
+		if (joypads[0].held.down)
+			hex_viewer_starting_position += std::min<unsigned int>(scroll_amount, std::size(sector_buffer) - HEX_VIEWER_TOTAL_WORDS_VISIBLE - hex_viewer_starting_position);
+
+		if (old_hex_viewer_starting_position != hex_viewer_starting_position)
+			DrawHexViewer();
+
+		const auto old_current_mode = current_mode;
+
+		if (joypads[0].pressed.left)
+		{
+			if (current_mode == 0)
+				current_mode = std::size(modes) - 1;
+			else
+				--current_mode;
+		}
+		if (joypads[0].pressed.right)
+		{
+			if (current_mode == std::size(modes) - 1)
+				current_mode = 0;
+			else
+				++current_mode;
+		}
+
+		if (old_current_mode != current_mode)
+			DoEverything();
 	}
 }

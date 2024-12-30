@@ -64,12 +64,13 @@ __INTERRUPT_HANDLER void _TRAP14Handler(void);
 __INTERRUPT_HANDLER void _TRAP15Handler(void);
 
 __VISIBILITY __attribute__((section(".text.entry"))) void _SP_Init(void);
-__VISIBILITY [[noreturn]] void _SP_Main(void);
+__VISIBILITY [[noreturn]] void _SP_Main(void); /* TODO: This can return. */
 __VISIBILITY void _SP_VerticalInterrupt(void);
 __VISIBILITY void _SP_User(void);
 
 #if defined(__cplusplus) && __cplusplus >= 202302L
 
+#include <atomic>
 #include <bit>
 #include <cassert>
 #include <cstdint>
@@ -1006,12 +1007,17 @@ namespace ClownMDSDK
 				bool bit5 : 1 = false;
 				bool bit4 : 1 = false;
 				bool bit3 : 1 = false;
-				bool mode : 1;
+				bool word_ram_1m_mode : 1;
 				bool dmna : 1;
 				bool ret : 1;
 			};
 
 			static volatile auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xA12002);
+
+			static inline void GiveWordRAMToSubCPU()
+			{
+				memory_mode.dmna = true;
+			}
 
 			struct CDCMode
 			{
@@ -1036,11 +1042,16 @@ namespace ClownMDSDK
 			static volatile auto &horizontal_interrupt_vector = *reinterpret_cast<volatile unsigned short*>(0xA12006);
 			static volatile auto &cdc_host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
 			static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xA1200C);
-			static volatile auto &communication_flag = *reinterpret_cast<volatile unsigned short*>(0xA1200E);
-			static volatile auto &communication_flag_ours = *reinterpret_cast<volatile unsigned char*>(0xA1200E);
-			static volatile auto &communication_flag_theirs = *reinterpret_cast<volatile unsigned char*>(0xA1200F);
-			static volatile auto &communication_command = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xA12010);
-			static volatile auto &communication_status = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xA12020);
+			static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xA1200E);
+			static auto &communication_flag_ours = *reinterpret_cast<std::atomic<unsigned char>*>(0xA1200E);
+			static auto &communication_flag_theirs = *reinterpret_cast<std::atomic<unsigned char>*>(0xA1200F);
+			static auto &communication_command = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xA12010);
+			static auto &communication_status = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xA12020);
+
+			template<typename T>
+			static auto &word_ram_2m = *reinterpret_cast<std::array<std::atomic<T>, 256 * 1024UL / sizeof(T)>*>(0x200000);
+			template<typename T>
+			static auto &word_ram_1m = *reinterpret_cast<std::array<std::atomic<T>, 128 * 1024UL / sizeof(T)>*>(0x200000);
 
 			struct JumpTable
 			{
@@ -1058,7 +1069,7 @@ namespace ClownMDSDK
 				Entry chk;
 				Entry address_error;
 				Entry divide_by_zero;
-				Entry trap_v;
+				Entry trapv;
 				Entry illegal_instruction_1;
 				Entry illegal_instruction_2;
 				Entry supervisor_error;
@@ -1097,12 +1108,17 @@ namespace ClownMDSDK
 			bool bit6 : 1 = false;
 			bool bit5 : 1 = false;
 			unsigned int priority_mode : 2; // TODO: Priority mode enum.
-			bool mode : 1;
+			bool word_ram_1m_mode : 1;
 			bool dmna : 1;
 			bool ret : 1;
 		};
 
 		static volatile auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xFFFF8002);
+
+		static inline void GiveWordRAMToMainCPU()
+		{
+			memory_mode.ret = true;
+		}
 
 		struct CDCMode
 		{
@@ -1125,12 +1141,17 @@ namespace ClownMDSDK
 		static volatile auto &cdc_host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
 		static volatile auto &cdc_dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
 		static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xFFFF800C);
-		static volatile auto &communication_flag = *reinterpret_cast<volatile unsigned short*>(0xFFFF800E);
-		static volatile auto &communication_flag_theirs = *reinterpret_cast<volatile unsigned char*>(0xFFFF800E);
-		static volatile auto &communication_flag_ours = *reinterpret_cast<volatile unsigned char*>(0xFFFF800F);
-		static volatile auto &communication_command = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xFFFF8010);
-		static volatile auto &communication_status = *reinterpret_cast<volatile std::array<unsigned short, 8>*>(0xFFFF8020);
+		static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xFFFF800E);
+		static auto &communication_flag_theirs = *reinterpret_cast<std::atomic<unsigned char>*>(0xFFFF800E);
+		static auto &communication_flag_ours = *reinterpret_cast<std::atomic<unsigned char>*>(0xFFFF800F);
+		static auto &communication_command = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8010);
+		static auto &communication_status = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8020);
 		static volatile auto &timer_interrupt_level_3 = *reinterpret_cast<volatile unsigned short*>(0xFFFF8030);
+
+		template<typename T>
+		static auto &word_ram_2m = *reinterpret_cast<std::array<std::atomic<T>, 256 * 1024UL / sizeof(T)>*>(0x80000);
+		template<typename T>
+		static auto &word_ram_1m = *reinterpret_cast<std::array<std::atomic<T>, 128 * 1024UL / sizeof(T)>*>(0xC0000);
 
 		struct InterruptMaskControl
 		{

@@ -11,7 +11,13 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <atomic>
+#include <span>
+#include <utility>
+
 #include <clownmdsdk.h>
+
+#include "command.h"
 
 namespace MCD = ClownMDSDK::SubCPU;
 
@@ -19,69 +25,96 @@ void _SP_Init() {}
 void _SP_VerticalInterrupt() {}
 void _SP_User() {}
 
+static const std::span<std::atomic<unsigned short>, 0x400> sector_buffer(MCD::word_ram_2m<unsigned short>.data(), 0x400);
+
 void _SP_Main()
 {
-	MCD::communication_flag_ours = 0x87;
-	while (MCD::communication_flag_theirs != 0x87);
-
 	MCD::BIOS::Drive::Initialise({0, 0xFF});
 
-	MCD::BIOS::CDC::Stop();
+	MCD::memory_mode.word_ram_1m_mode = false;
 
-	for (unsigned int i = 0; i < 100; ++i)
+	for (;;)
 	{
-		static constexpr auto WaitForSectorAvailable = []()
+		while (MCD::communication_flag_ours == MCD::communication_flag_theirs);
+
+		const auto command_value = MCD::communication_flag_theirs.load();
+		const auto command = static_cast<Command>(command_value);
+
+		switch (command)
 		{
-			for (unsigned int i = 0; i < 10000; ++i)
-				if (MCD::BIOS::CDC::SectorsAvailableForReading())
-					return true;
+			case Command::NONE:
+				break;
 
-			return false;
-		};
+			case Command::BEGIN_TRANSFER_BIOS:
+			case Command::BEGIN_TRANSFER_HOST_MAIN:
+			case Command::BEGIN_TRANSFER_HOST_SUB:
+				MCD::BIOS::CDC::Stop();
 
-		MCD::BIOS::CDROM::ReadN({0, 1});
+				for (unsigned int i = 0; i < 100; ++i)
+				{
+					static constexpr auto WaitForSectorAvailable = []()
+					{
+						for (unsigned int i = 0; i < 10000; ++i)
+							if (MCD::BIOS::CDC::SectorsAvailableForReading())
+								return true;
 
-		if (!WaitForSectorAvailable())
-			continue;
+						return false;
+					};
 
-		MCD::cdc_mode.device_destination = 2;
+					MCD::BIOS::CDROM::ReadN({0, 1});
 
-		if (!MCD::BIOS::CDC::Read())
-			continue;
+					if (!WaitForSectorAvailable())
+						continue;
 
-	#if 0
-		static std::array<unsigned short, 0x400> sector_buffer;
+					MCD::cdc_mode.device_destination = command == Command::BEGIN_TRANSFER_HOST_MAIN ? 2 : 3;
 
-	#if 1
-		unsigned short *sector_buffer_pointer = sector_buffer.data();
+					if (!MCD::BIOS::CDC::Read())
+						continue;
 
-		while (!MCD::cdc_mode.data_set_ready);
+					switch (command)
+					{
+						default:
+							break;
 
-		// Read header junk.
-		*sector_buffer_pointer = MCD::cdc_host_data;
-		*sector_buffer_pointer = MCD::cdc_host_data;
+						case Command::BEGIN_TRANSFER_BIOS:
+						{
+							unsigned long header;
+							void *data_pointer = sector_buffer.data();
+							void *header_pointer = &header;
+							if (!MCD::BIOS::CDC::Transfer(data_pointer, header_pointer))
+								continue;
+							break;
+						}
 
-		do
-			*sector_buffer_pointer++ = MCD::cdc_host_data;
-		while (!MCD::cdc_mode.end_of_data_transfer);
-	#else
-		unsigned long header;
-		void *data_pointer = sector_buffer.data();
-		void *header_pointer = &header;
-		if (!MCD::BIOS::CDC::Transfer(data_pointer, header_pointer))
-			continue;
-	#endif
+						case Command::BEGIN_TRANSFER_HOST_SUB:
+						{
+							auto *sector_buffer_pointer = sector_buffer.data();
 
-		MCD::BIOS::Music::PlayRepeat(sector_buffer[0] == 0x5345 ? 4 : 5);
-		for (;;);
-	#endif
+							while (!MCD::cdc_mode.data_set_ready);
 
-		MCD::communication_flag_ours = 0x97;
-		while (MCD::communication_flag_theirs != 0x97);
+							// Read header junk.
+							*sector_buffer_pointer = MCD::cdc_host_data;
+							*sector_buffer_pointer = MCD::cdc_host_data;
 
-		MCD::BIOS::CDC::Acknowledge();
-		break;
+							do
+								*sector_buffer_pointer++ = MCD::cdc_host_data;
+							while (!MCD::cdc_mode.end_of_data_transfer);
+
+							break;
+						}
+					}
+
+					MCD::GiveWordRAMToMainCPU();
+					break;
+				}
+
+				break;
+
+			case Command::END_TRANSFER:
+				MCD::BIOS::CDC::Acknowledge();
+				break;
+		}
+
+		MCD::communication_flag_ours = command_value;
 	}
-
-	for (;;);
 }
