@@ -87,40 +87,40 @@ void _SP_Main()
 						case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
 						case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
 						case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
-							MCD::CDC::mode.device_destination = 2;
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::MAIN_CPU;
 							break;
 
 						case Command::BEGIN_TRANSFER_BIOS:
 						case Command::BEGIN_TRANSFER_HOST_SUB_READ_PAST_END:
 						case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_DSR:
 						case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_EDT:
-							MCD::CDC::mode.device_destination = 3;
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::SUB_CPU;
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PCM:
 							std::fill(std::begin(MCD::PCM::ram_window), std::end(MCD::PCM::ram_window), 0);
-							MCD::CDC::mode.device_destination = 4;
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::PCM_RAM;
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8:
 							std::fill(std::begin(MCD::PCM::ram_window), std::end(MCD::PCM::ram_window), 0);
-							MCD::CDC::mode.device_destination = 4;
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::PCM_RAM;
 							MCD::CDC::SetDMAAddress(8);
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PRG:
-							MCD::CDC::mode.device_destination = 5;
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::PRG_RAM;
 							MCD::CDC::SetDMAAddress(reinterpret_cast<std::uintptr_t>(&prg_ram_sector_buffer));
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_WORD:
 							std::fill(std::begin(sector_buffer), std::end(sector_buffer), 0);
-							MCD::CDC::mode.device_destination = 7;
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::WORD_RAM;
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8:
 							std::fill(std::begin(sector_buffer), std::end(sector_buffer), 0);
-							MCD::CDC::mode.device_destination = 7;
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::WORD_RAM;
 							MCD::CDC::SetDMAAddress(8);
 							break;
 					}

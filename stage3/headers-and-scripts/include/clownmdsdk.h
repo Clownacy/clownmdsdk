@@ -1019,28 +1019,40 @@ namespace ClownMDSDK
 				memory_mode.dmna = true;
 			}
 
-			struct CDCMode
+			namespace CDC
 			{
-				bool end_of_data_transfer : 1;
-				bool data_set_ready : 1;
-				bool bit13 : 1 = false;
-				bool bit12 : 1 = false;
-				bool bit11 : 1 = false;
-				unsigned int device_destination : 3;
-				bool bit7 : 1 = false;
-				bool bit6 : 1 = false;
-				bool bit5 : 1 = false;
-				bool bit4 : 1 = false;
-				bool bit3 : 1 = false;
-				bool bit2 : 1 = false;
-				bool bit1 : 1 = false;
-				bool bit0 : 1 = false;
-			};
+				enum class DeviceDestination : unsigned int
+				{
+					MAIN_CPU = 2,
+					SUB_CPU  = 3,
+					PCM_RAM  = 4,
+					PRG_RAM  = 5,
+					WORD_RAM = 7,
+				};
 
-			static volatile auto &cdc_mode = *reinterpret_cast<volatile CDCMode*>(0xA12004);
+				struct Mode
+				{
+					bool end_of_data_transfer : 1;
+					bool data_set_ready : 1;
+					bool bit13 : 1 = false;
+					bool bit12 : 1 = false;
+					bool bit11 : 1 = false;
+					DeviceDestination device_destination : 3;
+					bool bit7 : 1 = false;
+					bool bit6 : 1 = false;
+					bool bit5 : 1 = false;
+					bool bit4 : 1 = false;
+					bool bit3 : 1 = false;
+					bool bit2 : 1 = false;
+					bool bit1 : 1 = false;
+					bool bit0 : 1 = false;
+				};
+
+				static volatile auto &mode = *reinterpret_cast<volatile Mode*>(0xA12004);
+				static volatile auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
+			}
 
 			static volatile auto &horizontal_interrupt_vector = *reinterpret_cast<volatile unsigned short*>(0xA12006);
-			static volatile auto &cdc_host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
 			static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xA1200C);
 			static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xA1200E);
 			static auto &communication_flag_ours = *reinterpret_cast<std::atomic<unsigned char>*>(0xA1200E);
@@ -1122,6 +1134,8 @@ namespace ClownMDSDK
 
 		namespace CDC
 		{
+			using DeviceDestination = MainCPU::MegaCD::CDC::DeviceDestination;
+
 			struct Mode
 			{
 				bool end_of_data_transfer : 1;
@@ -1129,7 +1143,7 @@ namespace ClownMDSDK
 				bool upper_byte_read : 1;
 				bool bit12 : 1 = false;
 				bool bit11 : 1 = false;
-				unsigned int device_destination : 3; // TODO: Destination enum.
+				DeviceDestination device_destination : 3; // TODO: Destination enum.
 				bool bit7 : 1 = false;
 				bool bit6 : 1 = false;
 				bool bit5 : 1 = false;
@@ -1138,7 +1152,6 @@ namespace ClownMDSDK
 			};
 
 			static volatile auto &mode = *reinterpret_cast<volatile Mode*>(0xFFFF8004);
-
 			static volatile auto &register_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8006);
 			static volatile auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
 			static volatile auto &dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);

@@ -149,13 +149,13 @@ static void DoTransfer(const Command command)
 		case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
 		case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
 		case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
-			while (!MD::MegaCD::cdc_mode.data_set_ready);
+			while (!MD::MegaCD::CDC::mode.data_set_ready);
 
 			auto *sector_buffer_pointer = sector_buffer.data();
 
 			// Read header junk.
-			*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
-			*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
+			*sector_buffer_pointer = MD::MegaCD::CDC::host_data;
+			*sector_buffer_pointer = MD::MegaCD::CDC::host_data;
 
 			// Read actual sector data.
 			switch (command)
@@ -165,17 +165,17 @@ static void DoTransfer(const Command command)
 
 				case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
 					for (auto &word : sector_buffer)
-						word = MD::MegaCD::cdc_host_data;
+						word = MD::MegaCD::CDC::host_data;
 					break;
 
 				case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
-					while (MD::MegaCD::cdc_mode.data_set_ready)
-						*sector_buffer_pointer++ = MD::MegaCD::cdc_host_data;
+					while (MD::MegaCD::CDC::mode.data_set_ready)
+						*sector_buffer_pointer++ = MD::MegaCD::CDC::host_data;
 					break;
 
 				case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
-					while (!MD::MegaCD::cdc_mode.end_of_data_transfer)
-						*sector_buffer_pointer++ = MD::MegaCD::cdc_host_data;
+					while (!MD::MegaCD::CDC::mode.end_of_data_transfer)
+						*sector_buffer_pointer++ = MD::MegaCD::CDC::host_data;
 					break;
 			}
 
