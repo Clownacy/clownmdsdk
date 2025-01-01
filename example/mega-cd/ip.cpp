@@ -30,10 +30,17 @@ struct Mode
 };
 
 static const auto modes = std::to_array<Mode>({
-	{"None"                  , Command::NONE                    },
-	{"BIOS CDCTRN"           , Command::BEGIN_TRANSFER_BIOS     },
-	{"Host Register Main-CPU", Command::BEGIN_TRANSFER_HOST_MAIN},
-	{"Host Register Sub-CPU" , Command::BEGIN_TRANSFER_HOST_SUB },
+	{"None"                     , Command::NONE                                  },
+	{"BIOS CDCTRN"              , Command::BEGIN_TRANSFER_BIOS                   },
+	{"Host Main-CPU (Past End)" , Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END},
+	{"Host Main-CPU (Until DSR)", Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR },
+	{"Host Main-CPU (Until EDT)", Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT },
+	{"Host Sub-CPU (Past End)"  , Command::BEGIN_TRANSFER_HOST_SUB_READ_PAST_END },
+	{"Host Sub-CPU (Until DSR)" , Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_DSR  },
+	{"Host Sub-CPU (Until EDT)" , Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_EDT  },
+	{"DMA WAVE-RAM"             , Command::BEGIN_TRANSFER_DMA_PCM                },
+	{"DMA PRG-RAM"              , Command::BEGIN_TRANSFER_DMA_PRG                },
+	{"DMA Word-RAM"             , Command::BEGIN_TRANSFER_DMA_WORD               },
 });
 
 static constexpr unsigned int VRAM_PLANE_A = 0xC000;
@@ -43,7 +50,7 @@ static JoypadManager<1> joypad_manager;
 static const auto &joypads = joypad_manager.GetJoypads();
 
 static unsigned int hex_viewer_starting_position = 0;
-static const std::span<std::atomic<unsigned short>, 0x400> sector_buffer(MD::MegaCD::word_ram_2m<unsigned short>.data(), 0x400);
+static const std::span<std::atomic<unsigned short>, 0x408> sector_buffer(MD::MegaCD::word_ram_2m<unsigned short>.data(), 0x408);
 static unsigned int current_mode = 0;
 
 static void SetupPlaneWrite(const unsigned int x, unsigned int y)
@@ -132,19 +139,45 @@ static void DoTransfer(const Command command)
 	// Start transfer.
 	SubmitSubCPUCommand(command);
 
-	if (command == Command::BEGIN_TRANSFER_HOST_MAIN)
+	switch (command)
 	{
-		while (!MD::MegaCD::cdc_mode.data_set_ready);
+		default:
+			break;
 
-		auto *sector_buffer_pointer = sector_buffer.data();
+		case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
+		case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
+		case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
+			while (!MD::MegaCD::cdc_mode.data_set_ready);
 
-		// Read header junk.
-		*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
-		*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
+			auto *sector_buffer_pointer = sector_buffer.data();
 
-		// Read actual sector data.
-		while (!MD::MegaCD::cdc_mode.end_of_data_transfer)
-			*sector_buffer_pointer++ = MD::MegaCD::cdc_host_data;
+			// Read header junk.
+			*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
+			*sector_buffer_pointer = MD::MegaCD::cdc_host_data;
+
+			// Read actual sector data.
+			switch (command)
+			{
+				default:
+					break;
+
+				case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
+					for (auto &word : sector_buffer)
+						word = MD::MegaCD::cdc_host_data;
+					break;
+
+				case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
+					while (MD::MegaCD::cdc_mode.data_set_ready)
+						*sector_buffer_pointer++ = MD::MegaCD::cdc_host_data;
+					break;
+
+				case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
+					while (!MD::MegaCD::cdc_mode.end_of_data_transfer)
+						*sector_buffer_pointer++ = MD::MegaCD::cdc_host_data;
+					break;
+			}
+
+			break;
 	}
 
 	// Finish transfer.
@@ -186,7 +219,7 @@ void _EntryPoint()
 			DrawString(string);
 		};
 
-		DrawHeader("                      ");
+		DrawHeader("                         ");
 		DrawHeader(modes[current_mode].label);
 		DoTransfer(modes[current_mode].command);
 		DrawHexViewer();

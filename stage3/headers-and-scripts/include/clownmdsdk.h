@@ -1283,8 +1283,7 @@ namespace ClownMDSDK
 
 		namespace PCM
 		{
-			static volatile unsigned char* const ram_window = reinterpret_cast<volatile unsigned char*>(0xFFFF2000);
-			static volatile unsigned char* const ram_window_end = ram_window + 0x2000;
+			static auto &ram_window = *reinterpret_cast<std::array<std::atomic<unsigned short>, 0x1000>*>(0xFFFF2000);
 		}
 
 		namespace BIOS
