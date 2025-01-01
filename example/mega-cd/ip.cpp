@@ -39,8 +39,10 @@ static const auto modes = std::to_array<Mode>({
 	{"Host Sub-CPU (Until DSR)" , Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_DSR  },
 	{"Host Sub-CPU (Until EDT)" , Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_EDT  },
 	{"DMA WAVE-RAM"             , Command::BEGIN_TRANSFER_DMA_PCM                },
+	{"DMA WAVE-RAM (Offset 8)"  , Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8       },
 	{"DMA PRG-RAM"              , Command::BEGIN_TRANSFER_DMA_PRG                },
 	{"DMA Word-RAM"             , Command::BEGIN_TRANSFER_DMA_WORD               },
+	{"DMA Word-RAM (Offset 8)"  , Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8      },
 });
 
 static constexpr unsigned int VRAM_PLANE_A = 0xC000;

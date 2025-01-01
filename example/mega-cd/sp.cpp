@@ -57,8 +57,10 @@ void _SP_Main()
 			case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_DSR:
 			case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_EDT:
 			case Command::BEGIN_TRANSFER_DMA_PCM:
+			case Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8:
 			case Command::BEGIN_TRANSFER_DMA_PRG:
 			case Command::BEGIN_TRANSFER_DMA_WORD:
+			case Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8:
 				MCD::BIOS::CDC::Stop();
 
 				for (unsigned int i = 0; i < 100; ++i)
@@ -85,29 +87,41 @@ void _SP_Main()
 						case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
 						case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
 						case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
-							MCD::cdc_mode.device_destination = 2;
+							MCD::CDC::mode.device_destination = 2;
 							break;
 
 						case Command::BEGIN_TRANSFER_BIOS:
 						case Command::BEGIN_TRANSFER_HOST_SUB_READ_PAST_END:
 						case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_DSR:
 						case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_EDT:
-							MCD::cdc_mode.device_destination = 3;
+							MCD::CDC::mode.device_destination = 3;
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PCM:
-							MCD::cdc_mode.device_destination = 4;
-							MCD::cdc_dma_address = 0;
+							std::fill(std::begin(MCD::PCM::ram_window), std::end(MCD::PCM::ram_window), 0);
+							MCD::CDC::mode.device_destination = 4;
+							break;
+
+						case Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8:
+							std::fill(std::begin(MCD::PCM::ram_window), std::end(MCD::PCM::ram_window), 0);
+							MCD::CDC::mode.device_destination = 4;
+							MCD::CDC::SetDMAAddress(8);
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PRG:
-							MCD::cdc_mode.device_destination = 5;
-							MCD::cdc_dma_address = reinterpret_cast<std::uintptr_t>(&prg_ram_sector_buffer) / 8;
+							MCD::CDC::mode.device_destination = 5;
+							MCD::CDC::SetDMAAddress(reinterpret_cast<std::uintptr_t>(&prg_ram_sector_buffer));
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_WORD:
-							MCD::cdc_mode.device_destination = 7;
-							MCD::cdc_dma_address = 0;
+							std::fill(std::begin(sector_buffer), std::end(sector_buffer), 0);
+							MCD::CDC::mode.device_destination = 7;
+							break;
+
+						case Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8:
+							std::fill(std::begin(sector_buffer), std::end(sector_buffer), 0);
+							MCD::CDC::mode.device_destination = 7;
+							MCD::CDC::SetDMAAddress(8);
 							break;
 					}
 
@@ -135,11 +149,11 @@ void _SP_Main()
 						{
 							auto *sector_buffer_pointer = sector_buffer.data();
 
-							while (!MCD::cdc_mode.data_set_ready);
+							while (!MCD::CDC::mode.data_set_ready);
 
 							// Read header junk.
-							*sector_buffer_pointer = MCD::cdc_host_data;
-							*sector_buffer_pointer = MCD::cdc_host_data;
+							*sector_buffer_pointer = MCD::CDC::host_data;
+							*sector_buffer_pointer = MCD::CDC::host_data;
 
 							switch (command)
 							{
@@ -148,17 +162,17 @@ void _SP_Main()
 
 								case Command::BEGIN_TRANSFER_HOST_SUB_READ_PAST_END:
 									for (auto &word : sector_buffer)
-										word = MCD::cdc_host_data;
+										word = MCD::CDC::host_data;
 									break;
 
 								case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_DSR:
-									while (MCD::cdc_mode.data_set_ready)
-										*sector_buffer_pointer++ = MCD::cdc_host_data;
+									while (MCD::CDC::mode.data_set_ready)
+										*sector_buffer_pointer++ = MCD::CDC::host_data;
 									break;
 
 								case Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_EDT:
-									while (!MCD::cdc_mode.end_of_data_transfer)
-										*sector_buffer_pointer++ = MCD::cdc_host_data;
+									while (!MCD::CDC::mode.end_of_data_transfer)
+										*sector_buffer_pointer++ = MCD::CDC::host_data;
 									break;
 							}
 
@@ -166,19 +180,21 @@ void _SP_Main()
 						}
 
 						case Command::BEGIN_TRANSFER_DMA_PCM:
-							while (!MCD::cdc_mode.end_of_data_transfer);
+						case Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8:
+							while (!MCD::CDC::mode.end_of_data_transfer);
 							for (std::size_t i = 0; i < SECTOR_BUFFER_LENGTH; ++i)
 								sector_buffer[i] = (MCD::PCM::ram_window[i * 2 + 0] << 8) | (MCD::PCM::ram_window[i * 2 + 1] & 0xFF);
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PRG:
-							while (!MCD::cdc_mode.end_of_data_transfer);
+							while (!MCD::CDC::mode.end_of_data_transfer);
 							for (std::size_t i = 0; i < SECTOR_BUFFER_LENGTH; ++i)
 								sector_buffer[i] = prg_ram_sector_buffer[i].load();
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_WORD:
-							while (!MCD::cdc_mode.end_of_data_transfer);
+						case Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8:
+							while (!MCD::CDC::mode.end_of_data_transfer);
 							break;
 					}
 

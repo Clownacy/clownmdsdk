@@ -1120,26 +1120,36 @@ namespace ClownMDSDK
 			memory_mode.ret = true;
 		}
 
-		struct CDCMode
+		namespace CDC
 		{
-			bool end_of_data_transfer : 1;
-			bool data_set_ready : 1;
-			bool upper_byte_read : 1;
-			bool bit12 : 1 = false;
-			bool bit11 : 1 = false;
-			unsigned int device_destination : 3; // TODO: Destination enum.
-			bool bit7 : 1 = false;
-			bool bit6 : 1 = false;
-			bool bit5 : 1 = false;
-			bool bit4 : 1 = false;
-			unsigned int register_address : 4;
-		};
+			struct Mode
+			{
+				bool end_of_data_transfer : 1;
+				bool data_set_ready : 1;
+				bool upper_byte_read : 1;
+				bool bit12 : 1 = false;
+				bool bit11 : 1 = false;
+				unsigned int device_destination : 3; // TODO: Destination enum.
+				bool bit7 : 1 = false;
+				bool bit6 : 1 = false;
+				bool bit5 : 1 = false;
+				bool bit4 : 1 = false;
+				unsigned int register_address : 4;
+			};
 
-		static volatile auto &cdc_mode = *reinterpret_cast<volatile CDCMode*>(0xFFFF8004);
+			static volatile auto &mode = *reinterpret_cast<volatile Mode*>(0xFFFF8004);
 
-		static volatile auto &cdc_register_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8006);
-		static volatile auto &cdc_host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
-		static volatile auto &cdc_dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
+			static volatile auto &register_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8006);
+			static volatile auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
+			static volatile auto &dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
+
+			static inline void SetDMAAddress(const std::uintptr_t address)
+			{
+				assert((address % 8) != 0);
+				dma_address = address / 8;
+			}
+		}
+
 		static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xFFFF800C);
 		static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xFFFF800E);
 		static auto &communication_flag_theirs = *reinterpret_cast<std::atomic<unsigned char>*>(0xFFFF800E);
