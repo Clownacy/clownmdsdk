@@ -17,7 +17,7 @@
 
 #include <clownmdsdk.h>
 
-#include "../common/joypad-manager.h"
+#include "../common/control-pad-manager.h"
 
 #include "command.h"
 
@@ -48,8 +48,8 @@ static const auto modes = std::to_array<Mode>({
 static constexpr unsigned int VRAM_PLANE_A = 0xC000;
 static constexpr unsigned int PLANE_WIDTH = 64;
 
-static JoypadManager<1> joypad_manager;
-static const auto &joypads = joypad_manager.GetJoypads();
+static ControlPadManager<1> control_pad_manager;
+static const auto &control_pads = control_pad_manager.GetControlPads();
 
 static unsigned int hex_viewer_starting_position = 0;
 static const std::span<std::atomic<unsigned short>, 0x408> sector_buffer(MD::MegaCD::word_ram_2m<unsigned short>.data(), 0x408);
@@ -114,7 +114,7 @@ __attribute__((interrupt)) static void VerticalInterrupt()
 {
 	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;
 
-	joypad_manager.Update();
+	control_pad_manager.Update();
 }
 
 static void SubmitSubCPUCommand(const Command command)
@@ -237,9 +237,9 @@ void _EntryPoint()
 		const auto old_hex_viewer_starting_position = hex_viewer_starting_position;
 		static constexpr unsigned int scroll_amount = 8;
 
-		if (joypads[0].held.up)
+		if (control_pads[0].held.up)
 			hex_viewer_starting_position -= std::min<unsigned int>(scroll_amount, hex_viewer_starting_position);
-		if (joypads[0].held.down)
+		if (control_pads[0].held.down)
 			hex_viewer_starting_position += std::min<unsigned int>(scroll_amount, std::size(sector_buffer) - HEX_VIEWER_TOTAL_WORDS_VISIBLE - hex_viewer_starting_position);
 
 		if (old_hex_viewer_starting_position != hex_viewer_starting_position)
@@ -247,14 +247,14 @@ void _EntryPoint()
 
 		const auto old_current_mode = current_mode;
 
-		if (joypads[0].pressed.left)
+		if (control_pads[0].pressed.left)
 		{
 			if (current_mode == 0)
 				current_mode = std::size(modes) - 1;
 			else
 				--current_mode;
 		}
-		if (joypads[0].pressed.right)
+		if (control_pads[0].pressed.right)
 		{
 			if (current_mode == std::size(modes) - 1)
 				current_mode = 0;

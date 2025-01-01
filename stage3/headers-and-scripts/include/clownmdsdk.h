@@ -910,7 +910,7 @@ namespace ClownMDSDK
 					VDP::Unsafe::CopyWordsWithDMA(ram, address, data, length);
 				}
 
-				struct Joypad3Button
+				struct ControlPad3Button
 				{
 					bool start : 1;
 					bool a : 1;
@@ -922,7 +922,7 @@ namespace ClownMDSDK
 					bool up : 1;
 				};
 
-				void InitialiseIOPortAsJoypad3Button(const unsigned int port_index)
+				void InitialiseIOPortAsControlPad3Button(const unsigned int port_index)
 				{
 					assert(port_index < total_io_ports);
 
@@ -930,7 +930,7 @@ namespace ClownMDSDK
 					io_data[port_index] = 0x40;
 				}
 
-				Joypad3Button ReadIOPortAsJoypad3Button(const unsigned int port_index)
+				ControlPad3Button ReadIOPortAsControlPad3Button(const unsigned int port_index)
 				{
 					assert(port_index < total_io_ports);
 
@@ -954,7 +954,7 @@ namespace ClownMDSDK
 					// Read up, down, left, right, C, and B.
 					output ^= SetAndRead(0x40) << 0 & 0x3F;
 
-					return std::bit_cast<Joypad3Button>(output);
+					return std::bit_cast<ControlPad3Button>(output);
 				}
 			};
 

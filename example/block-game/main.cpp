@@ -16,7 +16,7 @@
 
 #include <clownmdsdk.h>
 
-#include "../common/joypad-manager.h"
+#include "../common/control-pad-manager.h"
 
 namespace MD = ClownMDSDK::MainCPU;
 
@@ -72,8 +72,8 @@ enum class GridSlot : unsigned char
 
 static std::atomic<bool> waiting_for_v_int;
 
-static JoypadManager<1> joypad_manager;
-static const auto &joypads = joypad_manager.GetJoypads();
+static ControlPadManager<1> control_pad_manager;
+static const auto &control_pads = control_pad_manager.GetControlPads();
 
 static constexpr unsigned int GRID_WIDTH_IN_PUYOS = 6;
 static constexpr unsigned int GRID_HEIGHT_IN_PUYOS = 12;
@@ -239,7 +239,7 @@ void _EntryPoint()
 	{
 		WaitForVInt();
 
-		puyo.y += joypads[0].held.down ? 3 : 1;
+		puyo.y += control_pads[0].held.down ? 3 : 1;
 
 		if (puyo.Bottom() >= GRID_HEIGHT || left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width()] != GridSlot::NOTHING)
 		{
@@ -309,9 +309,9 @@ void _EntryPoint()
 						DrawGridSlot(x, y);
 		}
 
-		if (joypads[0].pressed.left && puyo.Left() != 0 && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() - 1] == GridSlot::NOTHING)
+		if (control_pads[0].pressed.left && puyo.Left() != 0 && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() - 1] == GridSlot::NOTHING)
 			puyo.x -= Puyo::Width();
-		if (joypads[0].pressed.right && puyo.Right() != GRID_WIDTH && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() + 1] == GridSlot::NOTHING)
+		if (control_pads[0].pressed.right && puyo.Right() != GRID_WIDTH && left_grid[puyo.Bottom() / puyo.Height()][puyo.x / puyo.Width() + 1] == GridSlot::NOTHING)
 			puyo.x += Puyo::Width();
 	}
 }
@@ -424,7 +424,7 @@ void _Level6InterruptHandler()
 	const MD::VDP::VRAM::Sprite sprite{.y = 0x80 + GRID_Y + puyo.y, .width = 1, .height = 1, .link = 0, .tile_metadata = {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = GridSlotToTileIndex(PuyoColourToGridSlot(puyo.colour))}, .x = 0x80 + LEFT_GRID_X + puyo.x};
 	MD::VDP::CopyWordsWithoutDMA(MD::VDP::RAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
 
-	joypad_manager.Update();
+	control_pad_manager.Update();
 }
 
 void _Level7InterruptHandler()
