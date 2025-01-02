@@ -134,6 +134,47 @@ __attribute__((visibility("default"))) inline void* memcpy(void* const dest, con
 	return dest;
 }
 
+__attribute__((visibility("default"))) inline void* memmove(void* const dest, const void* const src, size_t count)
+{
+	unsigned char *source = (unsigned char*)src;
+	unsigned char *destination = (unsigned char*)dest;
+	size_t count_div_10 = count / 0x10;
+
+	if (count == 0)
+		return dest;
+
+	asm volatile(
+			"jmp	1f(%%pc,%3.w)\n"
+		"0:\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"	move.b	(%2)+,(%0)+\n"
+		"1:\n"
+		"	dbf	%1,0b\n"
+		"	clr.w	%1\n"
+		"	subq.l	#1,%1\n"
+		"	bcc.s	0b\n"
+		: "+a" (destination), "+d" (count_div_10), "+a" (source)
+		: "da" (-((count % 0x10) * 2))
+		: "cc"
+	);
+
+	return dest;
+}
+
 __attribute__((visibility("default"))) inline void* memset(void* const dest, const int ch, size_t count)
 {
 	unsigned char *destination = (unsigned char*)dest;
