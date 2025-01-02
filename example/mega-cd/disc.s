@@ -16,11 +16,11 @@
 	| Disc header
 	.ascii	"SEGADISCSYSTEM  "
 	| Volume
-	.asciz	"SOUND TEST "
+	.asciz	"NAME HERE  "
 	dc.w	1	| CD-ROM
 	dc.w	0x100	| Version 1.0
 	| System
-	.asciz	"SOUND TEST "
+	.asciz	"NAME HERE  "
 	dc.w	0
 	dc.w	0
 	| Initial program
@@ -47,14 +47,14 @@
 	.ascii	"                "
 	| Regular header
 	.ascii	"SEGA MEGA DRIVE "	| System
-	.ascii	"(C)CLWN 2023.SEP"	| Copyright
-	.ascii	"SOUND TEST      "	| Domestic (Japan) name
+	.ascii	"(C)NAME YEAR.MON"	| Copyright
+	.ascii	"JAPANESE        "	| Domestic (Japan) name
+	.ascii	"  NAME GOES HERE"
 	.ascii	"                "
+	.ascii	"INTERNATIONAL   "	| International name
+	.ascii	"  NAME GOES HERE"
 	.ascii	"                "
-	.ascii	"SOUND TEST      "	| International name
-	.ascii	"                "
-	.ascii	"                "
-	.ascii	"GM T-XXXXX -00  "	| Serial code and revision
+	.ascii	"GM 00000000-00  "	| Serial code and revision
 	.ascii	"J               "	| IO support
 	.ascii	"                "
 	.ascii	"                "
