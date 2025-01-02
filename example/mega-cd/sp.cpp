@@ -59,6 +59,7 @@ void _SP_Main()
 			case Command::BEGIN_TRANSFER_DMA_PCM:
 			case Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8:
 			case Command::BEGIN_TRANSFER_DMA_PRG:
+			case Command::BEGIN_TRANSFER_DMA_PRG_OFFSET_8:
 			case Command::BEGIN_TRANSFER_DMA_WORD:
 			case Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8:
 				MCD::BIOS::CDC::Stop();
@@ -109,8 +110,15 @@ void _SP_Main()
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PRG:
+							std::fill(std::begin(prg_ram_sector_buffer), std::end(prg_ram_sector_buffer), 0);
 							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::PRG_RAM;
 							MCD::CDC::SetDMAAddress(reinterpret_cast<std::uintptr_t>(&prg_ram_sector_buffer));
+							break;
+
+						case Command::BEGIN_TRANSFER_DMA_PRG_OFFSET_8:
+							std::fill(std::begin(prg_ram_sector_buffer), std::end(prg_ram_sector_buffer), 0);
+							MCD::CDC::mode.device_destination = MCD::CDC::DeviceDestination::PRG_RAM;
+							MCD::CDC::SetDMAAddress(reinterpret_cast<std::uintptr_t>(&prg_ram_sector_buffer) + 8);
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_WORD:
@@ -187,9 +195,9 @@ void _SP_Main()
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_PRG:
+						case Command::BEGIN_TRANSFER_DMA_PRG_OFFSET_8:
 							while (!MCD::CDC::mode.end_of_data_transfer);
-							for (std::size_t i = 0; i < SECTOR_BUFFER_LENGTH; ++i)
-								sector_buffer[i] = prg_ram_sector_buffer[i];
+							std::copy(std::begin(prg_ram_sector_buffer), std::end(prg_ram_sector_buffer), std::begin(sector_buffer));
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_WORD:

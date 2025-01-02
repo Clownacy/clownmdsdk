@@ -41,6 +41,7 @@ static const auto modes = std::to_array<Mode>({
 	{"DMA WAVE-RAM"             , Command::BEGIN_TRANSFER_DMA_PCM                },
 	{"DMA WAVE-RAM (Offset 8)"  , Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8       },
 	{"DMA PRG-RAM"              , Command::BEGIN_TRANSFER_DMA_PRG                },
+	{"DMA PRG-RAM (Offset 8)"   , Command::BEGIN_TRANSFER_DMA_PRG_OFFSET_8       },
 	{"DMA Word-RAM"             , Command::BEGIN_TRANSFER_DMA_WORD               },
 	{"DMA Word-RAM (Offset 8)"  , Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8      },
 });
