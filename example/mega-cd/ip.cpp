@@ -52,7 +52,7 @@ static ControlPadManager<1> control_pad_manager;
 static const auto &control_pads = control_pad_manager.GetControlPads();
 
 static unsigned int hex_viewer_starting_position = 0;
-static const std::span<std::atomic<unsigned short>, 0x408> sector_buffer(MD::MegaCD::word_ram_2m<unsigned short>.data(), 0x408);
+static const std::span<unsigned short, 0x408> sector_buffer(MD::MegaCD::word_ram_2m<unsigned short>.data(), 0x408);
 static unsigned int current_mode = 0;
 
 static void SetupPlaneWrite(const unsigned int x, unsigned int y)

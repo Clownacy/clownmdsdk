@@ -978,6 +978,11 @@ namespace ClownMDSDK
 
 		namespace MegaCD
 		{
+			template<typename T>
+			static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x200000);
+			template<typename T>
+			static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x200000);
+
 			struct SubCPU
 			{
 				bool interrupt_level_2_mask : 1;
@@ -1016,6 +1021,13 @@ namespace ClownMDSDK
 
 			static inline void GiveWordRAMToSubCPU()
 			{
+				// Ensure that the compiler understands that Word-RAM is "read" by this, so it needs to flush memory.
+				asm(
+					""
+					:
+					: "m" (word_ram_2m<unsigned char>)
+				);
+
 				memory_mode.dmna = true;
 			}
 
@@ -1060,11 +1072,6 @@ namespace ClownMDSDK
 			static auto &communication_command = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xA12010);
 			static auto &communication_status = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xA12020);
 
-			template<typename T>
-			static auto &word_ram_2m = *reinterpret_cast<std::array<std::atomic<T>, 256 * 1024UL / sizeof(T)>*>(0x200000);
-			template<typename T>
-			static auto &word_ram_1m = *reinterpret_cast<std::array<std::atomic<T>, 128 * 1024UL / sizeof(T)>*>(0x200000);
-
 			struct JumpTable
 			{
 				struct Entry
@@ -1094,6 +1101,11 @@ namespace ClownMDSDK
 
 	namespace SubCPU
 	{
+		template<typename T>
+		static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x80000);
+		template<typename T>
+		static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0xC0000);
+
 		struct Status
 		{
 			bool bit15 : 1 = false;
@@ -1129,6 +1141,13 @@ namespace ClownMDSDK
 
 		static inline void GiveWordRAMToMainCPU()
 		{
+			// Ensure that the compiler understands that Word-RAM is "read" by this, so it needs to flush memory.
+			asm(
+				""
+				:
+				: "m" (word_ram_2m<unsigned char>)
+			);
+
 			memory_mode.ret = true;
 		}
 
@@ -1170,11 +1189,6 @@ namespace ClownMDSDK
 		static auto &communication_command = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8010);
 		static auto &communication_status = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8020);
 		static volatile auto &timer_interrupt_level_3 = *reinterpret_cast<volatile unsigned short*>(0xFFFF8030);
-
-		template<typename T>
-		static auto &word_ram_2m = *reinterpret_cast<std::array<std::atomic<T>, 256 * 1024UL / sizeof(T)>*>(0x80000);
-		template<typename T>
-		static auto &word_ram_1m = *reinterpret_cast<std::array<std::atomic<T>, 128 * 1024UL / sizeof(T)>*>(0xC0000);
 
 		struct InterruptMaskControl
 		{

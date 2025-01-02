@@ -27,9 +27,9 @@ void _SP_User() {}
 
 static constexpr std::size_t SECTOR_BUFFER_LENGTH = 0x408;
 
-static const std::span<std::atomic<unsigned short>, SECTOR_BUFFER_LENGTH> sector_buffer(MCD::word_ram_2m<unsigned short>.data(), SECTOR_BUFFER_LENGTH);
+static const std::span<unsigned short, SECTOR_BUFFER_LENGTH> sector_buffer(MCD::word_ram_2m<unsigned short>.data(), SECTOR_BUFFER_LENGTH);
 
-alignas(8) static std::array<std::atomic<unsigned short>, SECTOR_BUFFER_LENGTH> prg_ram_sector_buffer;
+alignas(8) static std::array<unsigned short, SECTOR_BUFFER_LENGTH> prg_ram_sector_buffer;
 
 void _SP_Main()
 {
@@ -189,7 +189,7 @@ void _SP_Main()
 						case Command::BEGIN_TRANSFER_DMA_PRG:
 							while (!MCD::CDC::mode.end_of_data_transfer);
 							for (std::size_t i = 0; i < SECTOR_BUFFER_LENGTH; ++i)
-								sector_buffer[i] = prg_ram_sector_buffer[i].load();
+								sector_buffer[i] = prg_ram_sector_buffer[i];
 							break;
 
 						case Command::BEGIN_TRANSFER_DMA_WORD:
