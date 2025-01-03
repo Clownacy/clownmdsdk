@@ -83,6 +83,8 @@ __VISIBILITY void _SP_User(void);
 
 #include <clownlzss/decompressors/kosinski.h>
 
+#define __BIND_ADDRESS(ADDRESS, NAME, ...) static auto &NAME = *reinterpret_cast<__VA_ARGS__*>(ADDRESS)
+
 // TODO: Move this to its own translation unit? Optimisation can be handled by LTO.
 namespace ClownMDSDK
 {
@@ -90,11 +92,11 @@ namespace ClownMDSDK
 	{
 		namespace Unsafe
 		{
-			static auto &version_register = *reinterpret_cast<volatile unsigned char*>(0xA10001);
+			__BIND_ADDRESS(0xA10001, version_register, volatile unsigned char);
 
 			static constexpr unsigned int total_io_ports = 3;
-			static auto &io_data = *reinterpret_cast<std::array<volatile unsigned short, total_io_ports>*>(0xA10002);
-			static auto &io_ctrl = *reinterpret_cast<std::array<volatile unsigned short, total_io_ports>*>(0xA10008);
+			__BIND_ADDRESS(0xA10002, io_data, std::array<volatile unsigned short, total_io_ports>);
+			__BIND_ADDRESS(0xA10008, io_ctrl, std::array<volatile unsigned short, total_io_ports>);
 
 			inline bool IsPAL()
 			{
@@ -156,7 +158,7 @@ namespace ClownMDSDK
 		{
 			namespace Unsafe
 			{
-				static auto &ports = *reinterpret_cast<std::array<volatile unsigned char, 4>*>(0xA04000);
+				__BIND_ADDRESS(0xA04000, ports, std::array<volatile unsigned char, 4>);
 				static auto &A0 = ports[0];
 				static auto &D0 = ports[1];
 				static auto &A1 = ports[2];
@@ -170,9 +172,9 @@ namespace ClownMDSDK
 		{
 			namespace Unsafe
 			{
-				static auto &ram = *reinterpret_cast<std::array<volatile unsigned char, 0x2000>*>(0xA00000);
-				static auto &bus_request = *reinterpret_cast<volatile unsigned short*>(0xA11100);
-				static auto &reset = *reinterpret_cast<volatile unsigned short*>(0xA11200);
+				__BIND_ADDRESS(0xA00000, ram, std::array<volatile unsigned char, 0x2000>);
+				__BIND_ADDRESS(0xA11100, bus_request, volatile unsigned short);
+				__BIND_ADDRESS(0xA11200, reset, volatile unsigned short);
 
 				inline void AssertReset()
 				{
@@ -536,11 +538,11 @@ namespace ClownMDSDK
 				DMA   = 0x27
 			};
 
-			static auto &data_port_word = *reinterpret_cast<volatile unsigned short*>(0xC00000);
-			static auto &data_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00000);
-			static auto &control_port_word = *reinterpret_cast<volatile unsigned short*>(0xC00004);
-			static auto &control_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00004);
-			static auto &control_port_low_byte = *reinterpret_cast<volatile unsigned char*>(0xC00004 + 1);
+			__BIND_ADDRESS(0xC00000, data_port_word, volatile unsigned short);
+			__BIND_ADDRESS(0xC00000, data_port_longword, volatile unsigned long);
+			__BIND_ADDRESS(0xC00004, control_port_word, volatile unsigned short);
+			__BIND_ADDRESS(0xC00004, control_port_longword, volatile unsigned long);
+			__BIND_ADDRESS(0xC00004 + 1, control_port_low_byte, volatile unsigned char);
 
 			inline void Write(const DataValueWord value)
 			{
@@ -973,8 +975,6 @@ namespace ClownMDSDK
 
 				void InitialiseIOPortAsControlPad3Button(const unsigned int port_index)
 				{
-					assert(port_index < total_io_ports);
-
 					IOCtrl(port_index) = 0x40;
 					IOData(port_index) = 0x40;
 				}
@@ -1045,7 +1045,7 @@ namespace ClownMDSDK
 				bool NOT_reset : 1; // Active low.
 			};
 
-			static auto &subcpu = *reinterpret_cast<volatile SubCPU*>(0xA12000);
+			__BIND_ADDRESS(0xA12000, subcpu, volatile SubCPU);
 
 			struct MemoryMode
 			{
@@ -1059,7 +1059,7 @@ namespace ClownMDSDK
 				bool ret : 1;
 			};
 
-			static auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xA12002);
+			__BIND_ADDRESS(0xA12002, memory_mode, volatile MemoryMode);
 
 			static inline void ResetGateArray()
 			{
@@ -1100,17 +1100,17 @@ namespace ClownMDSDK
 					bool bit0 : 1 = false;
 				};
 
-				static auto &mode = *reinterpret_cast<volatile Mode*>(0xA12004);
-				static auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
+				__BIND_ADDRESS(0xA12004, mode, volatile Mode);
+				__BIND_ADDRESS(0xA12008, host_data, volatile unsigned short);
 			}
 
-			static auto &horizontal_interrupt_vector = *reinterpret_cast<volatile unsigned short*>(0xA12006);
-			static auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xA1200C);
-			static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xA1200E);
-			static auto &communication_flag_ours = *reinterpret_cast<std::atomic<unsigned char>*>(0xA1200E);
-			static auto &communication_flag_theirs = *reinterpret_cast<std::atomic<unsigned char>*>(0xA1200F);
-			static auto &communication_command = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xA12010);
-			static auto &communication_status = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xA12020);
+			__BIND_ADDRESS(0xA12006, horizontal_interrupt_vector, volatile unsigned short);
+			__BIND_ADDRESS(0xA1200C, stop_watch, volatile unsigned short);
+			__BIND_ADDRESS(0xA1200E, communication_flag, std::atomic<unsigned short>);
+			__BIND_ADDRESS(0xA1200E, communication_flag_ours, std::atomic<unsigned char>);
+			__BIND_ADDRESS(0xA1200F, communication_flag_theirs, std::atomic<unsigned char>);
+			__BIND_ADDRESS(0xA12010, communication_command, std::array<std::atomic<unsigned short>, 8>);
+			__BIND_ADDRESS(0xA12020, communication_status, std::array<std::atomic<unsigned short>, 8>);
 
 			struct JumpTable
 			{
@@ -1135,20 +1135,20 @@ namespace ClownMDSDK
 				Entry trace;
 			};
 
-			static auto &jump_table = *reinterpret_cast<volatile JumpTable*>(0xFFFFFD00);
+			__BIND_ADDRESS(0xFFFFFD00, jump_table, volatile JumpTable);
 
 			namespace CDBoot
 			{
 				template<typename T>
-				static auto &boot_rom = *reinterpret_cast<const std::array<T, 128 * 1024UL / sizeof(T)>*>(0);
+				__BIND_ADDRESS(0, boot_rom, const std::array<T, 128 * 1024UL / sizeof(T)>);
 
 				template<typename T>
-				static auto &prg_ram_window = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x20000);
+				__BIND_ADDRESS(0x20000, prg_ram_window, std::array<T, 128 * 1024UL / sizeof(T)>);
 
 				template<typename T>
-				static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x200000);
+				__BIND_ADDRESS(0x200000, word_ram_2m, std::array<T, 256 * 1024UL / sizeof(T)>);
 				template<typename T>
-				static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x200000);
+				__BIND_ADDRESS(0x200000, word_ram_1m, std::array<T, 128 * 1024UL / sizeof(T)>);
 
 				static inline void GiveWordRAMToSubCPU()
 				{
@@ -1166,15 +1166,15 @@ namespace ClownMDSDK
 			namespace CartridgeBoot
 			{
 				template<typename T>
-				static auto &boot_rom = *reinterpret_cast<const std::array<T, 128 * 1024UL / sizeof(T)>*>(0x400000);
+				__BIND_ADDRESS(0x400000, boot_rom, const std::array<T, 128 * 1024UL / sizeof(T)>);
 
 				template<typename T>
-				static auto &prg_ram_window = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x420000);
+				__BIND_ADDRESS(0x420000, prg_ram_window, std::array<T, 128 * 1024UL / sizeof(T)>);
 
 				template<typename T>
-				static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x600000);
+				__BIND_ADDRESS(0x600000, word_ram_2m, std::array<T, 256 * 1024UL / sizeof(T)>);
 				template<typename T>
-				static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x600000);
+				__BIND_ADDRESS(0x600000, word_ram_1m, std::array<T, 128 * 1024UL / sizeof(T)>);
 
 				static inline void GiveWordRAMToSubCPU()
 				{
@@ -1257,9 +1257,9 @@ namespace ClownMDSDK
 	namespace SubCPU
 	{
 		template<typename T>
-		static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x80000);
+		__BIND_ADDRESS(0x80000, word_ram_2m, std::array<T, 256 * 1024UL / sizeof(T)>);
 		template<typename T>
-		static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0xC0000);
+		__BIND_ADDRESS(0xC0000, word_ram_1m, std::array<T, 128 * 1024UL / sizeof(T)>);
 
 		struct Status
 		{
@@ -1278,7 +1278,7 @@ namespace ClownMDSDK
 			bool NOT_reset : 1; // Active low.
 		};
 
-		static auto &status = *reinterpret_cast<volatile Status*>(0xFFFF8000);
+		__BIND_ADDRESS(0xFFFF8000, status, volatile Status);
 
 		struct MemoryMode
 		{
@@ -1292,7 +1292,7 @@ namespace ClownMDSDK
 			bool ret : 1;
 		};
 
-		static auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xFFFF8002);
+		__BIND_ADDRESS(0xFFFF8002, memory_mode, volatile MemoryMode);
 
 		static inline void GiveWordRAMToMainCPU()
 		{
@@ -1325,10 +1325,10 @@ namespace ClownMDSDK
 				unsigned int register_address : 4;
 			};
 
-			static auto &mode = *reinterpret_cast<volatile Mode*>(0xFFFF8004);
-			static auto &register_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8006);
-			static auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
-			static auto &dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
+			__BIND_ADDRESS(0xFFFF8004, mode, volatile Mode);
+			__BIND_ADDRESS(0xFFFF8006, register_data, volatile unsigned short);
+			__BIND_ADDRESS(0xFFFF8008, host_data, volatile unsigned short);
+			__BIND_ADDRESS(0xFFFF800A, dma_address, volatile unsigned short);
 
 			static inline void SetDMAAddress(const std::uintptr_t address)
 			{
@@ -1337,13 +1337,13 @@ namespace ClownMDSDK
 			}
 		}
 
-		static auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xFFFF800C);
-		static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xFFFF800E);
-		static auto &communication_flag_theirs = *reinterpret_cast<std::atomic<unsigned char>*>(0xFFFF800E);
-		static auto &communication_flag_ours = *reinterpret_cast<std::atomic<unsigned char>*>(0xFFFF800F);
-		static auto &communication_command = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8010);
-		static auto &communication_status = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8020);
-		static auto &timer_interrupt_level_3 = *reinterpret_cast<volatile unsigned short*>(0xFFFF8030);
+		__BIND_ADDRESS(0xFFFF800C, stop_watch, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF800E, communication_flag, std::atomic<unsigned short>);
+		__BIND_ADDRESS(0xFFFF800E, communication_flag_theirs, std::atomic<unsigned char>);
+		__BIND_ADDRESS(0xFFFF800F, communication_flag_ours, std::atomic<unsigned char>);
+		__BIND_ADDRESS(0xFFFF8010, communication_command, std::array<std::atomic<unsigned short>, 8>);
+		__BIND_ADDRESS(0xFFFF8020, communication_status, std::array<std::atomic<unsigned short>, 8>);
+		__BIND_ADDRESS(0xFFFF8030, timer_interrupt_level_3, volatile unsigned short);
 
 		struct InterruptMaskControl
 		{
@@ -1365,7 +1365,7 @@ namespace ClownMDSDK
 			bool bit0 : 1 = false;
 		};
 
-		static auto &interrupt_mask_control = *reinterpret_cast<volatile InterruptMaskControl*>(0xFFFF8032);
+		__BIND_ADDRESS(0xFFFF8032, interrupt_mask_control, volatile InterruptMaskControl);
 
 		struct CDFader
 		{
@@ -1376,7 +1376,7 @@ namespace ClownMDSDK
 			bool bit0 : 1 = false;
 		};
 
-		static auto &cd_fader = *reinterpret_cast<volatile CDFader*>(0xFFFF8034);
+		__BIND_ADDRESS(0xFFFF8034, cd_fader, volatile CDFader);
 
 		struct CDDControl
 		{
@@ -1398,10 +1398,10 @@ namespace ClownMDSDK
 			bool data_transmission_status : 1;
 		};
 
-		static auto &cdd_control = *reinterpret_cast<volatile CDDControl*>(0xFFFF8036);
+		__BIND_ADDRESS(0xFFFF8036, cdd_control, volatile CDDControl);
 
-		static auto &cdd_receiving_status = *reinterpret_cast<std::array<volatile unsigned char, 10>*>(0xFFFF8038);
-		static auto &cdd_transmission_command = *reinterpret_cast<std::array<volatile unsigned char, 10>*>(0xFFFF8042);
+		__BIND_ADDRESS(0xFFFF8038, cdd_receiving_status, std::array<volatile unsigned char, 10>);
+		__BIND_ADDRESS(0xFFFF8042, cdd_transmission_command, std::array<volatile unsigned char, 10>);
 
 		struct FontColour
 		{
@@ -1417,10 +1417,10 @@ namespace ClownMDSDK
 			unsigned int source_colour_data_1 : 4;
 		};
 
-		static auto &font_colour = *reinterpret_cast<volatile FontColour*>(0xFFFF804C);
+		__BIND_ADDRESS(0xFFFF804C, font_colour, volatile FontColour);
 
-		static auto &font_bit = *reinterpret_cast<volatile unsigned short*>(0xFFFF804E);
-		static auto &font_data = *reinterpret_cast<std::array<volatile unsigned short, 4>*>(0xFFFF8050);
+		__BIND_ADDRESS(0xFFFF804E, font_bit, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF8050, font_data, std::array<volatile unsigned short, 4>);
 
 		struct StampDataSize
 		{
@@ -1442,16 +1442,16 @@ namespace ClownMDSDK
 			bool repeat : 1;
 		};
 
-		static auto &stamp_data_size = *reinterpret_cast<volatile StampDataSize*>(0xFFFF8058);
+		__BIND_ADDRESS(0xFFFF8058, stamp_data_size, volatile StampDataSize);
 
 		// TODO: This has various restrictions based on the current mode. Maybe make a function for doing all settings at once with asserts?
-		static auto &stamp_map_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805A);
-		static auto &image_buffer_vertical_cell_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF805C);
-		static auto &image_buffer_start_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805E);
-		static auto &image_buffer_offset = *reinterpret_cast<volatile unsigned short*>(0xFFFF8060);
-		static auto &image_buffer_horizontal_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8062);
-		static auto &image_buffer_vertical_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8064);
-		static auto &trace_vector_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF8066);
+		__BIND_ADDRESS(0xFFFF805A, stamp_map_base_address, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF805C, image_buffer_vertical_cell_size, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF805E, image_buffer_start_address, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF8060, image_buffer_offset, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF8062, image_buffer_horizontal_dot_size, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF8064, image_buffer_vertical_dot_size, volatile unsigned short);
+		__BIND_ADDRESS(0xFFFF8066, trace_vector_base_address, volatile unsigned short);
 
 		struct SubcodeAddress
 		{
@@ -1468,14 +1468,14 @@ namespace ClownMDSDK
 			bool bit0 : 1 = false;
 		};
 
-		static auto &subcode_address = *reinterpret_cast<volatile SubcodeAddress*>(0xFFFF8068);
+		__BIND_ADDRESS(0xFFFF8068, subcode_address, volatile SubcodeAddress);
 
-		static auto &subcode_buffer = *reinterpret_cast<std::array<volatile unsigned short, 0x40>*>(0xFFFF8100);
-		static auto &subcode_buffer_image = *reinterpret_cast<std::array<volatile unsigned short, 0x40>*>(0xFFFF8180);
+		__BIND_ADDRESS(0xFFFF8100, subcode_buffer, std::array<volatile unsigned short, 0x40>);
+		__BIND_ADDRESS(0xFFFF8180, subcode_buffer_image, std::array<volatile unsigned short, 0x40>);
 
 		namespace PCM
 		{
-			static auto &ram_window = *reinterpret_cast<std::array<std::atomic<unsigned short>, 0x1000>*>(0xFFFF2000);
+			__BIND_ADDRESS(0xFFFF2000, ram_window, std::array<std::atomic<unsigned short>, 0x1000>);
 		}
 
 		namespace BIOS
