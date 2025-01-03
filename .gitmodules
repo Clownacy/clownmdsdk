@@ -1,0 +1,3 @@
+[submodule "stage3/headers-and-scripts/include/clownlzss"]
+	path = stage3/headers-and-scripts/include/clownlzss
+	url = https://github.com/Clownacy/clownlzss

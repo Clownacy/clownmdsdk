@@ -33,6 +33,10 @@ alignas(8) static std::array<unsigned short, SECTOR_BUFFER_LENGTH> prg_ram_secto
 
 void _SP_Main()
 {
+//	MCD::memory_mode.word_ram_1m_mode = false;
+//	for (;;)
+//		MCD::communication_flag_ours = MCD::communication_flag_theirs.load();
+
 	MCD::BIOS::Drive::Initialise({0, 0xFF});
 
 	MCD::memory_mode.word_ram_1m_mode = false;
@@ -47,6 +51,10 @@ void _SP_Main()
 		switch (command)
 		{
 			case Command::NONE:
+				break;
+
+			case Command::REQUEST_WORD_RAM:
+				MCD::GiveWordRAMToMainCPU();
 				break;
 
 			case Command::BEGIN_TRANSFER_BIOS:

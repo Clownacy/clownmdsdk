@@ -81,6 +81,8 @@ __VISIBILITY void _SP_User(void);
 #include <type_traits>
 #include <utility>
 
+#include <clownlzss/decompressors/kosinski.h>
+
 // TODO: Move this to its own translation unit? Optimisation can be handled by LTO.
 namespace ClownMDSDK
 {
@@ -97,6 +99,11 @@ namespace ClownMDSDK
 			inline bool IsPAL()
 			{
 				return (version_register & 1 << 6) != 0;
+			}
+
+			inline bool IsMegaCDConnected()
+			{
+				return (version_register & 1 << 5) == 0;
 			}
 		}
 
@@ -871,6 +878,11 @@ namespace ClownMDSDK
 					return ClownMDSDK::MainCPU::Unsafe::IsPAL();
 				}
 
+				bool IsMegaCDConnected()
+				{
+					return ClownMDSDK::MainCPU::Unsafe::IsMegaCDConnected();
+				}
+
 				void WriteFMI(const unsigned char address, const unsigned char value)
 				{
 					asm(
@@ -978,11 +990,6 @@ namespace ClownMDSDK
 
 		namespace MegaCD
 		{
-			template<typename T>
-			static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x200000);
-			template<typename T>
-			static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x200000);
-
 			struct SubCPU
 			{
 				bool interrupt_level_2_mask : 1;
@@ -1000,7 +1007,7 @@ namespace ClownMDSDK
 				bool bit3 : 1 = false;
 				bool bit2 : 1 = false;
 				bool bus_request : 1;
-				bool reset : 1;
+				bool NOT_reset : 1; // Active low.
 			};
 
 			static volatile auto &subcpu = *reinterpret_cast<volatile SubCPU*>(0xA12000);
@@ -1019,16 +1026,14 @@ namespace ClownMDSDK
 
 			static volatile auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xA12002);
 
-			static inline void GiveWordRAMToSubCPU()
+			static inline void ResetGateArray()
 			{
-				// Ensure that the compiler understands that Word-RAM is "read" by this, so it needs to flush memory.
 				asm(
-					""
-					:
-					: "m" (word_ram_2m<unsigned char>)
+						"move.w	#0xFF00,(0xA12002).l\n"
+					"	move.b	#3,(0xA12001).l\n"
+					"	move.b	#2,(0xA12001).l\n"
+					"	move.b	#0,(0xA12001).l\n"
 				);
-
-				memory_mode.dmna = true;
 			}
 
 			namespace CDC
@@ -1096,6 +1101,120 @@ namespace ClownMDSDK
 			};
 
 			static volatile auto &jump_table = *reinterpret_cast<volatile JumpTable*>(0xFFFFFD00);
+
+			namespace CDBoot
+			{
+				template<typename T>
+				static auto &boot_rom = *reinterpret_cast<const std::array<T, 128 * 1024UL / sizeof(T)>*>(0);
+
+				template<typename T>
+				static auto &prg_ram_window = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x20000);
+
+				template<typename T>
+				static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x200000);
+				template<typename T>
+				static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x200000);
+
+				static inline void GiveWordRAMToSubCPU()
+				{
+					// Ensure that the compiler understands that Word-RAM is "read" by this, so it needs to flush memory.
+					asm(
+						""
+						:
+						: "m" (word_ram_2m<unsigned char>)
+					);
+
+					memory_mode.dmna = true;
+				}
+			}
+
+			namespace CartridgeBoot
+			{
+				template<typename T>
+				static auto &boot_rom = *reinterpret_cast<const std::array<T, 128 * 1024UL / sizeof(T)>*>(0x400000);
+
+				template<typename T>
+				static auto &prg_ram_window = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x420000);
+
+				template<typename T>
+				static auto &word_ram_2m = *reinterpret_cast<std::array<T, 256 * 1024UL / sizeof(T)>*>(0x600000);
+				template<typename T>
+				static auto &word_ram_1m = *reinterpret_cast<std::array<T, 128 * 1024UL / sizeof(T)>*>(0x600000);
+
+				static inline void GiveWordRAMToSubCPU()
+				{
+					// Ensure that the compiler understands that Word-RAM is "read" by this, so it needs to flush memory.
+					asm(
+						""
+						:
+						: "m" (word_ram_2m<unsigned char>)
+					);
+
+					memory_mode.dmna = true;
+				}
+
+				template<typename T>
+				static inline bool InitialiseSubCPU(const std::span<const T> &subcpu_payload)
+				{
+					{
+						Z80::Bus z80_bus;
+						if (!z80_bus.IsMegaCDConnected())
+							return false;
+					}
+
+					// Find the SUB-CPU BIOS payload.
+					const auto sub_cpu_bios_payload_offset = []() -> unsigned long
+					{
+						if (boot_rom<unsigned short>[0x1586E / 2] == ('E' << 8 | 'G')) // "SEGA"
+							return 0x15800; // Western BIOS
+						if (boot_rom<unsigned short>[0x1606E / 2] == ('E' << 8 | 'G')) // "SEGA"
+							return 0x16000; // Regular BIOS
+						if (boot_rom<unsigned short>[0x1606E / 2] == ('O' << 8 | 'N')) // "WONDER"
+							return 0x16000; // WonderMega/X'Eye BIOS
+						if (boot_rom<unsigned short>[0x1AD6E / 2] == ('E' << 8 | 'G')) // "SEGA"
+							return 0x1AD00; // LaserActive BIOS
+						return 0;
+					}();
+
+					if (sub_cpu_bios_payload_offset == 0)
+						return false;
+
+					// Reset the hardware.
+					ResetGateArray();
+
+					// ResetGateArray sets 'write_protect' to '0xFF', so let's reset it here.
+					memory_mode.write_protect = 0;
+
+					// Stop and reset SUB-CPU.
+					subcpu.bus_request = true;
+					subcpu.NOT_reset = false;
+					while (!subcpu.bus_request);
+
+					// Clear PRG-RAM.
+					for (unsigned int i = 0; i < 4; ++i)
+					{
+						memory_mode.prg_ram_bank = i;
+						std::fill(std::begin(prg_ram_window<unsigned long>), std::end(prg_ram_window<unsigned long>), 0);
+					}
+					memory_mode.prg_ram_bank = 0;
+
+					// Decompress SUB-CPU BIOS payload to PRG-RAM.
+					ClownLZSS::KosinskiDecompress(&boot_rom<unsigned char>[sub_cpu_bios_payload_offset], &prg_ram_window<unsigned char>[0]);
+
+					// Upload our SUB-CPU payload to PRG-RAM.
+					std::copy(std::cbegin(subcpu_payload), std::cend(subcpu_payload), &prg_ram_window<unsigned char>[0x6000]);
+
+					// Send WORD-RAM to SUB-CPU.
+					GiveWordRAMToSubCPU();
+
+					// Restart the SUB-CPU.
+					subcpu.bus_request = false;
+					subcpu.NOT_reset = true;
+					while (!subcpu.NOT_reset);
+
+					return true;
+				}
+			}
 		}
 	}
 
@@ -1120,7 +1239,7 @@ namespace ClownMDSDK
 			bool bit3 : 1 = false;
 			bool bit2 : 1 = false;
 			bool bit1 : 1 = false;
-			bool reset : 1; // Active low.
+			bool NOT_reset : 1; // Active low.
 		};
 
 		static volatile auto &status = *reinterpret_cast<volatile Status*>(0xFFFF8000);
