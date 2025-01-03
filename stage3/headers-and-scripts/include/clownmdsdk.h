@@ -93,8 +93,8 @@ namespace ClownMDSDK
 			static auto &version_register = *reinterpret_cast<volatile unsigned char*>(0xA10001);
 
 			static constexpr unsigned int total_io_ports = 3;
-			static const auto io_data = reinterpret_cast<volatile unsigned short*>(0xA10002);
-			static const auto io_ctrl = reinterpret_cast<volatile unsigned short*>(0xA10008);
+			static auto &io_data = *reinterpret_cast<std::array<volatile unsigned short, total_io_ports>*>(0xA10002);
+			static auto &io_ctrl = *reinterpret_cast<std::array<volatile unsigned short, total_io_ports>*>(0xA10008);
 
 			inline bool IsPAL()
 			{
@@ -156,7 +156,7 @@ namespace ClownMDSDK
 		{
 			namespace Unsafe
 			{
-				static const auto ports = reinterpret_cast<volatile unsigned char*>(0xA04000);
+				static auto &ports = *reinterpret_cast<std::array<volatile unsigned char, 4>*>(0xA04000);
 				static auto &A0 = ports[0];
 				static auto &D0 = ports[1];
 				static auto &A1 = ports[2];
@@ -170,7 +170,7 @@ namespace ClownMDSDK
 		{
 			namespace Unsafe
 			{
-				static const auto ram = reinterpret_cast<volatile unsigned char*>(0xA00000);
+				static auto &ram = *reinterpret_cast<std::array<volatile unsigned char, 0x2000>*>(0xA00000);
 				static auto &bus_request = *reinterpret_cast<volatile unsigned short*>(0xA11100);
 				static auto &reset = *reinterpret_cast<volatile unsigned short*>(0xA11200);
 
@@ -883,9 +883,32 @@ namespace ClownMDSDK
 					}
 				}
 
-				const std::span<volatile unsigned char, 0x2000> ram = std::span<volatile unsigned char, 0x2000>(Unsafe::ram, 0x2000);
-				volatile unsigned short* const io_data = ClownMDSDK::MainCPU::Unsafe::io_data;
-				volatile unsigned short* const io_ctrl = ClownMDSDK::MainCPU::Unsafe::io_ctrl;
+				auto& RAM()
+				{
+					return Unsafe::ram;
+				}
+
+				auto& IOData()
+				{
+					return ClownMDSDK::MainCPU::Unsafe::io_data;
+				}
+
+				auto& IOData(const std::size_t index)
+				{
+					assert(index < total_io_ports);
+					return IOData()[index];
+				}
+
+				auto& IOCtrl()
+				{
+					return ClownMDSDK::MainCPU::Unsafe::io_ctrl;
+				}
+
+				auto& IOCtrl(const std::size_t index)
+				{
+					assert(index < total_io_ports);
+					return IOCtrl()[index];
+				}
 
 				bool IsConsolePAL()
 				{
@@ -952,15 +975,13 @@ namespace ClownMDSDK
 				{
 					assert(port_index < total_io_ports);
 
-					io_ctrl[port_index] = 0x40;
-					io_data[port_index] = 0x40;
+					IOCtrl(port_index) = 0x40;
+					IOData(port_index) = 0x40;
 				}
 
 				ControlPad3Button ReadIOPortAsControlPad3Button(const unsigned int port_index)
 				{
-					assert(port_index < total_io_ports);
-
-					auto &data_port = io_data[port_index];
+					auto &data_port = IOData(port_index);
 
 					const auto SetAndRead = [&data_port](const unsigned int value)
 					{
@@ -1379,8 +1400,8 @@ namespace ClownMDSDK
 
 		static auto &cdd_control = *reinterpret_cast<volatile CDDControl*>(0xFFFF8036);
 
-		static auto &cdd_receiving_status = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8038);
-		static auto &cdd_transmission_command = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8042);
+		static auto &cdd_receiving_status = *reinterpret_cast<std::array<volatile unsigned char, 10>*>(0xFFFF8038);
+		static auto &cdd_transmission_command = *reinterpret_cast<std::array<volatile unsigned char, 10>*>(0xFFFF8042);
 
 		struct FontColour
 		{
@@ -1399,7 +1420,7 @@ namespace ClownMDSDK
 		static auto &font_colour = *reinterpret_cast<volatile FontColour*>(0xFFFF804C);
 
 		static auto &font_bit = *reinterpret_cast<volatile unsigned short*>(0xFFFF804E);
-		static auto &font_data = *reinterpret_cast<volatile std::array<unsigned short, 4>*>(0xFFFF8050);
+		static auto &font_data = *reinterpret_cast<std::array<volatile unsigned short, 4>*>(0xFFFF8050);
 
 		struct StampDataSize
 		{
@@ -1449,8 +1470,8 @@ namespace ClownMDSDK
 
 		static auto &subcode_address = *reinterpret_cast<volatile SubcodeAddress*>(0xFFFF8068);
 
-		static auto &subcode_buffer = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8100);
-		static auto &subcode_buffer_image = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8180);
+		static auto &subcode_buffer = *reinterpret_cast<std::array<volatile unsigned short, 0x40>*>(0xFFFF8100);
+		static auto &subcode_buffer_image = *reinterpret_cast<std::array<volatile unsigned short, 0x40>*>(0xFFFF8180);
 
 		namespace PCM
 		{
