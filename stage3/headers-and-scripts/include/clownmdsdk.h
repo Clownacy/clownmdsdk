@@ -90,11 +90,11 @@ namespace ClownMDSDK
 	{
 		namespace Unsafe
 		{
-			static volatile unsigned char &version_register = *reinterpret_cast<volatile unsigned char*>(0xA10001);
+			static auto &version_register = *reinterpret_cast<volatile unsigned char*>(0xA10001);
 
 			static constexpr unsigned int total_io_ports = 3;
-			static volatile unsigned short* const io_data = reinterpret_cast<volatile unsigned short*>(0xA10002);
-			static volatile unsigned short* const io_ctrl = reinterpret_cast<volatile unsigned short*>(0xA10008);
+			static const auto io_data = reinterpret_cast<volatile unsigned short*>(0xA10002);
+			static const auto io_ctrl = reinterpret_cast<volatile unsigned short*>(0xA10008);
 
 			inline bool IsPAL()
 			{
@@ -156,11 +156,11 @@ namespace ClownMDSDK
 		{
 			namespace Unsafe
 			{
-				static volatile unsigned char* const ports = reinterpret_cast<volatile unsigned char*>(0xA04000);
-				static volatile unsigned char &A0 = ports[0];
-				static volatile unsigned char &D0 = ports[1];
-				static volatile unsigned char &A1 = ports[2];
-				static volatile unsigned char &D1 = ports[3];
+				static const auto ports = reinterpret_cast<volatile unsigned char*>(0xA04000);
+				static auto &A0 = ports[0];
+				static auto &D0 = ports[1];
+				static auto &A1 = ports[2];
+				static auto &D1 = ports[3];
 			}
 
 			static constexpr unsigned int sample_rate = M68k::clock / (6 * 6 * 4);
@@ -170,9 +170,9 @@ namespace ClownMDSDK
 		{
 			namespace Unsafe
 			{
-				static volatile unsigned char* const ram = reinterpret_cast<volatile unsigned char*>(0xA00000);
-				static volatile unsigned short &bus_request = *reinterpret_cast<volatile unsigned short*>(0xA11100);
-				static volatile unsigned short &reset = *reinterpret_cast<volatile unsigned short*>(0xA11200);
+				static const auto ram = reinterpret_cast<volatile unsigned char*>(0xA00000);
+				static auto &bus_request = *reinterpret_cast<volatile unsigned short*>(0xA11100);
+				static auto &reset = *reinterpret_cast<volatile unsigned short*>(0xA11200);
 
 				inline void AssertReset()
 				{
@@ -536,11 +536,11 @@ namespace ClownMDSDK
 				DMA   = 0x27
 			};
 
-			static volatile unsigned short &data_port_word = *reinterpret_cast<volatile unsigned short*>(0xC00000);
-			static volatile unsigned long &data_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00000);
-			static volatile unsigned short &control_port_word = *reinterpret_cast<volatile unsigned short*>(0xC00004);
-			static volatile unsigned long &control_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00004);
-			static volatile unsigned char &control_port_low_byte = *reinterpret_cast<volatile unsigned char*>(0xC00004 + 1);
+			static auto &data_port_word = *reinterpret_cast<volatile unsigned short*>(0xC00000);
+			static auto &data_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00000);
+			static auto &control_port_word = *reinterpret_cast<volatile unsigned short*>(0xC00004);
+			static auto &control_port_longword = *reinterpret_cast<volatile unsigned long*>(0xC00004);
+			static auto &control_port_low_byte = *reinterpret_cast<volatile unsigned char*>(0xC00004 + 1);
 
 			inline void Write(const DataValueWord value)
 			{
@@ -852,6 +852,11 @@ namespace ClownMDSDK
 		{
 			class Bus
 			{
+			private:
+				// Ideally, the compiler will resolve this variable
+				// at compile-time and optimise it away completely.
+				bool released = false;
+
 			public:
 				Bus(const bool wait_for_bus = true)
 				{
@@ -866,7 +871,16 @@ namespace ClownMDSDK
 
 				~Bus()
 				{
-					Unsafe::ReleaseBus();
+					Release();
+				}
+
+				void Release()
+				{
+					if (!released)
+					{
+						released = true;
+						Unsafe::ReleaseBus();
+					}
 				}
 
 				const std::span<volatile unsigned char, 0x2000> ram = std::span<volatile unsigned char, 0x2000>(Unsafe::ram, 0x2000);
@@ -1010,7 +1024,7 @@ namespace ClownMDSDK
 				bool NOT_reset : 1; // Active low.
 			};
 
-			static volatile auto &subcpu = *reinterpret_cast<volatile SubCPU*>(0xA12000);
+			static auto &subcpu = *reinterpret_cast<volatile SubCPU*>(0xA12000);
 
 			struct MemoryMode
 			{
@@ -1024,7 +1038,7 @@ namespace ClownMDSDK
 				bool ret : 1;
 			};
 
-			static volatile auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xA12002);
+			static auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xA12002);
 
 			static inline void ResetGateArray()
 			{
@@ -1065,12 +1079,12 @@ namespace ClownMDSDK
 					bool bit0 : 1 = false;
 				};
 
-				static volatile auto &mode = *reinterpret_cast<volatile Mode*>(0xA12004);
-				static volatile auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
+				static auto &mode = *reinterpret_cast<volatile Mode*>(0xA12004);
+				static auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xA12008);
 			}
 
-			static volatile auto &horizontal_interrupt_vector = *reinterpret_cast<volatile unsigned short*>(0xA12006);
-			static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xA1200C);
+			static auto &horizontal_interrupt_vector = *reinterpret_cast<volatile unsigned short*>(0xA12006);
+			static auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xA1200C);
 			static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xA1200E);
 			static auto &communication_flag_ours = *reinterpret_cast<std::atomic<unsigned char>*>(0xA1200E);
 			static auto &communication_flag_theirs = *reinterpret_cast<std::atomic<unsigned char>*>(0xA1200F);
@@ -1100,7 +1114,7 @@ namespace ClownMDSDK
 				Entry trace;
 			};
 
-			static volatile auto &jump_table = *reinterpret_cast<volatile JumpTable*>(0xFFFFFD00);
+			static auto &jump_table = *reinterpret_cast<volatile JumpTable*>(0xFFFFFD00);
 
 			namespace CDBoot
 			{
@@ -1160,6 +1174,7 @@ namespace ClownMDSDK
 						Z80::Bus z80_bus;
 						if (!z80_bus.IsMegaCDConnected())
 							return false;
+						z80_bus.Release();
 					}
 
 					// Find the SUB-CPU BIOS payload.
@@ -1242,7 +1257,7 @@ namespace ClownMDSDK
 			bool NOT_reset : 1; // Active low.
 		};
 
-		static volatile auto &status = *reinterpret_cast<volatile Status*>(0xFFFF8000);
+		static auto &status = *reinterpret_cast<volatile Status*>(0xFFFF8000);
 
 		struct MemoryMode
 		{
@@ -1256,7 +1271,7 @@ namespace ClownMDSDK
 			bool ret : 1;
 		};
 
-		static volatile auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xFFFF8002);
+		static auto &memory_mode = *reinterpret_cast<volatile MemoryMode*>(0xFFFF8002);
 
 		static inline void GiveWordRAMToMainCPU()
 		{
@@ -1289,10 +1304,10 @@ namespace ClownMDSDK
 				unsigned int register_address : 4;
 			};
 
-			static volatile auto &mode = *reinterpret_cast<volatile Mode*>(0xFFFF8004);
-			static volatile auto &register_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8006);
-			static volatile auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
-			static volatile auto &dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
+			static auto &mode = *reinterpret_cast<volatile Mode*>(0xFFFF8004);
+			static auto &register_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8006);
+			static auto &host_data = *reinterpret_cast<volatile unsigned short*>(0xFFFF8008);
+			static auto &dma_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF800A);
 
 			static inline void SetDMAAddress(const std::uintptr_t address)
 			{
@@ -1301,13 +1316,13 @@ namespace ClownMDSDK
 			}
 		}
 
-		static volatile auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xFFFF800C);
+		static auto &stop_watch = *reinterpret_cast<volatile unsigned short*>(0xFFFF800C);
 		static auto &communication_flag = *reinterpret_cast<std::atomic<unsigned short>*>(0xFFFF800E);
 		static auto &communication_flag_theirs = *reinterpret_cast<std::atomic<unsigned char>*>(0xFFFF800E);
 		static auto &communication_flag_ours = *reinterpret_cast<std::atomic<unsigned char>*>(0xFFFF800F);
 		static auto &communication_command = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8010);
 		static auto &communication_status = *reinterpret_cast<std::array<std::atomic<unsigned short>, 8>*>(0xFFFF8020);
-		static volatile auto &timer_interrupt_level_3 = *reinterpret_cast<volatile unsigned short*>(0xFFFF8030);
+		static auto &timer_interrupt_level_3 = *reinterpret_cast<volatile unsigned short*>(0xFFFF8030);
 
 		struct InterruptMaskControl
 		{
@@ -1329,7 +1344,7 @@ namespace ClownMDSDK
 			bool bit0 : 1 = false;
 		};
 
-		static volatile auto &interrupt_mask_control = *reinterpret_cast<volatile InterruptMaskControl*>(0xFFFF8032);
+		static auto &interrupt_mask_control = *reinterpret_cast<volatile InterruptMaskControl*>(0xFFFF8032);
 
 		struct CDFader
 		{
@@ -1340,7 +1355,7 @@ namespace ClownMDSDK
 			bool bit0 : 1 = false;
 		};
 
-		static volatile auto &cd_fader = *reinterpret_cast<volatile CDFader*>(0xFFFF8034);
+		static auto &cd_fader = *reinterpret_cast<volatile CDFader*>(0xFFFF8034);
 
 		struct CDDControl
 		{
@@ -1362,10 +1377,10 @@ namespace ClownMDSDK
 			bool data_transmission_status : 1;
 		};
 
-		static volatile auto &cdd_control = *reinterpret_cast<volatile CDDControl*>(0xFFFF8036);
+		static auto &cdd_control = *reinterpret_cast<volatile CDDControl*>(0xFFFF8036);
 
-		static volatile auto &cdd_receiving_status = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8038);
-		static volatile auto &cdd_transmission_command = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8042);
+		static auto &cdd_receiving_status = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8038);
+		static auto &cdd_transmission_command = *reinterpret_cast<volatile std::array<unsigned char, 10>*>(0xFFFF8042);
 
 		struct FontColour
 		{
@@ -1381,10 +1396,10 @@ namespace ClownMDSDK
 			unsigned int source_colour_data_1 : 4;
 		};
 
-		static volatile auto &font_colour = *reinterpret_cast<volatile FontColour*>(0xFFFF804C);
+		static auto &font_colour = *reinterpret_cast<volatile FontColour*>(0xFFFF804C);
 
-		static volatile auto &font_bit = *reinterpret_cast<volatile unsigned short*>(0xFFFF804E);
-		static volatile auto &font_data = *reinterpret_cast<volatile std::array<unsigned short, 4>*>(0xFFFF8050);
+		static auto &font_bit = *reinterpret_cast<volatile unsigned short*>(0xFFFF804E);
+		static auto &font_data = *reinterpret_cast<volatile std::array<unsigned short, 4>*>(0xFFFF8050);
 
 		struct StampDataSize
 		{
@@ -1406,16 +1421,16 @@ namespace ClownMDSDK
 			bool repeat : 1;
 		};
 
-		static volatile auto &stamp_data_size = *reinterpret_cast<volatile StampDataSize*>(0xFFFF8058);
+		static auto &stamp_data_size = *reinterpret_cast<volatile StampDataSize*>(0xFFFF8058);
 
 		// TODO: This has various restrictions based on the current mode. Maybe make a function for doing all settings at once with asserts?
-		static volatile auto &stamp_map_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805A);
-		static volatile auto &image_buffer_vertical_cell_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF805C);
-		static volatile auto &image_buffer_start_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805E);
-		static volatile auto &image_buffer_offset = *reinterpret_cast<volatile unsigned short*>(0xFFFF8060);
-		static volatile auto &image_buffer_horizontal_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8062);
-		static volatile auto &image_buffer_vertical_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8064);
-		static volatile auto &trace_vector_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF8066);
+		static auto &stamp_map_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805A);
+		static auto &image_buffer_vertical_cell_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF805C);
+		static auto &image_buffer_start_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF805E);
+		static auto &image_buffer_offset = *reinterpret_cast<volatile unsigned short*>(0xFFFF8060);
+		static auto &image_buffer_horizontal_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8062);
+		static auto &image_buffer_vertical_dot_size = *reinterpret_cast<volatile unsigned short*>(0xFFFF8064);
+		static auto &trace_vector_base_address = *reinterpret_cast<volatile unsigned short*>(0xFFFF8066);
 
 		struct SubcodeAddress
 		{
@@ -1432,10 +1447,10 @@ namespace ClownMDSDK
 			bool bit0 : 1 = false;
 		};
 
-		static volatile auto &subcode_address = *reinterpret_cast<volatile SubcodeAddress*>(0xFFFF8068);
+		static auto &subcode_address = *reinterpret_cast<volatile SubcodeAddress*>(0xFFFF8068);
 
-		static volatile auto &subcode_buffer = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8100);
-		static volatile auto &subcode_buffer_image = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8180);
+		static auto &subcode_buffer = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8100);
+		static auto &subcode_buffer_image = *reinterpret_cast<volatile std::array<unsigned short, 0x40>*>(0xFFFF8180);
 
 		namespace PCM
 		{
