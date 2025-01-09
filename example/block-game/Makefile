@@ -1,4 +1,4 @@
-	include /opt/clownmdsdk/rom.mk
+	include /opt/clownmdsdk/cartridge.mk
 
 CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -std=c++23 -fvisibility=hidden -flto -DNDEBUG
 LDFLAGS += -save-temps=obj

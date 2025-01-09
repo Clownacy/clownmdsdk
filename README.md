@@ -26,10 +26,10 @@ completely installed and ready for use.
 
 The toolchain will be installed at `/opt/clownmdsdk`. The simplest way to use
 the toolchain is with a Makefile: by adding the line
-` include /opt/clownmdsdk/rom.mk` to the start, the `CC`, `CXX`, `CPP`, `AS`,
-`CFLAGS`, `CXXFLAGS`, `LDFLAGS` variables will all be configured to use the
-toolchain, and the rest of the Makefile can be written as it would be for any
-other platform.
+` include /opt/clownmdsdk/cartridge.mk` to the start, the `CC`, `CXX`, `CPP`,
+`AS`, `CFLAGS`, `CXXFLAGS`, `LDFLAGS` variables will all be configured to use
+the toolchain, and the rest of the Makefile can be written as it would be for
+any other platform.
 
 
 ## Licence

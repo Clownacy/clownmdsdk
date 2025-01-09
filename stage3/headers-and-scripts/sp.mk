@@ -1,3 +1,3 @@
-	include /opt/clownmdsdk/bare.mk
+	include /opt/clownmdsdk/generic.mk
 
 LDFLAGS += -T $(CLOWNMDSDK_LOCATION)/sp.ld

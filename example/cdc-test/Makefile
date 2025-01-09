@@ -1,4 +1,4 @@
-	include /opt/clownmdsdk/bare.mk
+	include /opt/clownmdsdk/generic.mk
 
 CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -std=c++23 -fvisibility=hidden -flto -DNDEBUG
 LDFLAGS += -save-temps=obj
@@ -29,4 +29,4 @@ bin/font.o: font.unc
 
 bin/cdc-test-cartridge.bin: ip.cpp bin/sp.o bin/font.o
 	mkdir -p $(@D)
-	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/rom.ld
+	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/cartridge.ld
