@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024 Clownacy
+Copyright (c) 2024-2025 Clownacy
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted.
@@ -26,6 +26,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #define __INTERRUPT_HANDLER __VISIBILITY __attribute__((interrupt))
 
 __ENTRY_POINT void _EntryPoint(void);
+
+// M68000 exception handlers.
 __INTERRUPT_HANDLER void _BusErrorHandler(void);
 __INTERRUPT_HANDLER void _AddressErrorHandler(void);
 __INTERRUPT_HANDLER void _IllegalInstructionHandler(void);
@@ -63,9 +65,16 @@ __INTERRUPT_HANDLER void _TRAP13Handler(void);
 __INTERRUPT_HANDLER void _TRAP14Handler(void);
 __INTERRUPT_HANDLER void _TRAP15Handler(void);
 
+// Runs once at startup, before anything else.
 __VISIBILITY __attribute__((section(".text.entry"))) void _SP_Init(void);
+
+// Run indefinitely; should not return. Handles the bulk of operations.
 __VISIBILITY [[noreturn]] void _SP_Main(void); /* TODO: This can return. */
+
+// Runs once per frame, either 50 or 60 times a second for PAL or NTSC respectively.
 __VISIBILITY void _SP_VerticalInterrupt(void);
+
+// Runs in response to the user interrupt, which only occurs when manually triggered by the programmer.
 __VISIBILITY void _SP_User(void);
 
 #if defined(__cplusplus) && __cplusplus >= 202302L
