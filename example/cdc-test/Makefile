@@ -29,4 +29,4 @@ bin/font.o: font.unc
 
 bin/cdc-test-cartridge.bin: ip.cpp bin/sp.o bin/font.o
 	mkdir -p $(@D)
-	$(CXX) $< bin/sp.o bin/font.o -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/rom.ld
+	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/rom.ld
