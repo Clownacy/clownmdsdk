@@ -68,5 +68,3 @@
 
 	.org	0x8800
 	.incbin	"bin/sp.bin"
-
-	.fill	0x8000,1,0
