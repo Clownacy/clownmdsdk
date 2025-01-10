@@ -1,6 +1,10 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <utility>
+
+#include "system.h"
+
 enum class Command : unsigned char
 {
 	NONE = 0,
@@ -19,6 +23,21 @@ enum class Command : unsigned char
 	BEGIN_TRANSFER_DMA_WORD,
 	BEGIN_TRANSFER_DMA_WORD_OFFSET_8,
 	END_TRANSFER,
+	DO_GRAPHICS_TRANSFORMATION,
 };
+
+inline void SubmitSubCPUCommand(const Command command)
+{
+	static constexpr auto Internal = [](const Command command)
+	{
+		MD::MegaCD::communication_flag_ours = std::to_underlying(command);
+		while (MD::MegaCD::communication_flag_theirs != std::to_underlying(command));
+	};
+
+	Internal(command);
+	// Send a dummy command so that the same command can be
+	// submitted twice in a row without the SUB-CPU ignoring it.
+	Internal(Command::NONE);
+}
 
 #endif // COMMAND_H

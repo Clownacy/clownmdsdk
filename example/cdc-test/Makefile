@@ -5,9 +5,9 @@ LDFLAGS += -save-temps=obj
 
 all: bin/cdc-test-cd.iso bin/cdc-test-cartridge.bin
 
-bin/ip.bin: ip.cpp
+bin/ip.bin: ip.cpp cdc-test.cpp graphics-test.cpp main-menu.cpp utility.cpp
 	mkdir -p $(@D)
-	$(CXX) $< -o $@ $(CXXFLAGS) -DCD $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/ip.ld
+	$(CXX) $^ -o $@ $(CXXFLAGS) -DCD $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/ip.ld
 
 bin/sp.bin: sp.cpp
 	mkdir -p $(@D)
@@ -22,11 +22,13 @@ bin/cdc-test-cd.iso: bin/cdc-test-cd.o
 	$(LD) -shared $< -o $@ --oformat=binary
 
 bin/sp.o: bin/sp.bin
+	mkdir -p $(@D)
 	$(INCBIN) $< $@
 
 bin/font.o: font.unc
+	mkdir -p $(@D)
 	$(INCBIN) $< $@
 
-bin/cdc-test-cartridge.bin: ip.cpp bin/sp.o bin/font.o
+bin/cdc-test-cartridge.bin: ip.cpp cdc-test.cpp graphics-test.cpp main-menu.cpp utility.cpp bin/sp.o bin/font.o
 	mkdir -p $(@D)
 	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/cartridge.ld

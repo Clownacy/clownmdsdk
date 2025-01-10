@@ -1457,7 +1457,24 @@ namespace ClownMDSDK
 		__BIND_ADDRESS(0xFFFF805A, stamp_map_base_address, volatile unsigned short);
 		__BIND_ADDRESS(0xFFFF805C, image_buffer_vertical_cell_size, volatile unsigned short);
 		__BIND_ADDRESS(0xFFFF805E, image_buffer_start_address, volatile unsigned short);
-		__BIND_ADDRESS(0xFFFF8060, image_buffer_offset, volatile unsigned short);
+
+		struct ImageBufferOffset
+		{
+			bool bit15 : 1 = false;
+			bool bit14 : 1 = false;
+			bool bit13 : 1 = false;
+			bool bit12 : 1 = false;
+			bool bit11 : 1 = false;
+			bool bit10 : 1 = false;
+			bool bit9 : 1 = false;
+			bool bit8 : 1 = false;
+			bool bit7 : 1 = false;
+			bool bit6 : 1 = false;
+			unsigned int y : 3;
+			unsigned int x : 3;
+		};
+
+		__BIND_ADDRESS(0xFFFF8060, image_buffer_offset, volatile ImageBufferOffset);
 		__BIND_ADDRESS(0xFFFF8062, image_buffer_horizontal_dot_size, volatile unsigned short);
 		__BIND_ADDRESS(0xFFFF8064, image_buffer_vertical_dot_size, volatile unsigned short);
 		__BIND_ADDRESS(0xFFFF8066, trace_vector_base_address, volatile unsigned short);

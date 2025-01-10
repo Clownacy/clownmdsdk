@@ -11,15 +11,18 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#include <atomic>
-#include <span>
-#include <utility>
+#include <variant>
 
 #include <clownmdsdk.h>
 
 #include "../common/control-pad-manager.h"
 
-#include "command.h"
+#include "cdc-test.h"
+#include "control-pad.h"
+#include "graphics-test.h"
+#include "main-menu.h"
+#include "mode.h"
+#include "utility.h"
 
 namespace MD = ClownMDSDK::MainCPU;
 
@@ -29,93 +32,7 @@ namespace MCD_RAM = MD::MegaCD::CDBoot;
 namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
 #endif
 
-struct Mode
-{
-	const char *label;
-	Command command;
-};
-
-static const auto modes = std::to_array<Mode>({
-	{"None"                     , Command::NONE                                  },
-	{"BIOS CDCTRN"              , Command::BEGIN_TRANSFER_BIOS                   },
-	{"Host Main-CPU (Past End)" , Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END},
-	{"Host Main-CPU (Until DSR)", Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR },
-	{"Host Main-CPU (Until EDT)", Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT },
-	{"Host Sub-CPU (Past End)"  , Command::BEGIN_TRANSFER_HOST_SUB_READ_PAST_END },
-	{"Host Sub-CPU (Until DSR)" , Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_DSR  },
-	{"Host Sub-CPU (Until EDT)" , Command::BEGIN_TRANSFER_HOST_SUB_WAIT_FOR_EDT  },
-	{"DMA WAVE-RAM"             , Command::BEGIN_TRANSFER_DMA_PCM                },
-	{"DMA WAVE-RAM (Offset 8)"  , Command::BEGIN_TRANSFER_DMA_PCM_OFFSET_8       },
-	{"DMA PRG-RAM"              , Command::BEGIN_TRANSFER_DMA_PRG                },
-	{"DMA PRG-RAM (Offset 8)"   , Command::BEGIN_TRANSFER_DMA_PRG_OFFSET_8       },
-	{"DMA Word-RAM"             , Command::BEGIN_TRANSFER_DMA_WORD               },
-	{"DMA Word-RAM (Offset 8)"  , Command::BEGIN_TRANSFER_DMA_WORD_OFFSET_8      },
-});
-
-static constexpr unsigned int VRAM_PLANE_A = 0xC000;
-static constexpr unsigned int PLANE_WIDTH = 64;
-
-static ControlPadManager<1> control_pad_manager;
-static const auto &control_pads = control_pad_manager.GetControlPads();
-
-static unsigned int hex_viewer_starting_position = 0;
-static const std::span<unsigned short, 0x408> sector_buffer(MCD_RAM::word_ram_2m<unsigned short>.data(), 0x408);
-static unsigned int current_mode = 0;
-
-static void SetupPlaneWrite(const unsigned int x, unsigned int y)
-{
-	MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, VRAM_PLANE_A + (y * PLANE_WIDTH + x) * 2);
-}
-
-static void DrawString(const char* const string, const unsigned int palette_line = 0)
-{
-	for (const char* character = string; *character != '\0'; ++character)
-		MD::VDP::Write(MD::VDP::VRAM::TileMetadata{false, palette_line, false, false, static_cast<unsigned int>(*character)});
-}
-
-static constexpr unsigned int HEX_VIEWER_TOTAL_WORDS_PER_ROW = 8;
-static constexpr unsigned int HEX_VIEWER_TOTAL_ROWS = 224 / 8 - 2 - 1;
-static constexpr unsigned int HEX_VIEWER_TOTAL_WORDS_VISIBLE = HEX_VIEWER_TOTAL_WORDS_PER_ROW * HEX_VIEWER_TOTAL_ROWS;
-
-static void DrawHexViewer()
-{
-	static constexpr auto DrawHexWord = [](const unsigned short value, const unsigned int palette_line = 0)
-	{
-		static constexpr unsigned int BITS_PER_NYBBLE = 4;
-		static constexpr unsigned int NYBBLES_PER_VALUE = 16 / BITS_PER_NYBBLE;
-		static constexpr unsigned int NYBBLE_MASK = (1 << BITS_PER_NYBBLE) - 1;
-
-		for (unsigned int i = 0; i < NYBBLES_PER_VALUE; ++i)
-		{
-			static constexpr auto NybbleToASCII = [](const unsigned int nybble)
-			{
-				if (nybble >= 0xA)
-					return nybble - 0xA + 'A';
-				else
-					return nybble - 0x0 + '0';
-			};
-
-			MD::VDP::Write(MD::VDP::VRAM::TileMetadata{false, palette_line, false, false, NybbleToASCII(value << i * BITS_PER_NYBBLE >> ((NYBBLES_PER_VALUE - 1) * BITS_PER_NYBBLE) & NYBBLE_MASK)});
-		}
-	};
-
-	auto sector_buffer_pointer = sector_buffer.data() + hex_viewer_starting_position;
-
-	for (unsigned int y = 0; y < HEX_VIEWER_TOTAL_ROWS; ++y)
-	{
-		SetupPlaneWrite(2, 2 + y);
-		DrawHexWord((hex_viewer_starting_position + y * HEX_VIEWER_TOTAL_WORDS_PER_ROW) * 2, 2);
-
-		bool flipflop = false;
-
-		for (unsigned int x = 0; x < HEX_VIEWER_TOTAL_WORDS_PER_ROW; ++x)
-		{
-			DrawHexWord(*sector_buffer_pointer++, flipflop);
-
-			flipflop = !flipflop;
-		}
-	}
-}
+static std::variant<MainMenu, CDCTest, GraphicsTest> mode;
 
 #ifndef CD
 [[noreturn]] static void ErrorTrap()
@@ -313,77 +230,6 @@ void _Level6InterruptHandler()
 	control_pad_manager.Update();
 }
 
-static void SubmitSubCPUCommand(const Command command)
-{
-	static constexpr auto Internal = [](const Command command)
-	{
-		MD::MegaCD::communication_flag_ours = std::to_underlying(command);
-		while (MD::MegaCD::communication_flag_theirs != std::to_underlying(command));
-	};
-
-	Internal(command);
-	// Send a dummy command so that the same command can be
-	// submitted twice in a row without the SUB-CPU ignoring it.
-	Internal(Command::NONE);
-}
-
-static void DoTransfer(const Command command)
-{
-	std::fill(std::begin(sector_buffer), std::end(sector_buffer), 0);
-
-	if (command == Command::NONE)
-		return;
-
-	MCD_RAM::GiveWordRAMToSubCPU();
-
-	// Start transfer.
-	SubmitSubCPUCommand(command);
-
-	switch (command)
-	{
-		default:
-			break;
-
-		case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
-		case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
-		case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
-			while (!MD::MegaCD::CDC::mode.data_set_ready);
-
-			auto *sector_buffer_pointer = sector_buffer.data();
-
-			// Read header junk.
-			*sector_buffer_pointer = MD::MegaCD::CDC::host_data;
-			*sector_buffer_pointer = MD::MegaCD::CDC::host_data;
-
-			// Read actual sector data.
-			switch (command)
-			{
-				default:
-					break;
-
-				case Command::BEGIN_TRANSFER_HOST_MAIN_READ_PAST_END:
-					for (auto &word : sector_buffer)
-						word = MD::MegaCD::CDC::host_data;
-					break;
-
-				case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_DSR:
-					while (MD::MegaCD::CDC::mode.data_set_ready)
-						*sector_buffer_pointer++ = MD::MegaCD::CDC::host_data;
-					break;
-
-				case Command::BEGIN_TRANSFER_HOST_MAIN_WAIT_FOR_EDT:
-					while (!MD::MegaCD::CDC::mode.end_of_data_transfer)
-						*sector_buffer_pointer++ = MD::MegaCD::CDC::host_data;
-					break;
-			}
-
-			break;
-	}
-
-	// Finish transfer.
-	SubmitSubCPUCommand(Command::END_TRANSFER);
-}
-
 void _EntryPoint()
 {
 	auto vdp_register01 = MD::VDP::Register01{.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
@@ -406,8 +252,6 @@ void _EntryPoint()
 	}
 #endif
 
-	MD::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
-
 	// Write colours to CRAM.
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, 0);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{0, 0, 0});
@@ -426,63 +270,39 @@ void _EntryPoint()
 
 	MD::M68k::SetInterruptMask(0);
 
-	SetupPlaneWrite(2, 1);
-	DrawString("Method: ");
+	MD::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
 
-	SubmitSubCPUCommand(Command::REQUEST_WORD_RAM);
-
-	static constexpr auto DoEverything = []()
-	{
-		static constexpr auto DrawHeader = [](const char* const string)
-		{
-			SetupPlaneWrite(10, 1);
-			DrawString(string);
-		};
-
-		DrawHeader("                         ");
-		DrawHeader(modes[current_mode].label);
-		DoTransfer(modes[current_mode].command);
-		DrawHexViewer();
-	};
-
-	DoEverything();
+	mode.emplace<MainMenu>();
 
 	for (;;)
 	{
 		// Wait for vertical interrupt.
 		asm("stop #0x2000");
 
-		// Scroll up and down.
-		const auto old_hex_viewer_starting_position = hex_viewer_starting_position;
-		static constexpr unsigned int scroll_amount = 8;
+		const auto mode_id = std::visit(
+			[](auto &&mode)
+			{
+				return mode.Update();
+			},
+			mode
+		);
 
-		if (control_pads[0].held.up)
-			hex_viewer_starting_position -= std::min<unsigned int>(scroll_amount, hex_viewer_starting_position);
-		if (control_pads[0].held.down)
-			hex_viewer_starting_position += std::min<unsigned int>(scroll_amount, std::size(sector_buffer) - HEX_VIEWER_TOTAL_WORDS_VISIBLE - hex_viewer_starting_position);
-
-		if (old_hex_viewer_starting_position != hex_viewer_starting_position)
-			DrawHexViewer();
-
-		// Cycle methods.
-		const auto old_current_mode = current_mode;
-
-		if (control_pads[0].pressed.left)
+		switch (mode_id)
 		{
-			if (current_mode == 0)
-				current_mode = std::size(modes) - 1;
-			else
-				--current_mode;
-		}
-		if (control_pads[0].pressed.right)
-		{
-			if (current_mode == std::size(modes) - 1)
-				current_mode = 0;
-			else
-				++current_mode;
-		}
+			case ModeID::UNCHANGED:
+				break;
 
-		if (old_current_mode != current_mode)
-			DoEverything();
+			case ModeID::MAIN_MENU:
+				mode.emplace<MainMenu>();
+				break;
+
+			case ModeID::CDC_TEST:
+				mode.emplace<CDCTest>();
+				break;
+
+			case ModeID::GRAPHICS_TEST:
+				mode.emplace<GraphicsTest>();
+				break;
+		}
 	}
 }

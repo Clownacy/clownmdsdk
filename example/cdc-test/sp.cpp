@@ -219,6 +219,53 @@ void _SP_Main()
 			case Command::END_TRANSFER:
 				MCD::BIOS::CDC::Acknowledge();
 				break;
+
+			case Command::DO_GRAPHICS_TRANSFORMATION:
+			{
+				const unsigned int width = 7;
+				const unsigned int height = 3;
+
+				MCD::stamp_data_size.stamp_map_size = 0;
+				MCD::stamp_data_size.stamp_size = 1;
+				MCD::stamp_data_size.repeat = true;
+
+				const std::size_t stamp_map_offset = 0x10000;
+				const std::size_t image_buffer_offset = 0x20000;
+
+				MCD::stamp_map_base_address = stamp_map_offset / 4;
+				MCD::image_buffer_vertical_cell_size = height - 1;
+				MCD::image_buffer_start_address = image_buffer_offset / 4;
+				MCD::image_buffer_offset.y = 0;
+				MCD::image_buffer_offset.x = 6;
+				MCD::image_buffer_horizontal_dot_size = width * 8;
+				MCD::image_buffer_vertical_dot_size = height * 8 + 4;
+
+				for (unsigned int y = 0; y < 2; ++y)
+				{
+					for (unsigned int x = 0; x < 2; ++x)
+					{
+						MCD::word_ram_2m<unsigned short>[stamp_map_offset / 2 + y * (256 / 32) + x] = (1 + (y * 2 + x)) * 4;
+					}
+				}
+
+				const std::size_t trace_vector_offset = 0x30000;
+
+				for (unsigned int i = 0; i < MCD::image_buffer_vertical_dot_size; ++i)
+				{
+					MCD::word_ram_2m<unsigned short>[trace_vector_offset / 2 + i * 4 + 0] = 0;
+					MCD::word_ram_2m<unsigned short>[trace_vector_offset / 2 + i * 4 + 1] = i << 3;
+					MCD::word_ram_2m<unsigned short>[trace_vector_offset / 2 + i * 4 + 2] = 1 << 11;
+					MCD::word_ram_2m<unsigned short>[trace_vector_offset / 2 + i * 4 + 3] = (0 << 11) + 0;
+				}
+
+				MCD::trace_vector_base_address = trace_vector_offset / 4;
+
+				while (MCD::stamp_data_size.graphics_operation_in_progress);
+
+				MCD::GiveWordRAMToMainCPU();
+
+				break;
+			}
 		}
 
 		MCD::communication_flag_ours = command_value;
