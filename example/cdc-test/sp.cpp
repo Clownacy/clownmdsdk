@@ -225,8 +225,8 @@ void _SP_Main()
 				const unsigned int width = 7;
 				const unsigned int height = 3;
 
-				MCD::stamp_data_size.stamp_map_size = 0;
-				MCD::stamp_data_size.stamp_size = 1;
+				MCD::stamp_data_size.large_stamp_map = false;
+				MCD::stamp_data_size.large_stamps = true;
 				MCD::stamp_data_size.repeat = true;
 
 				const std::size_t stamp_map_offset = 0x10000;
@@ -236,7 +236,7 @@ void _SP_Main()
 				MCD::image_buffer_vertical_cell_size = height - 1;
 				MCD::image_buffer_start_address = image_buffer_offset / 4;
 				MCD::image_buffer_offset.y = 0;
-				MCD::image_buffer_offset.x = 6;
+				MCD::image_buffer_offset.x = 4;
 				MCD::image_buffer_horizontal_dot_size = width * 8;
 				MCD::image_buffer_vertical_dot_size = height * 8 + 4;
 

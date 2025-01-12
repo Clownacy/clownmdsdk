@@ -1446,8 +1446,8 @@ namespace ClownMDSDK
 			bool bit5 : 1 = false;
 			bool bit4 : 1 = false;
 			bool bit3 : 1 = false;
-			unsigned int stamp_map_size : 1; // TODO: Enum.
-			unsigned int stamp_size : 1; // TODO: Enum.
+			bool large_stamp_map : 1;
+			bool large_stamps : 1;
 			bool repeat : 1;
 		};
 
