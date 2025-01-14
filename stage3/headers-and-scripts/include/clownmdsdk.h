@@ -906,7 +906,7 @@ namespace ClownMDSDK
 
 				auto& IOData(const std::size_t index)
 				{
-					assert(index < total_io_ports);
+					assert(index < ClownMDSDK::MainCPU::Unsafe::total_io_ports);
 					return IOData()[index];
 				}
 
@@ -917,7 +917,7 @@ namespace ClownMDSDK
 
 				auto& IOCtrl(const std::size_t index)
 				{
-					assert(index < total_io_ports);
+					assert(index < ClownMDSDK::MainCPU::Unsafe::total_io_ports);
 					return IOCtrl()[index];
 				}
 
@@ -943,7 +943,7 @@ namespace ClownMDSDK
 						"	nop\n"              // 4(1/0)
 						"	nop\n"              // 4(1/0)
 						:
-						: "a" (FM::Unsafe::ports), "idQUm" (address), "idQUm" (value)
+						: "a" (std::data(FM::Unsafe::ports)), "idQUm" (address), "idQUm" (value)
 						: "cc"
 					);
 				}
@@ -960,7 +960,7 @@ namespace ClownMDSDK
 						"	nop\n"              // 4(1/0)
 						"	nop\n"              // 4(1/0)
 						:
-						: "a" (FM::Unsafe::ports), "idQUm" (address), "idQUm" (value)
+						: "a" (std::data(FM::Unsafe::ports)), "idQUm" (address), "idQUm" (value)
 						: "cc"
 					);
 				}
