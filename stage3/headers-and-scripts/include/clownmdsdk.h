@@ -489,6 +489,28 @@ namespace ClownMDSDK
 					bool y_flip : 1;
 					bool x_flip : 1;
 					unsigned int tile_index : 11;
+
+					[[nodiscard]] auto ToggleXFlip() const
+					{
+						auto copy = *this;
+						copy.x_flip = !copy.x_flip;
+						return copy;
+					}
+
+					[[nodiscard]] auto ToggleYFlip() const
+					{
+						auto copy = *this;
+						copy.y_flip = !copy.y_flip;
+						return copy;
+					}
+
+					[[nodiscard]] auto ToggleXYFlip() const
+					{
+						auto copy = *this;
+						copy.x_flip = !copy.x_flip;
+						copy.y_flip = !copy.y_flip;
+						return copy;
+					}
 				};
 
 				static_assert(std::is_standard_layout_v<TileMetadata> && sizeof(TileMetadata) == 2); // Make sure that this has no hidden data.
@@ -897,6 +919,12 @@ namespace ClownMDSDK
 				auto& RAM()
 				{
 					return Unsafe::ram;
+				}
+
+				auto& RAM(const std::size_t index)
+				{
+					assert(index < std::size(Unsafe::ram));
+					return RAM()[index];
 				}
 
 				auto& IOData()
