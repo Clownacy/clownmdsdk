@@ -5,7 +5,7 @@
 
 namespace std
 {
-	int abs(int i);
+	extern "C" int abs(int i);
 
 	extern "C" void* memcpy(void *dest, const void *src, std::size_t count);
 	extern "C" void* memmove(void *dest, const void *src, std::size_t count);
