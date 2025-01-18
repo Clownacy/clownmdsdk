@@ -168,10 +168,10 @@ namespace ClownMDSDK
 			namespace Unsafe
 			{
 				__BIND_ADDRESS(0xA04000, ports, std::array<volatile unsigned char, 4>);
-				static auto &A0 = ports[0];
-				static auto &D0 = ports[1];
-				static auto &A1 = ports[2];
-				static auto &D1 = ports[3];
+				__BIND_ADDRESS(0xA04000, a0, volatile unsigned char);
+				__BIND_ADDRESS(0xA04001, d0, volatile unsigned char);
+				__BIND_ADDRESS(0xA04002, a1, volatile unsigned char);
+				__BIND_ADDRESS(0xA04003, d1, volatile unsigned char);
 			}
 
 			static constexpr unsigned int sample_rate = M68k::clock / (6 * 6 * 4);
