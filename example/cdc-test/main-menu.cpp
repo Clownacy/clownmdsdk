@@ -21,10 +21,7 @@ static constexpr auto options = std::to_array<OptionsMenuEntry>({
 
 void MainMenu::DoEverything()
 {
-	MD::VDP::SetAddressIncrement(1);
-	MD::VDP::VRAM::FillBytesWithDMA(VRAM_PLANE_A, PLANE_WIDTH * PLANE_HEIGHT * 2, 0);
-	MD::VDP::WaitUntilDMAIsComplete();
-	MD::VDP::SetAddressIncrement(2);
+	ClearPlaneA();
 
 	const auto tile_y = SCREEN_HEIGHT / MD::VDP::VRAM::TILE_HEIGHT_NORMAL / 2;
 
