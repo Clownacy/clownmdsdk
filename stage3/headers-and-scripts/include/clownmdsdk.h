@@ -959,13 +959,24 @@ namespace ClownMDSDK
 					return ClownMDSDK::MainCPU::Unsafe::IsMegaCDConnected();
 				}
 
-				void WriteFMI(const unsigned char address, const unsigned char value)
+				void WaitUntilFMReady()
 				{
 					asm(
 						"0:\n"
-						"	tst.b	(%0)\n"     // 8(2/0)
-						"	bmi.s	0b\n"       // 10(2/0) | 8(1/0)
-						"	move.b	%1,(%0)\n"  // 8(1/1)
+						"	tst.b	%0\n" // 8(2/0)
+						"	bmi.s	0b\n" // 10(2/0) | 8(1/0)
+						: "=Qm" (FM::Unsafe::a0)
+						:
+						: "cc"
+					);
+				}
+
+				void WriteFMI(const unsigned char address, const unsigned char value)
+				{
+					WaitUntilFMReady();
+
+					asm(
+							"move.b	%1,(%0)\n"  // 8(1/1)
 						"	move.b	%2,1(%0)\n" // 12(2/1)
 						"	nop\n"              // 4(1/0)
 						"	nop\n"              // 4(1/0)
@@ -978,11 +989,10 @@ namespace ClownMDSDK
 
 				void WriteFMII(const unsigned char address, const unsigned char value)
 				{
+					WaitUntilFMReady();
+
 					asm(
-						"0:\n"
-						"	tst.b	(%0)\n"     // 8(2/0)
-						"	bmi.s	0b\n"       // 10(2/0) | 8(1/0)
-						"	move.b	%1,2(%0)\n" // 12(2/1)
+							"move.b	%1,2(%0)\n" // 12(2/1)
 						"	move.b	%2,3(%0)\n" // 12(2/1)
 						"	nop\n"              // 4(1/0)
 						"	nop\n"              // 4(1/0)
