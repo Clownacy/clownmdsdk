@@ -1,6 +1,7 @@
 	include /opt/clownmdsdk/generic.mk
 
-CFLAGS += -O3 -flto -DNDEBUG -Wall -Wextra -Wpedantic -fvisibility=hidden
+# TODO: Use '-flto' here once GCC fixes whatever ridiculous bug of theirs is causing `memset` to resolve to address 0.
+CFLAGS += -O3 -DNDEBUG -Wall -Wextra -Wpedantic -fvisibility=hidden
 
 all: ../bin/lib/libc.a ../bin/init-cartridge.o ../bin/init-ip.o ../bin/init-sp.o
 
