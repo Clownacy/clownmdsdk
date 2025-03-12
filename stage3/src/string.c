@@ -12,7 +12,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <string.h>
 
 static unsigned long _RepeatByteToUnsignedLong(const int ch)
 {

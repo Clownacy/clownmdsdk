@@ -1,5 +1,5 @@
-#ifndef STDLIB_H
-#define STDLIB_H
+#ifndef STRING_H
+#define STRING_H
 
 #include <stddef.h>
 
@@ -17,4 +17,4 @@ __attribute__((visibility("default"))) void* memset(void *dest, int ch, size_t c
 }
 #endif
 
-#endif /* STDLIB_H */
+#endif /* STRING_H */

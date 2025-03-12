@@ -1,5 +1,5 @@
-#ifndef CSTDLIB_H
-#define CSTDLIB_H
+#ifndef CSTRING_H
+#define CSTRING_H
 
 #include <cstddef>
 
@@ -12,4 +12,4 @@ namespace std
 	extern "C" void* memset(void *dest, int ch, std::size_t count);
 }
 
-#endif /* CSTDLIB_H */
+#endif /* CSTRING_H */
