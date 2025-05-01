@@ -8,7 +8,7 @@ CPP := $(CLOWNMDSDK_PREFIX)cpp
 LD := $(CLOWNMDSDK_PREFIX)ld
 INCBIN := $(CLOWNMDSDK_PREFIX)objcopy -I binary -O elf32-m68k --rename-section .data=.rodata,alloc,load,readonly,data,contents
 
-CLOWNMDSDK_CANDCXXFLAGS := -mshort -D__MEGA_DRIVE__ -ffreestanding -nodefaultlibs -fno-ident -fno-use-cxa-atexit -isystem $(CLOWNMDSDK_LOCATION)/include -L $(CLOWNMDSDK_LOCATION)/lib
+CLOWNMDSDK_CANDCXXFLAGS := -mshort -D__MEGA_DRIVE__ -ffreestanding -nodefaultlibs -fno-ident -isystem $(CLOWNMDSDK_LOCATION)/include -L $(CLOWNMDSDK_LOCATION)/lib
 CFLAGS := $(CLOWNMDSDK_CANDCXXFLAGS)
-CXXFLAGS := $(CLOWNMDSDK_CANDCXXFLAGS) -fno-exceptions -fno-rtti
+CXXFLAGS := $(CLOWNMDSDK_CANDCXXFLAGS) -fno-exceptions -fno-rtti -fno-use-cxa-atexit
 LDFLAGS := -lgcc -lc
