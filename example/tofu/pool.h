@@ -1,0 +1,120 @@
+#ifndef POOL_H
+#define POOL_H
+
+#include <cstddef>
+#include <span>
+
+#include "doubly-linked-list.h"
+#include "singly-linked-list.h"
+
+template<typename T>
+class Pool : protected ListCommon<Pool<T>, T>
+{
+private:
+	using Common = ListCommon<Pool<T>, T>;
+
+public:
+	MAKE_SINGLY_LINKED_LIST_ENTRY_TYPE(DeallocatedListEntry, GetDeallocatedListEntry);
+	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(AllocatedListEntry, GetAllocatedListEntry);
+
+	struct Entry : public DeallocatedListEntry<Entry>, public AllocatedListEntry<Entry>
+	{
+	public:
+		friend Pool<T>;
+
+		T* GetNext()
+		{
+			return static_cast<T*>(AllocatedListEntry<Entry>::GetNext());
+		}
+
+		const auto& GetPoolEntry() const
+		{
+			return *this;
+		}
+
+		void SetPoolEntry(const Entry &other)
+		{
+			*this = other;
+		}
+	};
+
+private:
+	DoublyLinkedList<Entry, AllocatedListEntry<Entry>> allocated;
+	SinglyLinkedList<Entry, DeallocatedListEntry<Entry>> deallocated;
+
+public:
+	Pool(const std::span<T> &array)
+	{
+		for (auto &entry : array)
+			deallocated.push_back(entry);
+	}
+
+	T& allocate_front()
+	{
+		Entry &entry = deallocated.pop_front();
+
+		allocated.push_front(entry);
+
+		return *static_cast<T*>(&entry);
+	}
+
+	T& allocate_back()
+	{
+		Entry &entry = deallocated.pop_front();
+
+		allocated.push_back(entry);
+
+		return *static_cast<T*>(&entry);
+	}
+
+	void deallocate(T &entry)
+	{
+		// Remove from allocated object list.
+		allocated.erase(entry);
+
+		// Add to deallocated object list.
+		deallocated.push_front(entry);
+	}
+
+	Common::Iterator begin()
+	{
+		if (empty())
+			return typename Common::Iterator();
+
+		return typename Common::Iterator(static_cast<Entry*>(&allocated.front()));
+	}
+
+	Common::Iterator end()
+	{
+		return typename Common::Iterator();
+	}
+
+	template<typename Self>
+	auto& front(this Self &self)
+	{
+		return self.allocated.front();
+	}
+
+	template<typename Self>
+	auto& back(this Self &self)
+	{
+		return self.allocated.back();
+	}
+
+	std::size_t length() const
+	{
+		return allocated.length();
+	}
+
+	bool empty() const
+	{
+		return allocated.empty();
+	}
+
+	bool full() const
+	{
+		return deallocated.empty();
+	}
+};
+
+#endif /* POOL_H */
