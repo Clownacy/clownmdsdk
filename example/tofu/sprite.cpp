@@ -1,5 +1,7 @@
 #include "sprite.h"
 
+#include "level.h"
+
 std::array<VDP::VRAM::Sprite, 80> Sprite::table;
 unsigned char Sprite::total_sprites;
 
@@ -14,8 +16,8 @@ void Sprite::Queue(const unsigned int x, const unsigned int y, const unsigned in
 	};
 
 	auto &sprite = table[total_sprites++];
-	sprite.x = OffsetCoordinate(x, width);
-	sprite.y = OffsetCoordinate(y, height);
+	sprite.x = OffsetCoordinate(x, width) - Level::camera.x;
+	sprite.y = OffsetCoordinate(y, height) - Level::camera.y;
 	sprite.width = width;
 	sprite.height = height;
 	sprite.link = total_sprites;

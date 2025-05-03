@@ -11,9 +11,13 @@ using namespace ClownMDSDK::MainCPU;
 
 namespace Level
 {
+	static constexpr Coordinate::Pixel screen_size(320, 224);
+
 	static constexpr unsigned int level_width_in_blocks = 0x20;
 	static constexpr unsigned int level_height_in_blocks = 0x10;
+
 	extern const std::array<unsigned char, level_width_in_blocks * level_height_in_blocks> blocks;
+	extern Coordinate::Pixel camera;
 
 	void Redraw(Z80::Bus &z80_bus);
 

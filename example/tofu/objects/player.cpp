@@ -83,5 +83,16 @@ void Objects::Player::Update()
 	// Gravity.
 	y_velocity += 0x5000;
 
+	// Updata camera.
+	Level::camera = Coordinate::Pixel(position);
+
+	// Restrict camera to bounds of level.
+	Level::camera.x = std::clamp(Level::camera.x, Level::screen_size.x / 2, Level::level_width_in_blocks  * Coordinate::block_width_in_pixels  - Level::screen_size.x / 2);
+	Level::camera.y = std::clamp(Level::camera.y, Level::screen_size.y / 2, Level::level_height_in_blocks * Coordinate::block_height_in_pixels - Level::screen_size.y / 2);
+
+	// Centre camera on target.
+	Level::camera.x -= Level::screen_size.x / 2;
+	Level::camera.y -= Level::screen_size.y / 2;
+
 	QueueForDisplay(facing_left ? -2 : 2, -2, 1, 3, {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = facing_left, .tile_index = 8});
 }

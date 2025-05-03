@@ -16,6 +16,7 @@
 
 #include <clownmdsdk.h>
 
+#include "coordinate.h"
 #include "controller.h"
 #include "level.h"
 #include "objects.h"
@@ -128,6 +129,14 @@ void _Level6InterruptHandler()
 
 	Z80::Bus z80_bus;
 	Sprite::UploadTable(z80_bus);
+
+	VDP::SendCommand(VDP::RAM::VSRAM, VDP::Access::WRITE, 0);
+	VDP::Write(VDP::DataValueWord(Level::camera.y));
+
+	VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, 0xDC00);
+	VDP::Write(VDP::DataValueWord(-Level::camera.x));
+
+	Level::Redraw(z80_bus);
 }
 
 void _Level7InterruptHandler()
@@ -253,7 +262,6 @@ void _EntryPoint()
 	for (;;)
 	{
 		Objects::Update();
-
 		WaitForVerticalInterrupt();
 	}
 }
