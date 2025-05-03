@@ -1,5 +1,5 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef CONTROL_PAD_MANAGER_H
+#define CONTROL_PAD_MANAGER_H
 
 #include <cstddef>
 
@@ -23,7 +23,7 @@ class ControlPadManager
 		{
 			ClownMDSDK::MainCPU::Z80::Bus z80_bus;
 
-			for (unsigned int i = 0; i < control_pads.size(); ++i)
+			for (unsigned int i = 0; i < std::size(control_pads); ++i)
 				z80_bus.InitialiseIOPortAsControlPad3Button(i);
 		}
 
@@ -35,13 +35,13 @@ class ControlPadManager
 
 				ClownMDSDK::MainCPU::Z80::Bus z80_bus;
 
-				for (unsigned int i = 0; i < data.size(); ++i)
+				for (unsigned int i = 0; i < std::size(data); ++i)
 					data[i] = z80_bus.ReadIOPortAsControlPad3Button(i);
 
 				return data;
 			}();
 
-			for (unsigned int i = 0; i < control_pads.size(); ++i)
+			for (unsigned int i = 0; i < std::size(control_pads); ++i)
 			{
 				const unsigned char new_held = std::bit_cast<unsigned char>(control_pad_data[i]);
 				const unsigned char old_held = std::bit_cast<unsigned char>(control_pads[i].held);
@@ -56,6 +56,11 @@ class ControlPadManager
 		{
 			return control_pads;
 		}
+
+		const auto& GetControlPad(const std::size_t index)
+		{
+			return control_pads[index];
+		}
 };
 
-#endif // CONTROLLER_H
+#endif // CONTROL_PAD_MANAGER_H
