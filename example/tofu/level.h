@@ -19,7 +19,8 @@ namespace Level
 	extern const std::array<unsigned char, level_width_in_blocks * level_height_in_blocks> blocks;
 	extern Coordinate::Pixel camera;
 
-	void Redraw(Z80::Bus &z80_bus);
+	void DrawWholeScreen(Z80::Bus &z80_bus);
+	void Draw(Z80::Bus &z80_bus);
 
 	[[nodiscard]] inline const auto& GetBlock(const Coordinate::Block &position)
 	{

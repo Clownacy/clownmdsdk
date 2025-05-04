@@ -136,7 +136,7 @@ void _Level6InterruptHandler()
 	VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, 0xDC00);
 	VDP::Write(VDP::DataValueWord(-Level::camera.x));
 
-	Level::Redraw(z80_bus);
+	Level::Draw(z80_bus);
 }
 
 void _Level7InterruptHandler()
@@ -251,7 +251,7 @@ void _EntryPoint()
 		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::CRAM, 0, std::data(palette), std::size(palette) / sizeof(short));
 
 		// Draw level.
-		Level::Redraw(z80_bus);
+		Level::DrawWholeScreen(z80_bus);
 	}
 
 	vdp_register_01.enable_display = true;
