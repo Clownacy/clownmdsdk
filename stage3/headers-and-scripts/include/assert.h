@@ -1,24 +1,27 @@
 #ifndef ASSERT_H
 #define ASSERT_H
 
-/* TODO: Proper assert handling. */
-#ifdef NDEBUG
-#define assert(x) ((void)0)
-#else
-#define assert(x) \
+#define _assert_internal(CONDITION, MESSAGE_PREFIX, MESSAGE, MESSAGE_SUFFIX) \
 	do \
 	{ \
-		if (!(x)) \
+		if (!(CONDITION)) \
 		{ \
 			/* TODO: What do we do about the SubCPU? */ \
-			ClownMDSDK::MainCPU::Debug::PrintLine(__func__, "() at " __FILE__ ":", __LINE__); \
-			ClownMDSDK::MainCPU::Debug::PrintLine("    Assertion '" #x "' failed."); \
+			ClownMDSDK::MainCPU::Debug::PrintLine(__PRETTY_FUNCTION__, " at " __FILE__ ":", __LINE__); \
+			ClownMDSDK::MainCPU::Debug::PrintLine("    Assertion '" #CONDITION "' failed" MESSAGE_PREFIX MESSAGE MESSAGE_SUFFIX "."); \
+			/* TODO: This should be a call to 'std::abort'. */ \
 			asm("illegal"); \
 		} \
 	} while(0)
+
+/* TODO: Proper assert handling. */
+#ifdef NDEBUG
+	#define assert(CONDITION) ((void)0)
+#else
+	#define assert(CONDITION) _assert_internal(CONDITION, "", "", "")
 #endif
 
-#define assertm(x, message) assert((x) && message)
+#define _assertm(CONDITION, MESSAGE) _assert_internal(CONDITION, " with message '", MESSAGE, "'")
 
 #include <clownmdsdk.h>
 
