@@ -45,14 +45,14 @@ public:
 		}
 
 		template<typename Self>
-		auto* operator->(this Self &self)
+		auto* operator->(this Self &&self)
 		{
 			assert(self.entry != Derived::Entry::GetNull());
 			return static_cast<copy_const_t<Self, BaseType>*>(self.entry);
 		}
 
 		template<typename Self>
-		auto& operator*(this Self &self)
+		auto& operator*(this Self &&self)
 		{
 			return *self.operator->();
 		}

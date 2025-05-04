@@ -54,7 +54,7 @@ public:
 		}
 
 		template<typename Self>
-		auto GetNext(this Self &self)
+		auto* GetNext(this Self &&self)
 		{
 			return static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->next);
 		}
@@ -78,14 +78,14 @@ public:
 	}
 
 	template<typename Self>
-	auto& front(this Self &self)
+	auto& front(this Self &&self)
 	{
 		assert(self.head != nullptr);
 		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.head));
 	}
 
 	template<typename Self>
-	auto& back(this Self &self)
+	auto& back(this Self &&self)
 	{
 		assert(self.tail != nullptr);
 		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.tail));

@@ -55,13 +55,13 @@ public:
 		}
 
 		template<typename Self>
-		auto GetNext(this Self &self)
+		auto* GetNext(this Self &&self)
 		{
 			return static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(&self)->next);
 		}
 
 		template<typename Self>
-		auto GetPrevious(this Self &self)
+		auto* GetPrevious(this Self &&self)
 		{
 			return static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(&self)->previous);
 		}
@@ -99,14 +99,14 @@ public:
 	}
 
 	template<typename Self>
-	auto& front(this Self &self)
+	auto& front(this Self &&self)
 	{
 		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
 		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(self.head));
 	}
 
 	template<typename Self>
-	auto& back(this Self &self)
+	auto& back(this Self &&self)
 	{
 		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
 		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(self.tail));

@@ -73,10 +73,7 @@ public:
 
 	Common::Iterator begin()
 	{
-		if (empty())
-			return typename Common::Iterator();
-
-		return typename Common::Iterator(static_cast<Entry*>(&allocated.front()));
+		return typename Common::Iterator(static_cast<Entry*>(&*allocated.begin()));
 	}
 
 	Common::Iterator end()
