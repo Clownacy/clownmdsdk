@@ -22,7 +22,7 @@ public:
 		Derived::Entry *entry;
 
 	public:
-		Iterator(Derived::Entry* const entry = nullptr)
+		Iterator(Derived::Entry* const entry = Derived::Entry::GetNull())
 			: entry(entry)
 		{}
 
@@ -39,17 +39,24 @@ public:
 			return old;
 		}
 
-		bool operator!=(Iterator &other) const
+		bool operator!=(const Iterator &other) const
 		{
 			return entry != other.entry;
 		}
 
 		template<typename Self>
+		auto* operator->(this Self &self)
+		{
+			assert(self.entry != Derived::Entry::GetNull());
+			return static_cast<copy_const_t<Self, BaseType>*>(self.entry);
+		}
+
+		template<typename Self>
 		auto& operator*(this Self &self)
 		{
-			assert(self.entry != nullptr);
-			return *static_cast<copy_const_t<Self, BaseType>*>(self.entry);
+			return *self.operator->();
 		}
+
 	};
 };
 

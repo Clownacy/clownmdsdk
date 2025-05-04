@@ -22,6 +22,11 @@ public:
 	public:
 		friend Pool<T>;
 
+		static constexpr auto GetNull()
+		{
+			return static_cast<T*>(AllocatedListEntry<Entry>::GetNull());
+		}
+
 		T* GetNext()
 		{
 			return static_cast<T*>(AllocatedListEntry<Entry>::GetNext());
@@ -67,13 +72,15 @@ public:
 		return *static_cast<T*>(&entry);
 	}
 
-	void deallocate(T &entry)
+	Common::Iterator deallocate(T &entry)
 	{
 		// Remove from allocated object list.
-		allocated.erase(entry);
+		const auto next = static_cast<T*>(allocated.erase(entry));
 
 		// Add to deallocated object list.
 		deallocated.push_front(entry);
+
+		return typename Common::Iterator(next);
 	}
 
 	Common::Iterator begin()

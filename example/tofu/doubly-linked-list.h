@@ -49,6 +49,11 @@ public:
 	public:
 		friend DoublyLinkedList<BaseType, EntryType>;
 
+		static constexpr auto GetNull()
+		{
+			return static_cast<BaseType*>(static_cast<DoublyLinkedListBase::Entry*>(nullptr));
+		}
+
 		template<typename Self>
 		auto GetNext(this Self &self)
 		{
@@ -72,14 +77,11 @@ public:
 		DoublyLinkedListBase::PushBack(&entry);
 	}
 
-	void erase(BaseType &entry)
+	BaseType* erase(Entry &entry)
 	{
+		const auto next = static_cast<BaseType*>(entry.GetNext());
 		DoublyLinkedListBase::Remove(&entry);
-	}
-
-	void erase(Entry &entry)
-	{
-		erase(*entry);
+		return next;
 	}
 
 	template<typename Self>

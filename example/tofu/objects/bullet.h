@@ -9,13 +9,14 @@ namespace Objects
 	{
 	protected:
 		long x_velocity;
+		unsigned int life = 60 * 1;
 		
 	public:
 		Bullet(const Coordinate::World &position, const long x_velocity)
 			: Base(position)
 			, x_velocity(x_velocity)
 		{}
-		void Update();
+		bool Update();
 	};
 }
 

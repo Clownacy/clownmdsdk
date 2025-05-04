@@ -48,6 +48,11 @@ public:
 	public:
 		friend SinglyLinkedList<BaseType, EntryType>;
 
+		static constexpr auto GetNull()
+		{
+			return static_cast<BaseType*>(static_cast<SinglyLinkedListBase::Entry*>(nullptr));
+		}
+
 		template<typename Self>
 		auto GetNext(this Self &self)
 		{
@@ -68,7 +73,7 @@ public:
 	BaseType& pop_front()
 	{
 		const auto pointer = SinglyLinkedListBase::PopFront();
-		assertm(pointer != nullptr, "Tried to pop empty list!");
+		_assertm(pointer != nullptr, "Tried to pop empty list!");
 		return *static_cast<BaseType*>(static_cast<Entry*>(pointer));
 	}
 

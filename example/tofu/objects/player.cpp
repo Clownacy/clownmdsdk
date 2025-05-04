@@ -7,7 +7,7 @@
 #include "../objects.h"
 #include "../sprite.h"
 
-void Objects::Player::Update()
+bool Objects::Player::Update()
 {
 	constexpr unsigned long hitbox_radius_x =  4 * 0x10000;
 	constexpr unsigned long hitbox_radius_y = 14 * 0x10000;
@@ -88,7 +88,7 @@ void Objects::Player::Update()
 
 	if (controller.pressed.b)
 	{
-		Objects::AllocateBack<Bullet>(position, facing_left ? -0x40000 : 0x40000);
+		Objects::AllocateBack<Bullet>(position, facing_left ? -0x60000 : 0x60000);
 	}
 
 	// Updata camera.
@@ -103,4 +103,6 @@ void Objects::Player::Update()
 	Level::camera.y -= Level::screen_size.y / 2;
 
 	QueueForDisplay(facing_left ? -2 : 2, -2, 1, 3, {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = facing_left, .tile_index = 8});
+
+	return true;
 }

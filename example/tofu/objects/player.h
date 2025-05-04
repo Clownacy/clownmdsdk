@@ -12,7 +12,7 @@ namespace Objects
 		long y_velocity;
 
 		using Base::Base;
-		void Update();
+		bool Update();
 	};
 }
 
