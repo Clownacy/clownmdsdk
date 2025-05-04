@@ -52,10 +52,16 @@ namespace Coordinate
 				return self.y;
 		}
 
+		constexpr World ToWorld(this auto &&self);
+		constexpr Pixel ToPixel(this auto &&self);
+		constexpr Tile ToTile(this auto &&self);
+		constexpr Block ToBlock(this auto &&self);
+
 		COORDINATE_BASE_MAKE_OPERATOR(+)
 		COORDINATE_BASE_MAKE_OPERATOR(-)
 		COORDINATE_BASE_MAKE_OPERATOR(*)
 		COORDINATE_BASE_MAKE_OPERATOR(/)
+		COORDINATE_BASE_MAKE_OPERATOR(%)
 	};
 
 	class World : public Base<unsigned long>
@@ -145,6 +151,30 @@ namespace Coordinate
 	constexpr inline Block::Block(const World &world)
 		: Block(Pixel(world))
 	{}
+
+	template<typename Integer>
+	constexpr inline World Base<Integer>::ToWorld(this auto &&self)
+	{
+		return self;
+	}
+
+	template<typename Integer>
+	constexpr inline Pixel Base<Integer>::ToPixel(this auto &&self)
+	{
+		return self;
+	}
+
+	template<typename Integer>
+	constexpr inline Tile Base<Integer>::ToTile(this auto &&self)
+	{
+		return self;
+	}
+
+	template<typename Integer>
+	constexpr inline Block Base<Integer>::ToBlock(this auto &&self)
+	{
+		return self;
+	}
 }
 
 #endif // COORDINATE_H
