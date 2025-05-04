@@ -67,7 +67,9 @@ public:
 
 	BaseType& pop_front()
 	{
-		return *static_cast<BaseType*>(static_cast<Entry*>(SinglyLinkedListBase::PopFront()));
+		const auto pointer = SinglyLinkedListBase::PopFront();
+		assertm(pointer != nullptr, "Tried to pop empty list!");
+		return *static_cast<BaseType*>(static_cast<Entry*>(pointer));
 	}
 
 	template<typename Self>

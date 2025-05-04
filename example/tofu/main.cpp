@@ -257,7 +257,7 @@ void _EntryPoint()
 	vdp_register_01.enable_display = true;
 	VDP::Write(vdp_register_01);
 
-	Objects::AllocateFront<Objects::Player>();
+	Objects::AllocateFront<Objects::Player>(Coordinate::Block(7, 3));
 
 	for (;;)
 	{

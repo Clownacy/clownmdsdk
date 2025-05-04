@@ -4,30 +4,33 @@
 #include <array>
 #include <variant>
 
-#include <clownmdsdk.h>
-
-#include "pool.h"
+#include "objects/bullet.h"
 #include "objects/player.h"
-
-using namespace ClownMDSDK::MainCPU;
+#include "pool.h"
 
 namespace Objects
 {
-	class PoolEntry : public std::variant<Player>, public Pool<PoolEntry>::Entry {};
+	class PoolEntry : public std::variant<std::monostate, Bullet, Player>, public Pool<PoolEntry>::Entry {};
 
 	extern std::array<PoolEntry, 0x10> pool_buffer;
 	extern Pool<PoolEntry> pool;
 
-	template<typename T>
-	T& AllocateFront()
+	template<typename T, typename... Args>
+	T* AllocateFront(Args &&...args)
 	{
-		return pool.allocate_front().emplace<T>();
+		if (pool.full())
+			return nullptr;
+
+		return &pool.allocate_front().emplace<T>(std::forward<Args>(args)...);
 	}
 
-	template<typename T>
-	T& AllocateBack()
+	template<typename T, typename... Args>
+	T* AllocateBack(Args &&...args)
 	{
-		return pool.allocate_back().emplace<T>();
+		if (pool.full())
+			return nullptr;
+
+		return &pool.allocate_back().emplace<T>(std::forward<Args>(args)...);
 	}
 
 	void Update();

@@ -1,7 +1,10 @@
 #include "player.h"
 
+#include <algorithm>
+
 #include "../controller.h"
 #include "../level.h"
+#include "../objects.h"
 #include "../sprite.h"
 
 void Objects::Player::Update()
@@ -82,6 +85,11 @@ void Objects::Player::Update()
 
 	// Gravity.
 	y_velocity += 0x5000;
+
+	if (controller.pressed.b)
+	{
+		Objects::AllocateBack<Bullet>(position, facing_left ? -0x40000 : 0x40000);
+	}
 
 	// Updata camera.
 	Level::camera = Coordinate::Pixel(position);

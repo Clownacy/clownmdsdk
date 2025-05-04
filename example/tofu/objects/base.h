@@ -14,6 +14,9 @@ namespace Objects
 	public:
 		Coordinate::World position;
 
+		Base(const Coordinate::World &position)
+			: position(position)
+		{}
 		void QueueForDisplay(int x_offset, int y_offset, unsigned int width, unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata);
 	};
 }

@@ -11,6 +11,7 @@ namespace Objects
 		bool facing_left, on_ground;
 		long y_velocity;
 
+		using Base::Base;
 		void Update();
 	};
 }

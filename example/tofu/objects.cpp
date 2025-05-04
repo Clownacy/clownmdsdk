@@ -7,9 +7,10 @@ void Objects::Update()
 {
 	for (auto &entry : pool)
 	{
-		entry.visit([](auto &&object)
+		entry.visit([]<typename T>(T &&object)
 		{
-			object.Update();
+			if constexpr (!std::is_same_v<std::remove_cvref_t<T>, std::monostate>)
+				object.Update();
 		});
 	}
 }
