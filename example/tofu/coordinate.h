@@ -21,12 +21,6 @@ using namespace ClownMDSDK::MainCPU;
 
 namespace Coordinate
 {
-	static constexpr unsigned int block_width_in_tiles = 2;
-	static constexpr unsigned int block_width_in_pixels = block_width_in_tiles * VDP::VRAM::TILE_WIDTH;
-
-	static constexpr unsigned int block_height_in_tiles = 2;
-	static constexpr unsigned int block_height_in_pixels = block_height_in_tiles * VDP::VRAM::TILE_HEIGHT_NORMAL;
-
 	class World;
 	class Pixel;
 	class Tile;
@@ -104,6 +98,12 @@ namespace Coordinate
 		constexpr Block(const World &world);
 	};
 
+	static constexpr Tile block_size_in_tiles(2, 2);
+
+	// TODO: Delete this.
+	static constexpr unsigned int block_width_in_tiles = block_size_in_tiles.x;
+	static constexpr unsigned int block_height_in_tiles = block_size_in_tiles.y;
+
 	constexpr inline World::World(const Pixel &pixel)
 		: Base(pixel.x * 0x10000, pixel.y * 0x10000)
 	{}
@@ -175,6 +175,10 @@ namespace Coordinate
 	{
 		return self;
 	}
+
+	// TODO: Delete this.
+	static constexpr unsigned int block_width_in_pixels = block_size_in_tiles.ToPixel().x;
+	static constexpr unsigned int block_height_in_pixels = block_size_in_tiles.ToPixel().y;
 }
 
 #endif // COORDINATE_H
