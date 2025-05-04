@@ -758,7 +758,68 @@ namespace ClownMDSDK
 					: "cc"
 				);
 			}
+		}
 
+		namespace Debug
+		{
+			namespace Internal
+			{
+				inline void Print(const char character)
+				{
+					// Some emulators treat the unused 0x9E VDP register as a character output.
+					// This includes ClownMDEmu, BlastEm, and Gens KMod.
+					// On other platforms, this is a harmless no-op.
+					VDP::Write(VDP::ControlValueWord(0x9E00 | character));
+				}
+
+				inline void Print(const char *string)
+				{
+					char character;
+					while ((character = *string++) != '\0')
+						Print(character);
+				}
+
+				template<typename TypeNative> requires std::is_integral_v<TypeNative>
+				inline void Print(const TypeNative value)
+				{
+					using Type = std::make_unsigned_t<TypeNative>;
+					auto integer = static_cast<Type>(value);
+
+					constexpr unsigned int total_bits = std::numeric_limits<Type>::digits;
+					constexpr unsigned int bits_per_nybble = 4;
+					constexpr unsigned int total_nybbles = total_bits / bits_per_nybble;
+
+					for (unsigned int i = 0; i < total_nybbles; ++i)
+					{
+						const char digit = integer >> total_bits - bits_per_nybble & (1 << bits_per_nybble) - 1;
+						const char character = digit + (digit < 0xA ? '0' - 0 : 'A' - 0xA);
+						Print(character);
+						integer <<= bits_per_nybble;
+					}
+				}
+			}
+
+			template<typename... Args>
+			inline void Print(Args... args)
+			{
+				(Internal::Print(std::forward<Args>(args)), ...);
+			}
+
+			inline void PrintNewline()
+			{
+				Print('\0');
+			}
+
+			template<typename... Args>
+			inline void PrintLine(Args... args)
+			{
+				Print(std::forward<Args>(args)...);
+				PrintNewline();
+			}
+		}
+
+		namespace VDP
+		{
 			namespace VRAM
 			{
 				struct Sprite
@@ -1297,61 +1358,6 @@ namespace ClownMDSDK
 
 					return true;
 				}
-			}
-		}
-
-		namespace Debug
-		{
-			namespace Internal
-			{
-				inline void Print(const char character)
-				{
-					// Some emulators treat the unused 0x9E VDP register as a character output.
-					// This includes ClownMDEmu, BlastEm, and Gens KMod.
-					// On other platforms, this is a harmless no-op.
-					VDP::Write(VDP::ControlValueWord(0x9E00 | character));
-				}
-
-				inline void Print(const char *string)
-				{
-					char character;
-					while ((character = *string++) != '\0')
-						Print(character);
-				}
-
-				template<typename T> requires std::is_integral_v<T> && std::is_unsigned_v<T>
-				inline void Print(T integer)
-				{
-					constexpr unsigned int total_bits = std::numeric_limits<T>::digits;
-					constexpr unsigned int bits_per_nybble = 4;
-					constexpr unsigned int total_nybbles = total_bits / bits_per_nybble;
-
-					for (unsigned int i = 0; i < total_nybbles; ++i)
-					{
-						const char digit = integer >> total_bits - bits_per_nybble & (1 << bits_per_nybble) - 1;
-						const char character = digit + (digit < 0xA ? '0' - 0 : 'A' - 0xA);
-						Print(character);
-						integer <<= bits_per_nybble;
-					}
-				}
-			}
-
-			template<typename... Args>
-			inline void Print(Args... args)
-			{
-				(Internal::Print(std::forward<Args>(args)), ...);
-			}
-
-			inline void PrintNewline()
-			{
-				Print('\0');
-			}
-
-			template<typename... Args>
-			inline void PrintLine(Args... args)
-			{
-				Print(std::forward<Args>(args)...);
-				PrintNewline();
 			}
 		}
 	}
