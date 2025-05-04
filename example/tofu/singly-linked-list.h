@@ -73,7 +73,7 @@ public:
 	BaseType& pop_front()
 	{
 		const auto pointer = SinglyLinkedListBase::PopFront();
-		_assertm(pointer != nullptr, "Tried to pop empty list!");
+		_assertm(pointer != nullptr, "Tried to pop empty list.");
 		return *static_cast<BaseType*>(static_cast<Entry*>(pointer));
 	}
 

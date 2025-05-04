@@ -5,7 +5,6 @@
 #include <span>
 
 #include "doubly-linked-list.h"
-#include "singly-linked-list.h"
 
 template<typename T>
 class Pool : protected ListCommon<Pool<T>, T>
@@ -14,23 +13,12 @@ private:
 	using Common = ListCommon<Pool<T>, T>;
 
 public:
-	MAKE_SINGLY_LINKED_LIST_ENTRY_TYPE(DeallocatedListEntry, GetDeallocatedListEntry);
-	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(AllocatedListEntry, GetAllocatedListEntry);
+	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(ListEntryBase, GetListEntryBase);
 
-	struct Entry : public DeallocatedListEntry<Entry>, public AllocatedListEntry<Entry>
+	class Entry : public ListEntryBase<Entry>
 	{
 	public:
 		friend Pool<T>;
-
-		static constexpr auto GetNull()
-		{
-			return static_cast<T*>(AllocatedListEntry<Entry>::GetNull());
-		}
-
-		T* GetNext()
-		{
-			return static_cast<T*>(AllocatedListEntry<Entry>::GetNext());
-		}
 
 		const auto& GetPoolEntry() const
 		{
@@ -44,8 +32,8 @@ public:
 	};
 
 private:
-	DoublyLinkedList<Entry, AllocatedListEntry<Entry>> allocated;
-	SinglyLinkedList<Entry, DeallocatedListEntry<Entry>> deallocated;
+	DoublyLinkedList<Entry, ListEntryBase<Entry>> allocated;
+	DoublyLinkedList<Entry, ListEntryBase<Entry>> deallocated;
 
 public:
 	Pool(const std::span<T> &array)
@@ -65,7 +53,7 @@ public:
 
 	T& allocate_back()
 	{
-		Entry &entry = deallocated.pop_front();
+		Entry &entry = deallocated.pop_back();
 
 		allocated.push_back(entry);
 

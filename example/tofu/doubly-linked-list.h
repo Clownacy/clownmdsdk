@@ -77,6 +77,20 @@ public:
 		DoublyLinkedListBase::PushBack(&entry);
 	}
 
+	BaseType& pop_front()
+	{
+		auto &entry = front();
+		erase(entry);
+		return entry;
+	}
+
+	BaseType& pop_back()
+	{
+		auto &entry = back();
+		erase(entry);
+		return entry;
+	}
+
 	BaseType* erase(Entry &entry)
 	{
 		const auto next = static_cast<BaseType*>(entry.GetNext());
@@ -87,14 +101,14 @@ public:
 	template<typename Self>
 	auto& front(this Self &self)
 	{
-		assert(self.head != nullptr);
+		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
 		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(self.head));
 	}
 
 	template<typename Self>
 	auto& back(this Self &self)
 	{
-		assert(self.tail != nullptr);
+		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
 		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(self.tail));
 	}
 
