@@ -738,6 +738,21 @@ namespace ClownMDSDK
 				Write(MakeDMALengthCommand(length));
 			}
 
+			inline void SetWindowPlaneHorizontalConfiguration(const bool align_right, const unsigned int width)
+			{
+				Write(Register11{.window_align_right = align_right, .window_width = width});
+			}
+
+			inline void SetWindowPlaneVerticalConfiguration(const bool align_bottom, const unsigned int height)
+			{
+				Write(Register12{.window_align_bottom = align_bottom, .window_height = height});
+			}
+
+			inline void SetHorizontalInterruptInterval(const unsigned int interval)
+			{
+				Write(Register0A{.horiziontal_interrupt_interval = interval});
+			}
+
 			namespace Unsafe
 			{
 				// WARNING: Make sure to request the Z80 bus before sending these commands to the VDP,
