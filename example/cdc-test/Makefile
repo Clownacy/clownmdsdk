@@ -1,6 +1,6 @@
 	include /opt/clownmdsdk/generic.mk
 
-CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -std=c++23 -fvisibility=hidden -flto -DNDEBUG
+CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -std=c++26 -fvisibility=hidden -flto -DNDEBUG
 LDFLAGS += -save-temps=obj
 
 all: bin/cdc-test-cd.iso bin/cdc-test-cartridge.bin
@@ -25,10 +25,6 @@ bin/sp.o: bin/sp.bin
 	mkdir -p $(@D)
 	$(INCBIN) $< $@
 
-bin/font.o: font.unc
-	mkdir -p $(@D)
-	$(INCBIN) $< $@
-
-bin/cdc-test-cartridge.bin: ip.cpp cdc-test.cpp graphics-test.cpp main-menu.cpp utility.cpp bin/sp.o bin/font.o
+bin/cdc-test-cartridge.bin: ip.cpp cdc-test.cpp graphics-test.cpp main-menu.cpp utility.cpp bin/sp.o
 	mkdir -p $(@D)
 	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/cartridge.ld

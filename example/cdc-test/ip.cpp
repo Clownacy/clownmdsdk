@@ -11,6 +11,7 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <array>
 #include <variant>
 
 #include <clownmdsdk.h>
@@ -244,11 +245,12 @@ void _EntryPoint()
 
 	// Upload the font to VRAM.
 	{
-		extern const unsigned short _binary_font_unc_start[];
-		extern const unsigned short _binary_font_unc_end[];
+		constexpr auto font = std::to_array<unsigned char>({
+			#embed "../common/font.unc"
+		});
 
 		MD::Z80::Bus z80_bus;
-		z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, _binary_font_unc_start, _binary_font_unc_end - _binary_font_unc_start);
+		z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(font), std::size(font) / sizeof(short));
 	}
 #endif
 
