@@ -11,8 +11,6 @@ static constexpr Coordinate::Tile plane_size_in_tiles(64, 32);
 static constexpr unsigned int screen_width = screen_size.x;
 static constexpr unsigned int screen_height = screen_size.y;
 
-static constexpr unsigned int line_length_in_blocks = screen_width / Coordinate::block_width_in_pixels + 1;
-
 const std::array<unsigned char, level_width_in_blocks * level_height_in_blocks> blocks = {
 	#embed "assets/level.unc"
 };
@@ -21,55 +19,77 @@ Coordinate::Pixel camera;
 static Coordinate::Block camera_previous;
 
 template<bool vertical>
-static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_blocks)
+static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_lines)
 {
 	const auto starting_tile_position_in_plane = starting_block_position.ToTile() % plane_size_in_tiles;
 
 	// We split the transfer in two to handle wrapping around the plane.
-	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size_in_tiles.x;
-	const auto second_transfer_length = std::sub_sat(starting_tile_position_in_plane.x + line_length_in_tiles, plane_size_in_tiles.x);
+	constexpr unsigned int line_length_in_blocks = screen_size.Dimension<vertical>() / Coordinate::block_size_in_tiles.ToPixel().Dimension<vertical>() + 1;
+	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size_in_tiles.Dimension<vertical>();
+	const auto second_transfer_length = std::sub_sat(starting_tile_position_in_plane.Dimension<vertical>() + line_length_in_tiles, plane_size_in_tiles.Dimension<vertical>());
 	const auto first_transfer_length = line_length_in_tiles - second_transfer_length;
 
-	auto second_transfer_vram_address = 0xC000 + sizeof(VDP::VRAM::TileMetadata) * plane_size_in_tiles.x * starting_tile_position_in_plane.y;
-	auto first_transfer_vram_address = second_transfer_vram_address + sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.x;
+	auto block_position = starting_block_position;
 
-	for (unsigned int block_in_screen_y = 0; block_in_screen_y < total_blocks; ++block_in_screen_y)
+	const auto DoLine = [&](const unsigned int vram_offset_x, const unsigned int vram_offset_y, const unsigned int total_lines)
 	{
-		std::array<std::array<VDP::VRAM::TileMetadata, line_length_in_blocks * Coordinate::block_size_in_tiles.x>, Coordinate::block_size_in_tiles.y> tile_metadata_lines;
+		auto second_transfer_vram_address = 0xC000 + (vertical ? vram_offset_x : vram_offset_y);
+		auto first_transfer_vram_address = second_transfer_vram_address + (vertical ? vram_offset_y : vram_offset_x);
+
+		constexpr auto line_stride = sizeof(VDP::VRAM::TileMetadata) * (vertical ? 1 : plane_size_in_tiles.x);
+
 		VDP::VRAM::TileMetadata tile_metadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
 
-		auto *tile = &GetBlock(starting_block_position + Coordinate::Block(0, block_in_screen_y));
-
-		unsigned int tile_in_screen_x = 0;
-
-		for (unsigned int block_in_screen_x = 0; block_in_screen_x < line_length_in_blocks; ++block_in_screen_x)
+		for (unsigned int block_line_in_screen = 0; block_line_in_screen < total_lines; ++block_line_in_screen)
 		{
-			tile_metadata.tile_index = *tile++ * Coordinate::block_size_in_tiles.x * Coordinate::block_size_in_tiles.y;
+			std::array<std::array<VDP::VRAM::TileMetadata, line_length_in_blocks * Coordinate::block_size_in_tiles.Dimension<vertical>()>, Coordinate::block_size_in_tiles.Dimension<!vertical>()> tile_metadata_lines;
 
-			for (unsigned int tile_in_block_x = 0; tile_in_block_x < Coordinate::block_size_in_tiles.x; ++tile_in_block_x)
+			auto *block_pointer = &GetBlock(block_position);
+
+			++block_position.Dimension<!vertical>();
+
+			unsigned int tile_in_line = 0;
+
+			for (unsigned int block_in_screen = 0; block_in_screen < line_length_in_blocks; ++block_in_screen)
 			{
-				for (unsigned int tile_in_block_y = 0; tile_in_block_y < Coordinate::block_size_in_tiles.y; ++tile_in_block_y)
+				tile_metadata.tile_index = *block_pointer * Coordinate::block_size_in_tiles.x * Coordinate::block_size_in_tiles.y;
+				block_pointer += vertical ? level_width_in_blocks : 1;
+
+				for (unsigned int tile_in_block_x = 0; tile_in_block_x < Coordinate::block_size_in_tiles.x; ++tile_in_block_x)
 				{
-					tile_metadata_lines[tile_in_block_y][tile_in_screen_x] = tile_metadata;
-					++tile_metadata.tile_index;
+					for (unsigned int tile_in_block_y = 0; tile_in_block_y < Coordinate::block_size_in_tiles.y; ++tile_in_block_y)
+					{
+						tile_metadata_lines[vertical ? tile_in_block_x : tile_in_block_y][tile_in_line + (vertical ? tile_in_block_y : tile_in_block_x)] = tile_metadata;
+						++tile_metadata.tile_index;
+					}
 				}
 
-				++tile_in_screen_x;
+				tile_in_line += Coordinate::block_size_in_tiles.Dimension<vertical>();
 			}
-		}
 
-		for (unsigned int tile_in_block_y = 0; tile_in_block_y < Coordinate::block_size_in_tiles.y; ++tile_in_block_y)
-		{
-			z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, first_transfer_vram_address, &tile_metadata_lines[tile_in_block_y][0], first_transfer_length );
-			first_transfer_vram_address += sizeof(VDP::VRAM::TileMetadata) * plane_size_in_tiles.x;
-
-			if (second_transfer_length != 0)
+			for (unsigned int line_in_block = 0; line_in_block < Coordinate::block_size_in_tiles.Dimension<!vertical>(); ++line_in_block)
 			{
-				z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, second_transfer_vram_address, &tile_metadata_lines[tile_in_block_y][first_transfer_length], second_transfer_length);
-				second_transfer_vram_address += sizeof(VDP::VRAM::TileMetadata) * plane_size_in_tiles.x;
+				z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, first_transfer_vram_address, &tile_metadata_lines[line_in_block][0], first_transfer_length );
+				first_transfer_vram_address += line_stride;
+
+				if (second_transfer_length != 0)
+				{
+					z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, second_transfer_vram_address, &tile_metadata_lines[line_in_block][first_transfer_length], second_transfer_length);
+					second_transfer_vram_address += line_stride;
+				}
 			}
 		}
-	}
+	};
+
+	// We split the lines we draw into two batches as well, also to handle plane wrapping.
+	const auto second_line_length = std::sub_sat(starting_tile_position_in_plane.ToBlock().Dimension<!vertical>() + total_lines, plane_size_in_tiles.ToBlock().Dimension<!vertical>());
+	const auto first_line_length = total_lines - second_line_length;
+
+	const auto vram_offset_x = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.x;
+	const auto vram_offset_y = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.y * plane_size_in_tiles.x;
+
+	DoLine(vram_offset_x, vram_offset_y, first_line_length);
+	DoLine(vertical ? 0 : vram_offset_x, vertical ? vram_offset_y : 0, second_line_length);
 }
 
 static void DrawRows(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_rows)
@@ -77,18 +97,38 @@ static void DrawRows(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_
 	DrawBlocks<false>(z80_bus, starting_block_position, total_rows);
 }
 
+static void DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_columns)
+{
+	// Ensure that the DMA transfers write along the Y axis rather than the X axis.
+	VDP::SetAddressIncrement(sizeof(VDP::VRAM::TileMetadata) * plane_size_in_tiles.x);
+
+	DrawBlocks<true>(z80_bus, starting_block_position, total_columns);
+
+	// Restore the default increment.
+	VDP::SetAddressIncrement(2);
+}
+
 void DrawWholeScreen(Z80::Bus &z80_bus)
 {
-	DrawRows(z80_bus, camera, screen_height / Coordinate::block_height_in_pixels + 1);
+	// Chooses whichever is more efficient for the screen resolution.
+	if constexpr (screen_size.x >= screen_size.y)
+		DrawRows(z80_bus, camera, screen_height / Coordinate::block_height_in_pixels + 1);
+	else
+		DrawColumns(z80_bus, camera, screen_width / Coordinate::block_width_in_pixels + 1);
 
 	camera_previous = camera;
 }
 
+// Checks how much the camera has moved in this frame, and loads blocks at the edges of the screen.
 void Draw(Z80::Bus &z80_bus)
 {
-//	DrawWholeScreen(z80_bus);
-//	return;
 	const auto camera_block_position = camera.ToBlock();
+
+	// TODO: This assumes that the camera cannot move more than one block per frame.
+	if (camera_block_position.x < camera_previous.x)
+		DrawColumns(z80_bus, camera_block_position, 1);
+	else if (camera_block_position.x > camera_previous.x)
+		DrawColumns(z80_bus, camera_block_position + Coordinate::Block(screen_size.ToBlock().x, 0), 1);
 
 	if (camera_block_position.y < camera_previous.y)
 		DrawRows(z80_bus, camera_block_position, 1);

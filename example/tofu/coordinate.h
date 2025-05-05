@@ -38,7 +38,7 @@ namespace Coordinate
 		{}
 
 		template<std::size_t Index>
-		auto& Dimension(this auto &&self)
+		constexpr auto& Dimension(this auto &&self)
 		{
 			if constexpr (Index == 0)
 				return self.x;
