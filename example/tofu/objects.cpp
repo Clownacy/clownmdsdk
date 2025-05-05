@@ -13,6 +13,9 @@ void Objects::Update()
 			{
 				if (!object.Update())
 				{
+					// Destruct object.
+					it->emplace<std::monostate>();
+
 					it = pool.deallocate(*it);
 					return;
 				}
