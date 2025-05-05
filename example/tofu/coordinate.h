@@ -37,12 +37,11 @@ namespace Coordinate
 			: x(x), y(y)
 		{}
 
-		template<std::size_t Index>
-		constexpr auto& Dimension(this auto &&self)
+		constexpr auto& Dimension(this auto &&self, const std::size_t index)
 		{
-			if constexpr (Index == 0)
+			if (index == 0)
 				return self.x;
-			else //if constexpr (Index == 1)
+			else //if (index == 1)
 				return self.y;
 		}
 
