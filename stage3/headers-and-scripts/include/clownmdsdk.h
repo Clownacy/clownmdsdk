@@ -863,35 +863,35 @@ namespace ClownMDSDK
 				inline void SetPlaneALocation(const unsigned int vram_address)
 				{
 					constexpr unsigned int divisor = 0x2000;
-					assert(vram_address % divisor == 0);
+					_assertm(vram_address % divisor == 0, "Tried to set Plane A location to a non-multiple of 0x2000.");
 					Write(Register02{.plane_a_location = vram_address / divisor});
 				}
 
 				inline void SetWindowPlaneLocation(const unsigned int vram_address)
 				{
 					constexpr unsigned int divisor = 0x800;
-					assert(vram_address % divisor == 0);
+					_assertm(vram_address % divisor == 0, "Tried to set Window Plane location to a non-multiple of 0x800.");
 					Write(Register03{.window_plane_location = vram_address / divisor});
 				}
 
 				inline void SetPlaneBLocation(const unsigned int vram_address)
 				{
 					constexpr unsigned int divisor = 0x2000;
-					assert(vram_address % divisor == 0);
+					_assertm(vram_address % divisor == 0, "Tried to set Plane B location to a non-multiple of 0x2000.");
 					Write(Register04{.plane_b_location = vram_address / divisor});
 				}
 
 				inline void SetSpriteTableLocation(const unsigned int vram_address)
 				{
 					constexpr unsigned int divisor = 0x200;
-					assert(vram_address % divisor == 0);
+					_assertm(vram_address % divisor == 0, "Tried to set Sprite Table location to a non-multiple of 0x200.");
 					Write(Register05{.sprite_table_location = vram_address / divisor});
 				}
 
 				inline void SetHorizontalScrollLocation(const unsigned int vram_address)
 				{
 					constexpr unsigned int divisor = 0x400;
-					assert(vram_address % divisor == 0);
+					_assertm(vram_address % divisor == 0, "Tried to set Horizontal Scroll Table location to a non-multiple of 0x400.");
 					Write(Register0D{.horizontal_scroll_location = vram_address / divisor});
 				}
 			}
@@ -984,7 +984,7 @@ namespace ClownMDSDK
 
 				auto& RAM(const std::size_t index)
 				{
-					assert(index < std::size(Unsafe::ram));
+					_assertm(index < std::size(Unsafe::ram), "Out-of-bounds Z80 RAM access.");
 					return RAM()[index];
 				}
 
@@ -995,7 +995,7 @@ namespace ClownMDSDK
 
 				auto& IOData(const std::size_t index)
 				{
-					assert(index < ClownMDSDK::MainCPU::Unsafe::total_io_ports);
+					_assertm(index < ClownMDSDK::MainCPU::Unsafe::total_io_ports, "Out-of-bounds IO Data access.");
 					return IOData()[index];
 				}
 
@@ -1006,7 +1006,7 @@ namespace ClownMDSDK
 
 				auto& IOCtrl(const std::size_t index)
 				{
-					assert(index < ClownMDSDK::MainCPU::Unsafe::total_io_ports);
+					_assertm(index < ClownMDSDK::MainCPU::Unsafe::total_io_ports, "Out-of-bounds IO Control access.");
 					return IOCtrl()[index];
 				}
 
@@ -1440,7 +1440,7 @@ namespace ClownMDSDK
 
 			static inline void SetDMAAddress(const std::uintptr_t address)
 			{
-				assert((address % 8) != 0);
+				_assertm((address % 8) != 0, "Attempted to set CDC DMA Address to non-multiple of 8.");
 				dma_address = address / 8;
 			}
 		}
