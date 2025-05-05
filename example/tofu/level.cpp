@@ -1,6 +1,7 @@
 #include "level.h"
 
 #include <numeric>
+#include <utility>
 
 namespace Level
 {
@@ -18,6 +19,14 @@ const std::array<unsigned char, level_width_in_blocks * level_height_in_blocks> 
 Coordinate::Pixel camera;
 static Coordinate::Block camera_previous;
 
+static constexpr auto SplitLength(const auto offset, const auto length, const auto limit)
+{
+	const auto second_length = std::sub_sat(offset + length, limit);
+	const auto first_length = length - second_length;
+
+	return std::pair(first_length, second_length);
+}
+
 template<bool vertical>
 static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_lines)
 {
@@ -27,8 +36,7 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	// We split the transfer in two to handle wrapping around the plane.
 	constexpr unsigned int line_length_in_blocks = screen_size.Dimension<vertical>() / Coordinate::block_size_in_tiles.ToPixel().Dimension<vertical>() + 1;
 	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size_in_tiles.Dimension<vertical>();
-	const auto second_transfer_length = std::sub_sat(starting_tile_position_in_plane.Dimension<vertical>() + line_length_in_tiles, plane_size_in_tiles.Dimension<vertical>());
-	const auto first_transfer_length = line_length_in_tiles - second_transfer_length;
+	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension<vertical>(), line_length_in_tiles, plane_size_in_tiles.Dimension<vertical>());
 
 	auto block_position = starting_block_position;
 	VDP::VRAM::TileMetadata tile_metadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
@@ -80,8 +88,7 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	};
 
 	// We split the lines we draw into two batches as well, also to handle plane wrapping.
-	const auto second_line_length = std::sub_sat(starting_tile_position_in_plane.ToBlock().Dimension<!vertical>() + total_lines, plane_size_in_tiles.ToBlock().Dimension<!vertical>());
-	const auto first_line_length = total_lines - second_line_length;
+	const auto [first_line_length, second_line_length] = SplitLength(starting_tile_position_in_plane.ToBlock().Dimension<!vertical>(), total_lines, plane_size_in_tiles.ToBlock().Dimension<!vertical>());
 
 	const auto vram_offset_x = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.x;
 	const auto vram_offset_y = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.y * plane_size_in_tiles.x;
