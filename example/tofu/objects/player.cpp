@@ -88,7 +88,7 @@ bool Objects::Player::Update()
 	y_velocity += 0x5000;
 
 	if (controller.pressed.b)
-		Objects::AllocateBack<Bullet>(position + Coordinate::Pixel(0, -2).ToWorld(), facing_left ? -0x68000 : 0x68000);
+		Objects::AllocateBack<Bullet>(position + Coordinate::Pixel(facing_left ? -6 : 6, -2).ToWorld(), facing_left ? -0x68000 : 0x68000);
 
 	// Updata camera.
 	Level::camera = Coordinate::Pixel(position);
