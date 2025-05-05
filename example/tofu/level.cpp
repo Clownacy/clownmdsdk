@@ -31,7 +31,7 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	const auto first_transfer_length = line_length_in_tiles - second_transfer_length;
 
 	auto block_position = starting_block_position;
-	VDP::VRAM::TileMetadata tile_metadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
+	VDP::VRAM::TileMetadata tile_metadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
 
 	const auto DoLine = [&](const unsigned int vram_offset_x, const unsigned int vram_offset_y, const unsigned int total_lines)
 	{
