@@ -6,8 +6,6 @@
 namespace Level
 {
 
-static constexpr Coordinate::Tile plane_size_in_tiles(64, 32);
-
 const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> blocks = {
 	#embed "assets/level.unc"
 };
@@ -26,13 +24,13 @@ static constexpr auto SplitLength(const auto offset, const auto length, const au
 template<bool vertical>
 static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_lines)
 {
-	constexpr auto line_stride = sizeof(VDP::VRAM::TileMetadata) * (vertical ? 1 : plane_size_in_tiles.x);
-	const auto starting_tile_position_in_plane = starting_block_position.ToTiles() % plane_size_in_tiles;
+	constexpr auto line_stride = sizeof(VDP::VRAM::TileMetadata) * (vertical ? 1 : Coordinate::plane_size.tiles.x);
+	const auto starting_tile_position_in_plane = starting_block_position.ToTiles() % Coordinate::plane_size.tiles;
 
 	// We split the transfer in two to handle wrapping around the plane.
 	constexpr unsigned int line_length_in_blocks = Coordinate::screen_size.pixels.Dimension(vertical) / Coordinate::block_size.pixels.Dimension(vertical) + 1;
 	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size.tiles.Dimension(vertical);
-	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension(vertical), line_length_in_tiles, plane_size_in_tiles.Dimension(vertical));
+	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension(vertical), line_length_in_tiles, Coordinate::plane_size.tiles.Dimension(vertical));
 
 	auto block_position = starting_block_position;
 	VDP::VRAM::TileMetadata tile_metadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
@@ -84,10 +82,10 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	};
 
 	// We split the lines we draw into two batches as well, also to handle plane wrapping.
-	const auto [first_line_length, second_line_length] = SplitLength(starting_tile_position_in_plane.ToBlocks().Dimension(!vertical), total_lines, plane_size_in_tiles.ToBlocks().Dimension(!vertical));
+	const auto [first_line_length, second_line_length] = SplitLength(starting_tile_position_in_plane.ToBlocks().Dimension(!vertical), total_lines, Coordinate::plane_size.tiles.ToBlocks().Dimension(!vertical));
 
 	const auto vram_offset_x = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.x;
-	const auto vram_offset_y = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.y * plane_size_in_tiles.x;
+	const auto vram_offset_y = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.y * Coordinate::plane_size.tiles.x;
 
 	DoLine(vram_offset_x, vram_offset_y, first_line_length);
 	DoLine(vertical ? 0 : vram_offset_x, vertical ? vram_offset_y : 0, second_line_length);
@@ -101,7 +99,7 @@ static void DrawRows(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_
 static void DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_columns)
 {
 	// Ensure that the DMA transfers write along the Y axis rather than the X axis.
-	VDP::SetAddressIncrement(sizeof(VDP::VRAM::TileMetadata) * plane_size_in_tiles.x);
+	VDP::SetAddressIncrement(sizeof(VDP::VRAM::TileMetadata) * Coordinate::plane_size.tiles.x);
 
 	DrawBlocks<true>(z80_bus, starting_block_position, total_columns);
 
