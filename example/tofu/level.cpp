@@ -65,14 +65,14 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 				tile_in_line += Coordinate::block_size_in_tiles.Dimension<vertical>();
 			}
 
-			for (unsigned int line_in_block = 0; line_in_block < Coordinate::block_size_in_tiles.Dimension<!vertical>(); ++line_in_block)
+			for (const auto &tile_metadata_line : tile_metadata_lines)
 			{
-				z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, first_transfer_vram_address, &tile_metadata_lines[line_in_block][0], first_transfer_length );
+				z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, first_transfer_vram_address, &tile_metadata_line[0], first_transfer_length);
 				first_transfer_vram_address += line_stride;
 
 				if (second_transfer_length != 0)
 				{
-					z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, second_transfer_vram_address, &tile_metadata_lines[line_in_block][first_transfer_length], second_transfer_length);
+					z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, second_transfer_vram_address, &tile_metadata_line[first_transfer_length], second_transfer_length);
 					second_transfer_vram_address += line_stride;
 				}
 			}
