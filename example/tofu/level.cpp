@@ -21,6 +21,7 @@ static Coordinate::Block camera_previous;
 template<bool vertical>
 static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_lines)
 {
+	constexpr auto line_stride = sizeof(VDP::VRAM::TileMetadata) * (vertical ? 1 : plane_size_in_tiles.x);
 	const auto starting_tile_position_in_plane = starting_block_position.ToTile() % plane_size_in_tiles;
 
 	// We split the transfer in two to handle wrapping around the plane.
@@ -30,15 +31,12 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	const auto first_transfer_length = line_length_in_tiles - second_transfer_length;
 
 	auto block_position = starting_block_position;
+	VDP::VRAM::TileMetadata tile_metadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
 
 	const auto DoLine = [&](const unsigned int vram_offset_x, const unsigned int vram_offset_y, const unsigned int total_lines)
 	{
 		auto second_transfer_vram_address = 0xC000 + (vertical ? vram_offset_x : vram_offset_y);
 		auto first_transfer_vram_address = second_transfer_vram_address + (vertical ? vram_offset_y : vram_offset_x);
-
-		constexpr auto line_stride = sizeof(VDP::VRAM::TileMetadata) * (vertical ? 1 : plane_size_in_tiles.x);
-
-		VDP::VRAM::TileMetadata tile_metadata{.priority = false, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
 
 		for (unsigned int block_line_in_screen = 0; block_line_in_screen < total_lines; ++block_line_in_screen)
 		{

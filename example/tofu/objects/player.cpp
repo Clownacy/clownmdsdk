@@ -14,7 +14,7 @@ bool Objects::Player::Update()
 
 	// Templated for maximum inlining for maximum performance!
 	// The 68000 has no cache, so unrolled code is always optimal.
-	const auto DoCollision = [&]<bool vertical, bool flipped>
+	const auto DoCollision = [&]<bool vertical, bool flipped>()
 	{
 		const auto offset = vertical ? (flipped ? hitbox_radius_y : -hitbox_radius_y) : (flipped ? hitbox_radius_x : -hitbox_radius_x);
 		const Coordinate::Block lower(position + Coordinate::World(vertical ? -hitbox_radius_x     : offset, vertical ? offset : -hitbox_radius_y));
@@ -87,9 +87,7 @@ bool Objects::Player::Update()
 	y_velocity += 0x5000;
 
 	if (controller.pressed.b)
-	{
-		Objects::AllocateBack<Bullet>(position, facing_left ? -0x60000 : 0x60000);
-	}
+		Objects::AllocateBack<Bullet>(position + Coordinate::Pixel(0, -2).ToWorld(), facing_left ? -0x60000 : 0x60000);
 
 	// Updata camera.
 	Level::camera = Coordinate::Pixel(position);
