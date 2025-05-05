@@ -11,12 +11,7 @@ using namespace ClownMDSDK::MainCPU;
 
 namespace Level
 {
-	static constexpr Coordinate::Pixel screen_size(320, 224);
-
-	static constexpr unsigned int level_width_in_blocks = 0x40;
-	static constexpr unsigned int level_height_in_blocks = 0x10;
-
-	extern const std::array<unsigned char, level_width_in_blocks * level_height_in_blocks> blocks;
+	extern const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> blocks;
 	extern Coordinate::Pixel camera;
 
 	void DrawWholeScreen(Z80::Bus &z80_bus);
@@ -24,7 +19,7 @@ namespace Level
 
 	[[nodiscard]] inline const auto& GetBlock(const Coordinate::Block &position)
 	{
-		return blocks[position.y * level_width_in_blocks + position.x];
+		return blocks[position.y * Coordinate::level_size.blocks.x + position.x];
 	}
 }
 

@@ -43,6 +43,8 @@ namespace Coordinate
 				return self.x;
 			else //if (index == 1)
 				return self.y;
+
+			_assertm(index < 2, "Out-of-bounds coordinate index.");
 		}
 
 		constexpr World ToWorld(this auto &&self);
@@ -97,12 +99,6 @@ namespace Coordinate
 		constexpr Block(const World &world);
 	};
 
-	static constexpr Tile block_size_in_tiles(2, 2);
-
-	// TODO: Delete this.
-	static constexpr unsigned int block_width_in_tiles = block_size_in_tiles.x;
-	static constexpr unsigned int block_height_in_tiles = block_size_in_tiles.y;
-
 	constexpr inline World::World(const Pixel &pixel)
 		: Base(pixel.x * 0x10000, pixel.y * 0x10000)
 	{}
@@ -136,11 +132,11 @@ namespace Coordinate
 	{}
 
 	constexpr inline Tile::Tile(const Block &block)
-		: Base(block.x * block_width_in_tiles, block.y * block_height_in_tiles)
+		: Base(block.x * 2, block.y * 2)
 	{}
 
 	constexpr inline Block::Block(const Tile &tile)
-		: Base(tile.x / block_width_in_tiles, tile.y / block_height_in_tiles)
+		: Base(tile.x / 2, tile.y / 2)
 	{}
 
 	constexpr inline Block::Block(const Pixel &pixel)
@@ -175,9 +171,25 @@ namespace Coordinate
 		return self;
 	}
 
-	// TODO: Delete this.
-	static constexpr unsigned int block_width_in_pixels = block_size_in_tiles.ToPixels().x;
-	static constexpr unsigned int block_height_in_pixels = block_size_in_tiles.ToPixels().y;
+	class Omni
+	{
+	public:
+		const World world;
+		const Pixel pixels;
+		const Tile tiles;
+		const Block blocks;
+
+		constexpr Omni(const auto &coordinate)
+			: world(coordinate)
+			, pixels(coordinate)
+			, tiles(coordinate)
+			, blocks(coordinate)
+		{}
+	};
+
+	static constexpr Omni block_size(Block(1, 1));
+	static constexpr Omni screen_size(Pixel(320, 224));
+	static constexpr Omni level_size(Block(0x40, 0x10));
 }
 
 #endif // COORDINATE_H

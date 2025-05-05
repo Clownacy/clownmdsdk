@@ -8,11 +8,7 @@ namespace Level
 
 static constexpr Coordinate::Tile plane_size_in_tiles(64, 32);
 
-// TODO: Delete this.
-static constexpr unsigned int screen_width = screen_size.x;
-static constexpr unsigned int screen_height = screen_size.y;
-
-const std::array<unsigned char, level_width_in_blocks * level_height_in_blocks> blocks = {
+const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> blocks = {
 	#embed "assets/level.unc"
 };
 
@@ -34,8 +30,8 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	const auto starting_tile_position_in_plane = starting_block_position.ToTiles() % plane_size_in_tiles;
 
 	// We split the transfer in two to handle wrapping around the plane.
-	constexpr unsigned int line_length_in_blocks = screen_size.Dimension(vertical) / Coordinate::block_size_in_tiles.ToPixels().Dimension(vertical) + 1;
-	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size_in_tiles.Dimension(vertical);
+	constexpr unsigned int line_length_in_blocks = Coordinate::screen_size.pixels.Dimension(vertical) / Coordinate::block_size.pixels.Dimension(vertical) + 1;
+	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size.tiles.Dimension(vertical);
 	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension(vertical), line_length_in_tiles, plane_size_in_tiles.Dimension(vertical));
 
 	auto block_position = starting_block_position;
@@ -48,7 +44,7 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 
 		for (unsigned int block_line_in_screen = 0; block_line_in_screen < total_lines; ++block_line_in_screen)
 		{
-			std::array<std::array<VDP::VRAM::TileMetadata, line_length_in_blocks * Coordinate::block_size_in_tiles.Dimension(vertical)>, Coordinate::block_size_in_tiles.Dimension(!vertical)> tile_metadata_lines;
+			std::array<std::array<VDP::VRAM::TileMetadata, line_length_in_blocks * Coordinate::block_size.tiles.Dimension(vertical)>, Coordinate::block_size.tiles.Dimension(!vertical)> tile_metadata_lines;
 
 			auto *block_pointer = &GetBlock(block_position);
 
@@ -58,19 +54,19 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 
 			for (unsigned int block_in_screen = 0; block_in_screen < line_length_in_blocks; ++block_in_screen)
 			{
-				tile_metadata.tile_index = *block_pointer * Coordinate::block_size_in_tiles.x * Coordinate::block_size_in_tiles.y;
-				block_pointer += vertical ? level_width_in_blocks : 1;
+				tile_metadata.tile_index = *block_pointer * Coordinate::block_size.tiles.x * Coordinate::block_size.tiles.y;
+				block_pointer += vertical ? Coordinate::level_size.blocks.x : 1;
 
-				for (unsigned int tile_in_block_x = 0; tile_in_block_x < Coordinate::block_size_in_tiles.x; ++tile_in_block_x)
+				for (unsigned int tile_in_block_x = 0; tile_in_block_x < Coordinate::block_size.tiles.x; ++tile_in_block_x)
 				{
-					for (unsigned int tile_in_block_y = 0; tile_in_block_y < Coordinate::block_size_in_tiles.y; ++tile_in_block_y)
+					for (unsigned int tile_in_block_y = 0; tile_in_block_y < Coordinate::block_size.tiles.y; ++tile_in_block_y)
 					{
 						tile_metadata_lines[vertical ? tile_in_block_x : tile_in_block_y][tile_in_line + (vertical ? tile_in_block_y : tile_in_block_x)] = tile_metadata;
 						++tile_metadata.tile_index;
 					}
 				}
 
-				tile_in_line += Coordinate::block_size_in_tiles.Dimension(vertical);
+				tile_in_line += Coordinate::block_size.tiles.Dimension(vertical);
 			}
 
 			for (const auto &tile_metadata_line : tile_metadata_lines)
@@ -116,10 +112,10 @@ static void DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_blo
 void DrawWholeScreen(Z80::Bus &z80_bus)
 {
 	// Chooses whichever is more efficient for the screen resolution.
-	if constexpr (screen_size.x >= screen_size.y)
-		DrawRows(z80_bus, camera, screen_height / Coordinate::block_height_in_pixels + 1);
+	if constexpr (Coordinate::screen_size.blocks.x >= Coordinate::screen_size.blocks.y)
+		DrawRows(z80_bus, camera, Coordinate::screen_size.pixels.y / Coordinate::block_size.pixels.y + 1);
 	else
-		DrawColumns(z80_bus, camera, screen_width / Coordinate::block_width_in_pixels + 1);
+		DrawColumns(z80_bus, camera, Coordinate::screen_size.pixels.x / Coordinate::block_size.pixels.x + 1);
 
 	camera_previous = camera;
 }
@@ -133,12 +129,12 @@ void Draw(Z80::Bus &z80_bus)
 	if (camera_block_position.x < camera_previous.x)
 		DrawColumns(z80_bus, camera_block_position, 1);
 	else if (camera_block_position.x > camera_previous.x)
-		DrawColumns(z80_bus, camera_block_position + Coordinate::Block(screen_size.ToBlocks().x, 0), 1);
+		DrawColumns(z80_bus, camera_block_position + Coordinate::Block(Coordinate::screen_size.blocks.x, 0), 1);
 
 	if (camera_block_position.y < camera_previous.y)
 		DrawRows(z80_bus, camera_block_position, 1);
 	else if (camera_block_position.y > camera_previous.y)
-		DrawRows(z80_bus, camera_block_position + Coordinate::Block(0, screen_size.ToBlocks().y), 1);
+		DrawRows(z80_bus, camera_block_position + Coordinate::Block(0, Coordinate::screen_size.blocks.y), 1);
 
 	camera_previous = camera_block_position;
 }

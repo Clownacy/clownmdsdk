@@ -15,7 +15,7 @@ void Sprite::Queue(const unsigned int x, const unsigned int y, const unsigned in
 		return position - (size + 1) * 8 / 2;
 	};
 
-	const auto screen_x = OffsetCoordinate(x, width) - Level::camera.x;
+	const auto screen_x = OffsetCoordinate(x, width ) - Level::camera.x;
 	const auto screen_y = OffsetCoordinate(y, height) - Level::camera.y;
 
 	if (screen_x >= 0x200 || screen_y >= 0x200)
