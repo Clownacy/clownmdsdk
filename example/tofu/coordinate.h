@@ -191,6 +191,7 @@ namespace Coordinate
 	static constexpr Omni screen_size(Pixel(320, 224));
 	static constexpr Omni level_size(Block(0x40, 0x10));
 	static constexpr Omni plane_size(Tile(64, 32));
+	static constexpr Omni hud_size(Tile(12, 3));
 }
 
 #endif // COORDINATE_H

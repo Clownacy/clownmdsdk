@@ -16,7 +16,7 @@ namespace Objects
 	extern Pool<PoolEntry> pool;
 
 	template<typename T, typename... Args>
-	T* AllocateFront(Args &&...args)
+	T* EmplaceFront(Args &&...args)
 	{
 		if (pool.full())
 			return nullptr;
@@ -25,7 +25,7 @@ namespace Objects
 	}
 
 	template<typename T, typename... Args>
-	T* AllocateBack(Args &&...args)
+	T* EmplaceBack(Args &&...args)
 	{
 		if (pool.full())
 			return nullptr;

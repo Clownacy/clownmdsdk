@@ -109,7 +109,8 @@ void _Level3InterruptHandler()
 
 void _Level4InterruptHandler()
 {
-
+	// Cut-off Window Plane so that it doesn't end completely down the screen.
+	VDP::SetWindowPlaneHorizontalConfiguration(false, 0);
 }
 
 void _Level5InterruptHandler()
@@ -130,9 +131,11 @@ void _Level6InterruptHandler()
 	Z80::Bus z80_bus;
 	Sprite::UploadTable(z80_bus);
 
+	// Set vertical scroll value.
 	VDP::SendCommand(VDP::RAM::VSRAM, VDP::Access::WRITE, 0);
 	VDP::Write(VDP::DataValueWord(Level::camera.y));
 
+	// Set horizontal scroll value.
 	VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, 0xDC00);
 	VDP::Write(VDP::DataValueWord(-Level::camera.x));
 
@@ -224,10 +227,44 @@ void _TRAP15Handler()
 
 }
 
+static void DrawHUD()
+{
+	// Fill-in a region of Window Plane with tile data for the HUD.
+	// I would have located the HUD on the left, like it was in the original TOFU's Assignment fangame,
+	// but Window Plane is bugged on the Mega Drive, causing tiles to its right to be corrupted.
+	// So, to work around this, Window Plane is only displayed on the right instead.
+
+	constexpr auto ComputeWindowPlaneVRAMAddress = [](const Coordinate::Tile &position)
+	{
+		constexpr auto ComputePlaneVRAMAddress = [](const unsigned int plane_vram_address, const Coordinate::Tile &position)
+		{
+			return plane_vram_address + (position.y * Coordinate::plane_size.tiles.x + position.x) * sizeof(VDP::VRAM::TileMetadata);
+		};
+
+		return ComputePlaneVRAMAddress(0xF000, position);
+	};
+
+	// Draw background.
+	for (unsigned int y = 0; y < Coordinate::hud_size.tiles.y; ++y)
+	{
+		VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, ComputeWindowPlaneVRAMAddress(Coordinate::Tile(Coordinate::screen_size.tiles.x - Coordinate::hud_size.tiles.x, y)));
+
+		for (unsigned int x = 0; x < Coordinate::hud_size.tiles.x; ++x)
+			VDP::Write(VDP::VRAM::TileMetadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0x11});
+	}
+
+	// Draw text.
+	VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, ComputeWindowPlaneVRAMAddress(Coordinate::Tile(Coordinate::screen_size.tiles.x - Coordinate::hud_size.tiles.x + 2, 1)));
+	for (unsigned int i = 0; i < 8; ++i)
+		VDP::Write(VDP::VRAM::TileMetadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0x100 - ' ' + '0' + i});
+}
+
 static void WaitForVerticalInterrupt()
 {
 	waiting_for_vertical_interrupt = true;
-	asm("stop #0x2000");
+	do
+		asm("stop #0x2000");
+	while (waiting_for_vertical_interrupt);
 }
 
 // Run indefinitely; should not return. Handles the bulk of operations.
@@ -250,17 +287,54 @@ void _EntryPoint()
 		});
 		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::CRAM, 0, std::data(palette), std::size(palette) / sizeof(short));
 
+		static constexpr auto font = []() constexpr
+		{
+			auto font = std::to_array<unsigned char>({
+				#embed "../common/font.unc"
+			});
+
+			// Preprocess the font to recolour it. Modern C++ kicks ass!
+			for (auto &byte : font)
+			{
+				auto nybbles = std::to_array({byte >> 4, byte & 0xF});
+
+				for (auto &nybble : nybbles)
+				{
+					if (nybble == 0)
+						nybble = 1;
+					else if (nybble == 1)
+						nybble = 7;
+				}
+
+				byte = nybbles[0] << 4 | nybbles[1];
+			}
+
+			return font;
+		}();
+		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 0x100, std::data(font), std::size(font) / sizeof(short));
+
 		// Draw level.
 		Level::DrawWholeScreen(z80_bus);
 	}
 
+	DrawHUD();
+
 	vdp_register_01.enable_display = true;
 	VDP::Write(vdp_register_01);
 
-	Objects::AllocateFront<Objects::Player>(Coordinate::Block(7, 3));
+	// Configure horizontal interrupt.
+	VDP::Write(VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = true, .lock_hv_counter = false});
+	VDP::SetHorizontalInterruptInterval(Coordinate::hud_size.pixels.y - 1);
+
+	// Spawn player.
+	Objects::EmplaceFront<Objects::Player>(Coordinate::Block(7, 3));
 
 	for (;;)
 	{
+		// Enable Window Plane at the top of the screen.
+		// We will disable it in the horizontal interrupt to end it mid-way through the screen.
+		VDP::SetWindowPlaneHorizontalConfiguration(true, (Coordinate::screen_size.tiles.x - Coordinate::hud_size.tiles.x) / 2);
+
 		Objects::Update();
 		WaitForVerticalInterrupt();
 	}
