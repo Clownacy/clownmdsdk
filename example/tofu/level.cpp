@@ -31,10 +31,10 @@ template<bool vertical>
 static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_lines)
 {
 	constexpr auto line_stride = sizeof(VDP::VRAM::TileMetadata) * (vertical ? 1 : plane_size_in_tiles.x);
-	const auto starting_tile_position_in_plane = starting_block_position.ToTile() % plane_size_in_tiles;
+	const auto starting_tile_position_in_plane = starting_block_position.ToTiles() % plane_size_in_tiles;
 
 	// We split the transfer in two to handle wrapping around the plane.
-	constexpr unsigned int line_length_in_blocks = screen_size.Dimension(vertical) / Coordinate::block_size_in_tiles.ToPixel().Dimension(vertical) + 1;
+	constexpr unsigned int line_length_in_blocks = screen_size.Dimension(vertical) / Coordinate::block_size_in_tiles.ToPixels().Dimension(vertical) + 1;
 	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size_in_tiles.Dimension(vertical);
 	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension(vertical), line_length_in_tiles, plane_size_in_tiles.Dimension(vertical));
 
@@ -88,7 +88,7 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	};
 
 	// We split the lines we draw into two batches as well, also to handle plane wrapping.
-	const auto [first_line_length, second_line_length] = SplitLength(starting_tile_position_in_plane.ToBlock().Dimension(!vertical), total_lines, plane_size_in_tiles.ToBlock().Dimension(!vertical));
+	const auto [first_line_length, second_line_length] = SplitLength(starting_tile_position_in_plane.ToBlocks().Dimension(!vertical), total_lines, plane_size_in_tiles.ToBlocks().Dimension(!vertical));
 
 	const auto vram_offset_x = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.x;
 	const auto vram_offset_y = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.y * plane_size_in_tiles.x;
@@ -127,18 +127,18 @@ void DrawWholeScreen(Z80::Bus &z80_bus)
 // Checks how much the camera has moved in this frame, and loads blocks at the edges of the screen.
 void Draw(Z80::Bus &z80_bus)
 {
-	const auto camera_block_position = camera.ToBlock();
+	const auto camera_block_position = camera.ToBlocks();
 
 	// TODO: This assumes that the camera cannot move more than one block per frame.
 	if (camera_block_position.x < camera_previous.x)
 		DrawColumns(z80_bus, camera_block_position, 1);
 	else if (camera_block_position.x > camera_previous.x)
-		DrawColumns(z80_bus, camera_block_position + Coordinate::Block(screen_size.ToBlock().x, 0), 1);
+		DrawColumns(z80_bus, camera_block_position + Coordinate::Block(screen_size.ToBlocks().x, 0), 1);
 
 	if (camera_block_position.y < camera_previous.y)
 		DrawRows(z80_bus, camera_block_position, 1);
 	else if (camera_block_position.y > camera_previous.y)
-		DrawRows(z80_bus, camera_block_position + Coordinate::Block(0, screen_size.ToBlock().y), 1);
+		DrawRows(z80_bus, camera_block_position + Coordinate::Block(0, screen_size.ToBlocks().y), 1);
 
 	camera_previous = camera_block_position;
 }

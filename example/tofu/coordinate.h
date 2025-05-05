@@ -46,9 +46,9 @@ namespace Coordinate
 		}
 
 		constexpr World ToWorld(this auto &&self);
-		constexpr Pixel ToPixel(this auto &&self);
-		constexpr Tile ToTile(this auto &&self);
-		constexpr Block ToBlock(this auto &&self);
+		constexpr Pixel ToPixels(this auto &&self);
+		constexpr Tile ToTiles(this auto &&self);
+		constexpr Block ToBlocks(this auto &&self);
 
 		COORDINATE_BASE_MAKE_OPERATOR(+)
 		COORDINATE_BASE_MAKE_OPERATOR(-)
@@ -158,26 +158,26 @@ namespace Coordinate
 	}
 
 	template<typename Integer>
-	constexpr inline Pixel Base<Integer>::ToPixel(this auto &&self)
+	constexpr inline Pixel Base<Integer>::ToPixels(this auto &&self)
 	{
 		return self;
 	}
 
 	template<typename Integer>
-	constexpr inline Tile Base<Integer>::ToTile(this auto &&self)
+	constexpr inline Tile Base<Integer>::ToTiles(this auto &&self)
 	{
 		return self;
 	}
 
 	template<typename Integer>
-	constexpr inline Block Base<Integer>::ToBlock(this auto &&self)
+	constexpr inline Block Base<Integer>::ToBlocks(this auto &&self)
 	{
 		return self;
 	}
 
 	// TODO: Delete this.
-	static constexpr unsigned int block_width_in_pixels = block_size_in_tiles.ToPixel().x;
-	static constexpr unsigned int block_height_in_pixels = block_size_in_tiles.ToPixel().y;
+	static constexpr unsigned int block_width_in_pixels = block_size_in_tiles.ToPixels().x;
+	static constexpr unsigned int block_height_in_pixels = block_size_in_tiles.ToPixels().y;
 }
 
 #endif // COORDINATE_H
