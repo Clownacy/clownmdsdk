@@ -109,32 +109,12 @@ void _SpuriousInterruptHandler()
 	ErrorTrap();
 }
 
-void _Level1InterruptHandler()
+void _ControllerInterruptHandler()
 {
 
 }
 
-void _Level2InterruptHandler()
-{
-
-}
-
-void _Level3InterruptHandler()
-{
-
-}
-
-void _Level4InterruptHandler()
-{
-
-}
-
-void _Level5InterruptHandler()
-{
-
-}
-
-void _Level7InterruptHandler()
+void _HorizontalInterruptHandler()
 {
 
 }
@@ -223,7 +203,7 @@ void _TRAP15Handler()
 #ifdef CD
 __attribute__((interrupt)) static void VerticalInterrupt()
 #else
-void _Level6InterruptHandler()
+void _VerticalInterruptHandler()
 #endif
 {
 	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;

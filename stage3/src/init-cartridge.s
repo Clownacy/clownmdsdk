@@ -19,8 +19,8 @@
 	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UninitialisedInterruptHandler
 	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
 	dc.l	_UnassignedHandler,_UnassignedHandler,_UnassignedHandler,_UnassignedHandler
-	dc.l	_SpuriousInterruptHandler,_Level1InterruptHandler,_Level2InterruptHandler,_Level3InterruptHandler
-	dc.l	_Level4InterruptHandler,_Level5InterruptHandler,_Level6InterruptHandler,_Level7InterruptHandler
+	dc.l	_SpuriousInterruptHandler,_UnassignedHandler,_ControllerInterruptHandler,_UnassignedHandler
+	dc.l	_HorizontalInterruptHandler,_UnassignedHandler,_VerticalInterruptHandler,_UnassignedHandler
 	dc.l	_TRAP0Handler,_TRAP1Handler,_TRAP2Handler,_TRAP3Handler
 	dc.l	_TRAP4Handler,_TRAP5Handler,_TRAP6Handler,_TRAP7Handler
 	dc.l	_TRAP8Handler,_TRAP9Handler,_TRAP10Handler,_TRAP11Handler

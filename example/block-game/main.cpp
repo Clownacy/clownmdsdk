@@ -389,32 +389,17 @@ void _SpuriousInterruptHandler()
 	ErrorTrap();
 }
 
-void _Level1InterruptHandler()
+void _ControllerInterruptHandler()
 {
 
 }
 
-void _Level2InterruptHandler()
+void _HorizontalInterruptHandler()
 {
 
 }
 
-void _Level3InterruptHandler()
-{
-
-}
-
-void _Level4InterruptHandler()
-{
-
-}
-
-void _Level5InterruptHandler()
-{
-
-}
-
-void _Level6InterruptHandler()
+void _VerticalInterruptHandler()
 {
 	if (!waiting_for_v_int)
 		return;
@@ -425,11 +410,6 @@ void _Level6InterruptHandler()
 	MD::VDP::CopyWordsWithoutDMA(MD::VDP::RAM::VRAM, VRAM_SPRITE_TABLE, &sprite, sizeof(sprite) / 2);
 
 	control_pad_manager.Update();
-}
-
-void _Level7InterruptHandler()
-{
-
 }
 
 void _TRAP0Handler()

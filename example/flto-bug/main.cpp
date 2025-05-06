@@ -80,37 +80,17 @@ void _SpuriousInterruptHandler()
 
 }
 
-void _Level1InterruptHandler()
+void _ControllerInterruptHandler()
 {
 
 }
 
-void _Level2InterruptHandler()
+void _HorizontalInterruptHandler()
 {
 
 }
 
-void _Level3InterruptHandler()
-{
-
-}
-
-void _Level4InterruptHandler()
-{
-
-}
-
-void _Level5InterruptHandler()
-{
-
-}
-
-void _Level6InterruptHandler()
-{
-
-}
-
-void _Level7InterruptHandler()
+void _VerticalInterruptHandler()
 {
 
 }
