@@ -13,6 +13,7 @@
 
 #include <array>
 #include <atomic>
+#include <initializer_list>
 
 #include <clownmdsdk.h>
 
@@ -277,21 +278,30 @@ void _EntryPoint()
 	{
 		Z80::Bus z80_bus;
 
-		static const auto tiles = std::to_array<unsigned char>({
+		static constexpr auto WordsFromBytes = []<std::size_t S>(const unsigned char (&bytes)[S]) constexpr
+		{
+			static_assert(S % 2 == 0, "Data must be an even number of bytes long!");
+			std::array<unsigned short, S / 2> words;
+			for (std::size_t i = 0; i < std::size(words); ++i)
+				words[i] = static_cast<unsigned short>(bytes[i * 2 + 0]) << 8 | bytes[i * 2 + 1];
+			return words;
+		};
+
+		static constexpr auto tiles = WordsFromBytes({
 			#embed "assets/tiles.unc"
 		});
-		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 4, std::data(tiles), std::size(tiles) / sizeof(short));
+		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 4, std::data(tiles), std::size(tiles));
 
-		static const auto palette = std::to_array<unsigned char>({
+		static constexpr auto palette = WordsFromBytes({
 			#embed "assets/palette.unc"
 		});
-		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::CRAM, 0, std::data(palette), std::size(palette) / sizeof(short));
+		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::CRAM, 0, std::data(palette), std::size(palette));
 
-		static constexpr auto font = []() constexpr
+		static constexpr auto font = [&]() constexpr
 		{
-			auto font = std::to_array<unsigned char>({
+			unsigned char font[] = {
 				#embed "../common/font.unc"
-			});
+			};
 
 			// Preprocess the font to recolour it. Modern C++ kicks ass!
 			for (auto &byte : font)
@@ -309,9 +319,9 @@ void _EntryPoint()
 				byte = nybbles[0] << 4 | nybbles[1];
 			}
 
-			return font;
+			return WordsFromBytes(font);
 		}();
-		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 0x100, std::data(font), std::size(font) / sizeof(short));
+		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 0x100, std::data(font), std::size(font));
 
 		// Draw level.
 		Level::DrawWholeScreen(z80_bus);
