@@ -98,10 +98,32 @@ void _ControllerInterruptHandler()
 
 }
 
+static unsigned int horizontal_interrupt_flip_flop;
+
 void _HorizontalInterruptHandler()
 {
-	// Cut-off Window Plane so that it doesn't end completely down the screen.
-	VDP::SetWindowPlaneHorizontalConfiguration(false, 0);
+	switch (horizontal_interrupt_flip_flop)
+	{
+		case 0:
+			break;
+
+		case 1:
+			// Configure horizontal interrupt.
+			VDP::SetHorizontalInterruptInterval(9);
+			break;
+
+		case 2:
+			VDP::SetWindowPlaneHorizontalConfiguration(true, (Coordinate::screen_size.tiles.x - Coordinate::hud_size.tiles.x) / 2);
+			break;
+
+		default:
+			// Cut-off Window Plane so that it doesn't go completely down the screen.
+			VDP::SetWindowPlaneHorizontalConfiguration(false, 0);
+			VDP::Write(VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = false, .lock_hv_counter = false});
+			break;
+	}
+
+	++horizontal_interrupt_flip_flop;
 }
 
 // Runs once per frame, either 50 or 60 times a second for PAL or NTSC respectively.
@@ -312,18 +334,18 @@ void _EntryPoint()
 	vdp_register_01.enable_display = true;
 	VDP::Write(vdp_register_01);
 
-	// Configure horizontal interrupt.
-	VDP::Write(VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = true, .lock_hv_counter = false});
-	VDP::SetHorizontalInterruptInterval(Coordinate::hud_size.pixels.y - 1);
-
 	// Spawn player.
 	Objects::EmplaceFront<Objects::Player>(Coordinate::Block(7, 3));
 
 	for (;;)
 	{
+		// Configure horizontal interrupt.
+		VDP::SetHorizontalInterruptInterval(2);
+		horizontal_interrupt_flip_flop = 0;
+
 		// Enable Window Plane at the top of the screen.
 		// We will disable it in the horizontal interrupt to end it mid-way through the screen.
-		VDP::SetWindowPlaneHorizontalConfiguration(true, (Coordinate::screen_size.tiles.x - Coordinate::hud_size.tiles.x) / 2);
+		VDP::Write(VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = true, .lock_hv_counter = false});
 
 		Objects::Update();
 		WaitForVerticalInterrupt();
