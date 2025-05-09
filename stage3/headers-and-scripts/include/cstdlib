@@ -1,0 +1,12 @@
+#ifndef CSTRING_H
+#define CSTRING_H
+
+namespace std
+{
+	__attribute__((noreturn)) __attribute__((always_inline)) static void abort(void)
+	{
+		for (;;);
+	}
+}
+
+#endif /* CSTRING_H */

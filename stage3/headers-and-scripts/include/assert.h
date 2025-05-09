@@ -1,6 +1,8 @@
 #ifndef ASSERT_H
 #define ASSERT_H
 
+#include <stdlib.h>
+
 #define _assert_internal(CONDITION, MESSAGE_PREFIX, MESSAGE, MESSAGE_SUFFIX) \
 	do \
 	{ \
@@ -9,8 +11,7 @@
 			/* TODO: What do we do about the SubCPU? */ \
 			ClownMDSDK::MainCPU::Debug::PrintLine(__PRETTY_FUNCTION__, " at " __FILE__ ":", __LINE__); \
 			ClownMDSDK::MainCPU::Debug::PrintLine("    Assertion '" #CONDITION "' failed" MESSAGE_PREFIX MESSAGE MESSAGE_SUFFIX "."); \
-			/* TODO: This should be a call to 'std::abort'. */ \
-			asm("illegal"); \
+			abort(); \
 		} \
 	} while(0)
 
