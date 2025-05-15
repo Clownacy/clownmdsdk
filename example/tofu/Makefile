@@ -22,17 +22,17 @@ SOURCES := \
 	singly-linked-list \
 	sprite
 
-OBJECTS = $(addprefix $(OBJDIR)/, $(addsuffix .o, $(SOURCES)))
-DEPENDENCIES = $(addprefix $(OBJDIR)/, $(addsuffix .d, $(SOURCES)))
+OBJECTS := $(addprefix $(OBJDIR)/, $(addsuffix .o, $(SOURCES)))
+DEPENDENCIES := $(addprefix $(OBJDIR)/, $(addsuffix .d, $(SOURCES)))
 
 all: $(OBJDIR)/rom.bin
 
 $(OBJDIR)/%.o: %.cpp
-	mkdir -p $(@D)
-	$(CXX) $^ -o $@ -c $(CXXFLAGS) -MMD -MP -MF $(OBJDIR)/$*.d
+	@mkdir -p $(@D)
+	$(CXX) $< -o $@ -c $(CXXFLAGS) -MMD -MP -MF $(OBJDIR)/$*.d
 
 $(OBJDIR)/rom.bin: $(OBJECTS)
-	mkdir -p $(@D)
+	@mkdir -p $(@D)
 	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS)
 
 include $(wildcard $(DEPENDENCIES))
