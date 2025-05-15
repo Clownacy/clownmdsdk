@@ -6,7 +6,6 @@ CC := $(CLOWNMDSDK_PREFIX)gcc
 CXX := $(CLOWNMDSDK_PREFIX)g++
 CPP := $(CLOWNMDSDK_PREFIX)cpp
 LD := $(CLOWNMDSDK_PREFIX)ld
-INCBIN := $(CLOWNMDSDK_PREFIX)objcopy -I binary -O elf32-m68k --rename-section .data=.rodata,alloc,load,readonly,data,contents
 
 # GCC by default uses `-fuse-cxa-atexit`, which requires that the C
 # standard library support `__cxa_atexit`. Since ClownMDSDK does not

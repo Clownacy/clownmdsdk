@@ -219,13 +219,15 @@ void _EntryPoint()
 #ifdef CD
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 #else
-	extern const unsigned char _binary_bin_sp_bin_start[];
-	extern const unsigned char _binary_bin_sp_bin_end[];
-	MCD_RAM::InitialiseSubCPU(std::span{_binary_bin_sp_bin_start, _binary_bin_sp_bin_end});
+	static constexpr auto subcpu_payload = std::to_array<unsigned char>({
+		#embed "bin/sp.bin"
+	});
+
+	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
 
 	// Upload the font to VRAM.
 	{
-		constexpr auto font = std::to_array<unsigned char>({
+		static constexpr auto font = std::to_array<unsigned char>({
 			#embed "../common/font.unc"
 		});
 
