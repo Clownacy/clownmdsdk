@@ -29,11 +29,6 @@ static unsigned long _RepeatByteToUnsignedLong(const int ch)
 	return value;
 }
 
-int abs(const int i)
-{
-	return i < 0 ? -i : i;
-}
-
 void* memcpy(void* const dest, const void* const src, size_t count)
 {
 	unsigned char *source = (unsigned char*)src;
