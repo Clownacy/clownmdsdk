@@ -1,3 +1,6 @@
 [submodule "stage3/headers-and-scripts/include/clownlzss"]
-	path = stage3/headers-and-scripts/include/clownlzss
+	path = stage4/headers-and-scripts/include/clownlzss
 	url = https://github.com/Clownacy/clownlzss
+[submodule "stage3/asl-releases"]
+	path = stage3/asl-releases
+	url = https://github.com/flamewing/asl-releases

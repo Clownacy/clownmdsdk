@@ -16,8 +16,8 @@ Building requires a Unix-like environment. Linux users should be able to build
 the toolchain natively, while Windows users should install and use MSYS2 or
 WSL.
 
-The process of building and installing the toolchain is done in three stages,
-denoted by the three subdirectories. See each of the subdirectories' README
+The process of building and installing the toolchain is done in four stages,
+denoted by the four subdirectories. See each of the subdirectories' README
 files for details. After all stages are complete, the toolchain will be
 completely installed and ready for use.
 
