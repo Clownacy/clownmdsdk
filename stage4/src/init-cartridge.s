@@ -99,7 +99,7 @@
 .Ldata_vdp_end:
 
 .Ldata_z80:
-	.incbin "z80/init.bin"
+	.incbin "../bin/init-z80.bin"
 .Ldata_z80_end:
 
 	align 2
