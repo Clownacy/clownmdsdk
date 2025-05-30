@@ -136,18 +136,22 @@ void _VerticalInterruptHandler()
 
 	Controller::manager.Update();
 
-	Z80::Bus z80_bus;
-	Sprite::UploadTable(z80_bus);
+	Z80::Bus::Lock(
+		[&](auto &z80_bus)
+		{
+			Sprite::UploadTable(z80_bus);
 
-	// Set vertical scroll value.
-	VDP::SendCommand(VDP::RAM::VSRAM, VDP::Access::WRITE, 0);
-	VDP::Write(VDP::DataValueWord(Level::camera.y));
+			// Set vertical scroll value.
+			VDP::SendCommand(VDP::RAM::VSRAM, VDP::Access::WRITE, 0);
+			VDP::Write(VDP::DataValueWord(Level::camera.y));
 
-	// Set horizontal scroll value.
-	VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, 0xDC00);
-	VDP::Write(VDP::DataValueWord(-Level::camera.x));
+			// Set horizontal scroll value.
+			VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, 0xDC00);
+			VDP::Write(VDP::DataValueWord(-Level::camera.x));
 
-	Level::Draw(z80_bus);
+			Level::Draw(z80_bus);
+		}
+	);
 }
 
 void _TRAP0Handler()
@@ -277,57 +281,58 @@ void _EntryPoint()
 	VDP::Write(vdp_register_01);
 
 	// Upload stuff to the VDP.
-	{
-		Z80::Bus z80_bus;
-
-		static constexpr auto WordsFromBytes = []<std::size_t S>(const unsigned char (&bytes)[S]) constexpr
+	Z80::Bus::Lock(
+		[&](auto &z80_bus)
 		{
-			static_assert(S % 2 == 0, "Data must be an even number of bytes long!");
-			std::array<unsigned short, S / 2> words;
-			for (std::size_t i = 0; i < std::size(words); ++i)
-				words[i] = static_cast<unsigned short>(bytes[i * 2 + 0]) << 8 | bytes[i * 2 + 1];
-			return words;
-		};
-
-		static constexpr auto tiles = WordsFromBytes({
-			#embed "assets/tiles.unc"
-		});
-		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 4, std::data(tiles), std::size(tiles));
-
-		static constexpr auto palette = WordsFromBytes({
-			#embed "assets/palette.unc"
-		});
-		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::CRAM, 0, std::data(palette), std::size(palette));
-
-		static constexpr auto font = [&]() constexpr
-		{
-			unsigned char font[] = {
-				#embed "../common/font.unc"
+			static constexpr auto WordsFromBytes = []<std::size_t S>(const unsigned char (&bytes)[S]) constexpr
+			{
+				static_assert(S % 2 == 0, "Data must be an even number of bytes long!");
+				std::array<unsigned short, S / 2> words;
+				for (std::size_t i = 0; i < std::size(words); ++i)
+					words[i] = static_cast<unsigned short>(bytes[i * 2 + 0]) << 8 | bytes[i * 2 + 1];
+				return words;
 			};
 
-			// Preprocess the font to recolour it. Modern C++ kicks ass!
-			for (auto &byte : font)
-			{
-				auto nybbles = std::to_array({byte >> 4, byte & 0xF});
+			static constexpr auto tiles = WordsFromBytes({
+				#embed "assets/tiles.unc"
+			});
+			z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 4, std::data(tiles), std::size(tiles));
 
-				for (auto &nybble : nybbles)
+			static constexpr auto palette = WordsFromBytes({
+				#embed "assets/palette.unc"
+			});
+			z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::CRAM, 0, std::data(palette), std::size(palette));
+
+			static constexpr auto font = [&]() constexpr
+			{
+				unsigned char font[] = {
+					#embed "../common/font.unc"
+				};
+
+				// Preprocess the font to recolour it. Modern C++ kicks ass!
+				for (auto &byte : font)
 				{
-					if (nybble == 0)
-						nybble = 1;
-					else if (nybble == 1)
-						nybble = 7;
+					auto nybbles = std::to_array({byte >> 4, byte & 0xF});
+
+					for (auto &nybble : nybbles)
+					{
+						if (nybble == 0)
+							nybble = 1;
+						else if (nybble == 1)
+							nybble = 7;
+					}
+
+					byte = nybbles[0] << 4 | nybbles[1];
 				}
 
-				byte = nybbles[0] << 4 | nybbles[1];
-			}
+				return WordsFromBytes(font);
+			}();
+			z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 0x100, std::data(font), std::size(font));
 
-			return WordsFromBytes(font);
-		}();
-		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 0x100, std::data(font), std::size(font));
-
-		// Draw level.
-		Level::DrawWholeScreen(z80_bus);
-	}
+			// Draw level.
+			Level::DrawWholeScreen(z80_bus);
+		}
+	);
 
 	DrawHUD();
 

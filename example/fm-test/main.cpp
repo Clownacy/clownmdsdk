@@ -257,10 +257,12 @@ void _EntryPoint()
 	};
 
 	// Upload the instrument.
-	{
-		ClownMDSDK::MainCPU::Z80::Bus z80_bus;
-		Upload(z80_bus, 2, instrument);
-	}
+	ClownMDSDK::MainCPU::Z80::Bus::Lock(
+		[&](auto &z80_bus)
+		{
+			Upload(z80_bus, 2, instrument);
+		}
+	);
 
 	auto vdp_register01 = ClownMDSDK::MainCPU::VDP::Register01{.enable_display = true, .enable_vertical_interrupt = true, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
 	ClownMDSDK::MainCPU::VDP::Write(vdp_register01);
@@ -270,10 +272,12 @@ void _EntryPoint()
 	for (;;)
 	{
 		// Control the instrument's 'key-on' with the 'A' button.
-		{
-			ClownMDSDK::MainCPU::Z80::Bus z80_bus;
-			z80_bus.WriteFMI(0x28, control_pad_manager.GetControlPads()[0].held.a ? 0xF6 : 0x06);
-		}
+		ClownMDSDK::MainCPU::Z80::Bus::Lock(
+			[&](auto &z80_bus)
+			{
+				z80_bus.WriteFMI(0x28, control_pad_manager.GetControlPads()[0].held.a ? 0xF6 : 0x06);
+			}
+		);
 
 		// Sleep until the next frame.
 		asm("stop #0x2300");

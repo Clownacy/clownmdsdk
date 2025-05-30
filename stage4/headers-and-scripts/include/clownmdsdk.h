@@ -957,14 +957,28 @@ namespace ClownMDSDK
 
 		namespace Z80
 		{
-			class Bus
+			template<typename Derived>
+			class BusCommon
+			{
+			public:
+				static auto Lock(const auto &callback)
+				{
+					Derived bus;
+					return callback(bus);
+				}
+			};
+
+			class Bus : public BusCommon<Bus>
 			{
 			private:
+				using Base = BusCommon<Bus>;
+				friend Base;
+
 				// Ideally, the compiler will resolve this variable
 				// at compile-time and optimise it away completely.
 				bool released = false;
 
-			public:
+			protected:
 				Bus(const bool wait_for_bus = true)
 				{
 					Unsafe::RequestBus();
@@ -976,6 +990,7 @@ namespace ClownMDSDK
 				Bus(const Bus &other) = delete;
 				Bus& operator=(const Bus &other) = delete;
 
+			public:
 				~Bus()
 				{
 					Release();
@@ -1126,16 +1141,25 @@ namespace ClownMDSDK
 				}
 			};
 
-			class BusInterruptSafe : public Bus
+			class BusInterruptSafe : public Bus, public BusCommon<BusInterruptSafe>
 			{
 			private:
+				using Base = BusCommon<BusInterruptSafe>;
+				friend Base;
+
 				const unsigned int interrupt_mask;
 
-			public:
+			protected:
 				BusInterruptSafe(const bool wait_for_bus = true)
 					: interrupt_mask(M68k::DisableInterrupts())
 					, Bus(wait_for_bus)
 				{}
+
+			public:
+				static auto Lock(const auto &callback)
+				{
+					return Base::Lock(callback);
+				}
 
 				~BusInterruptSafe()
 				{
@@ -1312,12 +1336,8 @@ namespace ClownMDSDK
 				template<typename T>
 				static inline bool InitialiseSubCPU(const std::span<const T> &subcpu_payload)
 				{
-					{
-						Z80::Bus z80_bus;
-						if (!z80_bus.IsMegaCDConnected())
-							return false;
-						z80_bus.Release();
-					}
+					if (!Z80::Bus::Lock([](auto &z80_bus){return z80_bus.IsMegaCDConnected();}))
+						return false;
 
 					// Find the SUB-CPU BIOS payload.
 					const auto sub_cpu_bios_payload_offset = []() -> unsigned long

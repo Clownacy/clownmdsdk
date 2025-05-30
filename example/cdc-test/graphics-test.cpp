@@ -33,8 +33,12 @@ GraphicsTest::GraphicsTest()
 	SubmitSubCPUCommand(Command::REQUEST_WORD_RAM);
 
 	const auto total_words = width * height * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL / 2;
-	MD::Z80::Bus z80_bus;
-	z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, 0x100 * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, &MCD_RAM::word_ram_2m<unsigned short>[0x20000 / 2 + 1], total_words);
+	MD::Z80::Bus::Lock(
+		[&](auto &z80_bus)
+		{
+			z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, 0x100 * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, &MCD_RAM::word_ram_2m<unsigned short>[0x20000 / 2 + 1], total_words);
+		}
+	);
 	MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, 0x100 * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL);
 	MD::VDP::Write(MD::VDP::DataValueWord(MCD_RAM::word_ram_2m<unsigned short>[0x20000 / 2]));
 }

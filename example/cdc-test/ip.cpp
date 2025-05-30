@@ -231,8 +231,12 @@ void _EntryPoint()
 			#embed "../common/font.unc"
 		});
 
-		MD::Z80::Bus z80_bus;
-		z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(font), std::size(font) / sizeof(short));
+		MD::Z80::Bus::Lock(
+			[&](auto &z80_bus)
+			{
+				z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(font), std::size(font) / sizeof(short));
+			}
+		);
 	}
 #endif
 

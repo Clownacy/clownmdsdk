@@ -21,10 +21,13 @@ class ControlPadManager
 	public:
 		ControlPadManager()
 		{
-			ClownMDSDK::MainCPU::Z80::Bus z80_bus;
-
-			for (unsigned int i = 0; i < std::size(control_pads); ++i)
-				z80_bus.InitialiseIOPortAsControlPad3Button(i);
+			ClownMDSDK::MainCPU::Z80::Bus::Lock(
+				[&](auto &z80_bus)
+				{
+					for (unsigned int i = 0; i < std::size(control_pads); ++i)
+						z80_bus.InitialiseIOPortAsControlPad3Button(i);
+				}
+			);
 		}
 
 		void Update()
@@ -33,10 +36,13 @@ class ControlPadManager
 			{
 				std::array<ClownMDSDK::MainCPU::Z80::Bus::ControlPad3Button, total_control_pads> data;
 
-				ClownMDSDK::MainCPU::Z80::Bus z80_bus;
-
-				for (unsigned int i = 0; i < std::size(data); ++i)
-					data[i] = z80_bus.ReadIOPortAsControlPad3Button(i);
+				ClownMDSDK::MainCPU::Z80::Bus::Lock(
+					[&](auto &z80_bus)
+					{
+						for (unsigned int i = 0; i < std::size(data); ++i)
+							data[i] = z80_bus.ReadIOPortAsControlPad3Button(i);
+					}
+				);
 
 				return data;
 			}();
