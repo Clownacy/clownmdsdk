@@ -957,23 +957,8 @@ namespace ClownMDSDK
 
 		namespace Z80
 		{
-			template<typename Derived>
-			class BusCommon
+			class Bus
 			{
-			public:
-				static auto Lock(const auto &callback)
-				{
-					Derived bus;
-					return callback(bus);
-				}
-			};
-
-			class Bus : public BusCommon<Bus>
-			{
-			private:
-				using Base = BusCommon<Bus>;
-				friend Base;
-
 			protected:
 				Bus(const bool wait_for_bus = true)
 				{
@@ -987,6 +972,20 @@ namespace ClownMDSDK
 				Bus& operator=(const Bus &other) = delete;
 
 			public:
+				static auto Lock(const auto &callback)
+				{
+					Bus bus;
+					return callback(bus);
+				}
+
+				static auto LockInterruptSafe(const auto &callback)
+				{
+					const unsigned int interrupt_mask = M68k::DisableInterrupts();
+					const auto result = Lock(callback);
+					M68k::SetInterruptMask(interrupt_mask);
+					return result;
+				}
+
 				~Bus()
 				{
 					Unsafe::ReleaseBus();
@@ -1125,32 +1124,6 @@ namespace ClownMDSDK
 					output ^= SetAndRead(0x40) << 0 & 0x3F;
 
 					return std::bit_cast<ControlPad3Button>(output);
-				}
-			};
-
-			class BusInterruptSafe : public Bus, public BusCommon<BusInterruptSafe>
-			{
-			private:
-				using Base = BusCommon<BusInterruptSafe>;
-				friend Base;
-
-				const unsigned int interrupt_mask;
-
-			protected:
-				BusInterruptSafe(const bool wait_for_bus = true)
-					: interrupt_mask(M68k::DisableInterrupts())
-					, Bus(wait_for_bus)
-				{}
-
-			public:
-				static auto Lock(const auto &callback)
-				{
-					return Base::Lock(callback);
-				}
-
-				~BusInterruptSafe()
-				{
-					M68k::SetInterruptMask(interrupt_mask);
 				}
 			};
 		}
