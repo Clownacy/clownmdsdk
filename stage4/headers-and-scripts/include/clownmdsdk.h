@@ -974,10 +974,6 @@ namespace ClownMDSDK
 				using Base = BusCommon<Bus>;
 				friend Base;
 
-				// Ideally, the compiler will resolve this variable
-				// at compile-time and optimise it away completely.
-				bool released = false;
-
 			protected:
 				Bus(const bool wait_for_bus = true)
 				{
@@ -993,16 +989,7 @@ namespace ClownMDSDK
 			public:
 				~Bus()
 				{
-					Release();
-				}
-
-				void Release()
-				{
-					if (!released)
-					{
-						released = true;
-						Unsafe::ReleaseBus();
-					}
+					Unsafe::ReleaseBus();
 				}
 
 				auto& RAM()
