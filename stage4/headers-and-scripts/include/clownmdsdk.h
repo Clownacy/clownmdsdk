@@ -972,16 +972,16 @@ namespace ClownMDSDK
 				Bus& operator=(const Bus &other) = delete;
 
 			public:
-				static auto Lock(const auto &callback)
+				static auto Lock(const auto &callback, const bool wait_for_bus = true)
 				{
-					Bus bus;
+					Bus bus(wait_for_bus);
 					return callback(bus);
 				}
 
-				static auto LockInterruptSafe(const auto &callback)
+				static auto LockInterruptSafe(const auto &callback, const bool wait_for_bus = true)
 				{
 					const unsigned int interrupt_mask = M68k::DisableInterrupts();
-					const auto result = Lock(callback);
+					const auto result = Lock(callback, wait_for_bus);
 					M68k::SetInterruptMask(interrupt_mask);
 					return result;
 				}
