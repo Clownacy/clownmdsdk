@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-__attribute__((noreturn)) __attribute__((always_inline)) static int abs(const int i)
+__attribute__((always_inline)) static int abs(const int i)
 {
 	return i < 0 ? -i : i;
 }
