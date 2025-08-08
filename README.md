@@ -36,7 +36,7 @@ any other platform.
 ## Examples
 
 Blank template projects and examples which showcase using ClownMDSDK can be
-found in the `examples` directory.
+found in the `example` directory.
 
 
 ## Licence
