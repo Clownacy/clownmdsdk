@@ -18,9 +18,9 @@ the package names are...
 
 Linux distributions will have different package names.
 
-Next, download GNU Binutils 2.44. It can be found at the following URL:
-https://ftp.gnu.org/gnu/binutils/binutils-2.44.tar.xz
+Next, download GNU Binutils 2.45. It can be found at the following URL:
+https://ftp.gnu.org/gnu/binutils/binutils-2.45.tar.xz
 
-After that, extract the `binutils-2.44` directory to here, and then run the
+After that, extract the `binutils-2.45` directory to here, and then run the
 `binutils.sh` script. Upon its completion, GNU Binutils will be compiled and
 installed to `/opt/clownmdsdk` and Stage 2 can begin.
