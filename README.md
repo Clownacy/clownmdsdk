@@ -1,8 +1,9 @@
-# clownmdsdk
+# ClownMDSDK
 
-clownmdsdk is a toolchain for developing Sega Mega Drive/Sega Genesis homebrew
+ClownMDSDK is a toolchain for developing Sega Mega Drive/Sega Genesis homebrew
 in freestanding C++. The toolchain includes GNU Binutils, GCC, and some
-essential libraries and scripts.
+essential libraries and scripts. Convenience functions are provided for
+performing low-level tasks such as writing to the VDP's registers.
 
 Unlike SGDK, this is explicitly NOT a framework nor game engine: this project's
 sole concern is enabling the creation of bare-metal Mega Drive software using
@@ -30,6 +31,12 @@ the toolchain is with a Makefile: by adding the line
 `AS`, `CFLAGS`, `CXXFLAGS`, `LDFLAGS` variables will all be configured to use
 the toolchain, and the rest of the Makefile can be written as it would be for
 any other platform.
+
+
+## Examples
+
+Blank template projects and examples which showcase using ClownMDSDK can be
+found in the `examples` directory.
 
 
 ## Licence
