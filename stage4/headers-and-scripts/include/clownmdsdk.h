@@ -565,6 +565,26 @@ namespace ClownMDSDK
 				DMA   = 0x27
 			};
 
+			struct Status
+			{
+				bool bit15 : 1 = false;
+				bool bit14 : 1 = false;
+				bool bit13 : 1 = false;
+				bool bit12 : 1 = false;
+				bool bit11 : 1 = false;
+				bool bit10 : 1 = false;
+				bool write_fifo_empty : 1;
+				bool write_fifo_full : 1;
+				bool vertical_interrupt : 1;
+				bool sprite_overflow : 1;
+				bool sprite_collision : 1;
+				bool odd_frame : 1;
+				bool vertical_blanking : 1;
+				bool horizontal_blanking : 1;
+				bool dma_busy : 1;
+				bool pal : 1;
+			};
+
 			__BIND_ADDRESS(0xC00000, data_port_word, volatile unsigned short);
 			__BIND_ADDRESS(0xC00000, data_port_longword, volatile unsigned long);
 			__BIND_ADDRESS(0xC00004, control_port_word, volatile unsigned short);
@@ -635,6 +655,11 @@ namespace ClownMDSDK
 			inline void SendCommand(const RAM ram, const Access access, const unsigned int address)
 			{
 				Write(MakeCommand(ram, access, address));
+			}
+
+			inline Status ReadStatus()
+			{
+				return std::bit_cast<Status>(control_port_word);
 			}
 		}
 
