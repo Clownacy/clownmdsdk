@@ -15,6 +15,8 @@ private:
 public:
 	CDCTest();
 	ModeID Update();
+	void HorizontalInterrupt() {}
+	void VerticalInterrupt() {}
 };
 
 #endif // CDC_TEST_H

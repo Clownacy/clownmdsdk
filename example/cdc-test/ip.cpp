@@ -21,6 +21,7 @@
 #include "cdc-test.h"
 #include "control-pad.h"
 #include "graphics-test.h"
+#include "hv-test.h"
 #include "main-menu.h"
 #include "mode.h"
 #include "utility.h"
@@ -33,7 +34,7 @@ namespace MCD_RAM = MD::MegaCD::CDBoot;
 namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
 #endif
 
-static std::variant<MainMenu, CDCTest, GraphicsTest> mode;
+static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 
 #ifndef CD
 [[noreturn]] static void ErrorTrap()
@@ -116,7 +117,13 @@ void _ControllerInterruptHandler()
 
 void _HorizontalInterruptHandler()
 {
-
+	std::visit(
+		[](auto &&mode)
+		{
+			mode.HorizontalInterrupt();
+		},
+		mode
+	);
 }
 
 void _TRAP0Handler()
@@ -206,9 +213,17 @@ __attribute__((interrupt)) static void VerticalInterrupt()
 void _VerticalInterruptHandler()
 #endif
 {
-	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;
+//	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;
 
 	control_pad_manager.Update();
+
+	std::visit(
+		[](auto &&mode)
+		{
+			mode.VerticalInterrupt();
+		},
+		mode
+	);
 }
 
 void _EntryPoint()
@@ -219,11 +234,11 @@ void _EntryPoint()
 #ifdef CD
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 #else
-	static constexpr auto subcpu_payload = std::to_array<unsigned char>({
-		#embed "bin/sp.bin"
-	});
+//	static constexpr auto subcpu_payload = std::to_array<unsigned char>({
+//		#embed "bin/sp.bin"
+//	});
 
-	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
+//	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
 
 	// Upload the font to VRAM.
 	{
@@ -251,6 +266,8 @@ void _EntryPoint()
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, (32 + 1) * 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{2, 2, 7});
 
+	mode.emplace<HVTest>(2);
+
 	// Finished setup.
 	vdp_register01.enable_display = true;
 	vdp_register01.enable_vertical_interrupt = true;
@@ -259,8 +276,6 @@ void _EntryPoint()
 	MD::M68k::SetInterruptMask(0);
 
 	MD::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
-
-	mode.emplace<MainMenu>();
 
 	for (;;)
 	{
@@ -290,6 +305,26 @@ void _EntryPoint()
 
 			case ModeID::GRAPHICS_TEST:
 				mode.emplace<GraphicsTest>();
+				break;
+
+			case ModeID::HV_TEST_H_INT:
+				mode.emplace<HVTest>(2); // Starts with 0xE1, then counts up from 0.
+				break;
+
+			case ModeID::HV_TEST_V_START:
+				mode.emplace<HVTest>(20); // Should be 0xE0.
+				break;
+
+			case ModeID::HV_TEST_V_END:
+				mode.emplace<HVTest>(30); // Should be 0xFF.
+				break;
+
+			case ModeID::HV_TEST_H_START:
+				mode.emplace<HVTest>(40); // Counts up from 0xFF.
+				break;
+
+			case ModeID::HV_TEST_H_END:
+				mode.emplace<HVTest>(50); // Counts up from 0xFF.
 				break;
 		}
 	}

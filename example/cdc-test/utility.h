@@ -8,6 +8,7 @@ static constexpr unsigned int SCREEN_HEIGHT = 224;
 
 void SetupPlaneWrite(const unsigned int x, unsigned int y);
 void DrawString(const char* const string, const unsigned int palette_line = 0);
+void DrawHexWord(const unsigned short value, const unsigned int palette_line = 0);
 void ClearPlaneA();
 
 #endif // UTILITY_H

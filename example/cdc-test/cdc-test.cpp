@@ -97,26 +97,6 @@ static void DoTransfer(const Command command)
 
 void CDCTest::DrawHexViewer()
 {
-	static constexpr auto DrawHexWord = [](const unsigned short value, const unsigned int palette_line = 0)
-	{
-		static constexpr unsigned int BITS_PER_NYBBLE = 4;
-		static constexpr unsigned int NYBBLES_PER_VALUE = 16 / BITS_PER_NYBBLE;
-		static constexpr unsigned int NYBBLE_MASK = (1 << BITS_PER_NYBBLE) - 1;
-
-		for (unsigned int i = 0; i < NYBBLES_PER_VALUE; ++i)
-		{
-			static constexpr auto NybbleToASCII = [](const unsigned int nybble)
-			{
-				if (nybble >= 0xA)
-					return nybble - 0xA + 'A';
-				else
-					return nybble - 0x0 + '0';
-			};
-
-			MD::VDP::Write(MD::VDP::VRAM::TileMetadata{false, palette_line, false, false, NybbleToASCII(value << i * BITS_PER_NYBBLE >> ((NYBBLES_PER_VALUE - 1) * BITS_PER_NYBBLE) & NYBBLE_MASK)});
-		}
-	};
-
 	auto sector_buffer_pointer = sector_buffer.data() + hex_viewer_starting_position;
 
 	for (unsigned int y = 0; y < HEX_VIEWER_TOTAL_ROWS; ++y)

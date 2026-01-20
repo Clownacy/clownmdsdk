@@ -13,6 +13,8 @@ private:
 public:
 	MainMenu();
 	ModeID Update();
+	void HorizontalInterrupt() {}
+	void VerticalInterrupt() {}
 };
 
 #endif // MAIN_MENU_H
