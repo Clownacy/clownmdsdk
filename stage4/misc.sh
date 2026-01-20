@@ -8,4 +8,4 @@ cp -r headers-and-scripts/* $PREFIX
 make -C src -B
 
 # Copy the libraries to the install location.
-cp -r bin/* $PREFIX
+cp -r bin/install/* $PREFIX

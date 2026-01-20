@@ -10,7 +10,7 @@ __attribute__((always_inline)) static int abs(const int i)
 	return i < 0 ? -i : i;
 }
 
-__attribute__((noreturn)) __attribute__((always_inline)) static void abort(void)
+__attribute__((noreturn)) __attribute__((always_inline)) inline void abort(void)
 {
 	for (;;);
 }
