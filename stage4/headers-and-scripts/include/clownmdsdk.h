@@ -570,6 +570,9 @@ namespace ClownMDSDK
 			__BIND_ADDRESS(0xC00004, control_port_word, volatile unsigned short);
 			__BIND_ADDRESS(0xC00004, control_port_longword, volatile unsigned long);
 			__BIND_ADDRESS(0xC00004 + 1, control_port_low_byte, volatile unsigned char);
+			__BIND_ADDRESS(0xC00008, hv_counter, volatile unsigned short);
+			__BIND_ADDRESS(0xC00008 + 0, v_counter, volatile unsigned char);
+			__BIND_ADDRESS(0xC00008 + 1, h_counter, volatile unsigned char);
 
 			inline void Write(const DataValueWord value)
 			{
