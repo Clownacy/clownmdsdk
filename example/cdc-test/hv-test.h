@@ -11,17 +11,17 @@ class HVTest
 private:
 	struct Values
 	{
-		unsigned char v_counter;
+		unsigned short v_counter;
 		bool h_blank;
 	};
 
 	unsigned int state;
 	std::atomic<bool> do_sample = false;
 	unsigned int line = 0;
-	std::array<Values, 0x200> values;
+	std::array<Values, 0x200> values = {};
 
 public:
-	HVTest(unsigned int state);
+	HVTest(unsigned int state, unsigned int h_int_counter);
 	~HVTest();
 	ModeID Update();
 	void HorizontalInterrupt();

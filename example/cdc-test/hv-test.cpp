@@ -5,28 +5,16 @@
 #include "system.h"
 #include "utility.h"
 
-HVTest::HVTest(const unsigned int state)
+HVTest::HVTest(const unsigned int state, const unsigned int h_int_counter)
 	: state(state)
 {
 	ClearPlaneA();
-	MD::VDP::SetHorizontalInterruptInterval(0);
+	MD::VDP::SetHorizontalInterruptInterval(h_int_counter);
 }
 
 HVTest::~HVTest()
 {
 	MD::VDP::Write(MD::VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = false, .lock_hv_counter = false});
-}
-
-static unsigned char ReadVCounter()
-{
-	unsigned char value;
-
-	do
-	{
-		value = MD::VDP::v_counter;
-	} while (value != MD::VDP::v_counter);
-
-	return value;
 }
 
 ModeID HVTest::Update()
@@ -88,7 +76,7 @@ ModeID HVTest::Update()
 			// Wait for V-blank to start.
 			while (!MD::VDP::ReadStatus().vertical_blanking);
 
-			values[line++] = {ReadVCounter(), MD::VDP::ReadStatus().horizontal_blanking};
+			values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
 
 			MD::M68k::SetInterruptMask(0);
 
@@ -108,7 +96,7 @@ ModeID HVTest::Update()
 			// Wait for V-blank to end.
 			while (MD::VDP::ReadStatus().vertical_blanking);
 
-			values[line++] = {ReadVCounter(), MD::VDP::ReadStatus().horizontal_blanking};
+			values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
 
 			MD::M68k::SetInterruptMask(0);
 
@@ -134,7 +122,7 @@ ModeID HVTest::Update()
 				while (!MD::VDP::ReadStatus().horizontal_blanking);
 
 				// Log V-counter.
-				values[line++] = {ReadVCounter(), MD::VDP::ReadStatus().horizontal_blanking};
+				values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
 			}
 
 			MD::M68k::SetInterruptMask(0);
@@ -164,7 +152,7 @@ ModeID HVTest::Update()
 				while (MD::VDP::ReadStatus().horizontal_blanking);
 
 				// Log V-counter.
-				values[line++] = {ReadVCounter(), MD::VDP::ReadStatus().horizontal_blanking};
+				values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
 			}
 
 			MD::M68k::SetInterruptMask(0);
@@ -183,11 +171,13 @@ ModeID HVTest::Update()
 
 void HVTest::HorizontalInterrupt()
 {
-	values[line++] = {ReadVCounter(), MD::VDP::ReadStatus().horizontal_blanking};
+	values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
 }
 
 void HVTest::VerticalInterrupt()
 {
+	values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
+
 	if (do_sample)
 	{
 		do_sample = false;

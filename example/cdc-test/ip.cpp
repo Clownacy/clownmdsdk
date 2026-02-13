@@ -266,7 +266,7 @@ void _EntryPoint()
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, (32 + 1) * 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{2, 2, 7});
 
-	mode.emplace<HVTest>(2);
+	mode.emplace<MainMenu>();
 
 	// Finished setup.
 	vdp_register01.enable_display = true;
@@ -307,24 +307,36 @@ void _EntryPoint()
 				mode.emplace<GraphicsTest>();
 				break;
 
-			case ModeID::HV_TEST_H_INT:
-				mode.emplace<HVTest>(2); // Starts with 0xE1, then counts up from 0.
+			case ModeID::HV_TEST_H_INT_0:
+				mode.emplace<HVTest>(2, 0); // Starts with 0xE1, then counts up from 0.
+				break;
+
+			case ModeID::HV_TEST_H_INT_223:
+				mode.emplace<HVTest>(2, 223); // Starts with 0xE1, then counts up from 0.
+				break;
+
+			case ModeID::HV_TEST_H_INT_224:
+				mode.emplace<HVTest>(2, 224); // Starts with 0xE1, then counts up from 0.
+				break;
+
+			case ModeID::HV_TEST_H_INT_225:
+				mode.emplace<HVTest>(2, 225); // Starts with 0xE1, then counts up from 0.
 				break;
 
 			case ModeID::HV_TEST_V_START:
-				mode.emplace<HVTest>(20); // Should be 0xE0.
+				mode.emplace<HVTest>(20, 0); // Should be 0xE0.
 				break;
 
 			case ModeID::HV_TEST_V_END:
-				mode.emplace<HVTest>(30); // Should be 0xFF.
+				mode.emplace<HVTest>(30, 0); // Should be 0xFF.
 				break;
 
 			case ModeID::HV_TEST_H_START:
-				mode.emplace<HVTest>(40); // Counts up from 0xFF.
+				mode.emplace<HVTest>(40, 0); // Counts up from 0xFF.
 				break;
 
 			case ModeID::HV_TEST_H_END:
-				mode.emplace<HVTest>(50); // Counts up from 0xFF.
+				mode.emplace<HVTest>(50, 0); // Counts up from 0xFF.
 				break;
 		}
 	}

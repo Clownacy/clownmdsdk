@@ -17,7 +17,10 @@ struct OptionsMenuEntry
 static constexpr auto options = std::to_array<OptionsMenuEntry>({
 	{ModeID::CDC_TEST     , "CDC Test"     },
 	{ModeID::GRAPHICS_TEST, "Graphics Test"},
-	{ModeID::HV_TEST_H_INT        , "H/V at H-Int"},
+	{ModeID::HV_TEST_H_INT_0      , "H/V at V-Int and H-Int (0)"},
+	{ModeID::HV_TEST_H_INT_223    , "H/V at V-Int and H-Int (223)"},
+	{ModeID::HV_TEST_H_INT_224    , "H/V at V-Int and H-Int (224)"},
+	{ModeID::HV_TEST_H_INT_225    , "H/V at V-Int and H-Int (225)"},
 	{ModeID::HV_TEST_V_START      , "H/V at V-Blank Start"},
 	{ModeID::HV_TEST_V_END        , "H/V at V-Blank End"},
 	{ModeID::HV_TEST_H_START      , "H/V at H-Blank Start"},
