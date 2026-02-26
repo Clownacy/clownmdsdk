@@ -13,6 +13,7 @@
 
 #include <array>
 #include <atomic>
+#include <cstdlib>
 
 #include <clownmdsdk.h>
 
@@ -96,8 +97,8 @@ void _EntryPoint()
 
 					for (unsigned int x = 0; x < VDP::VRAM::TILE_WIDTH; ++x)
 					{
-						const unsigned int x_distance = x >= VDP::VRAM::TILE_WIDTH / 2 ? VDP::VRAM::TILE_WIDTH - x - 1 : x;
-						const unsigned int y_distance = y >= VDP::VRAM::TILE_HEIGHT_INTERLACE_MODE_2 / 2 ? VDP::VRAM::TILE_HEIGHT_INTERLACE_MODE_2 - y - 1 : y;
+						const unsigned int x_distance = std::abs(x - VDP::VRAM::TILE_WIDTH / 2);
+						const unsigned int y_distance = std::abs(y - VDP::VRAM::TILE_HEIGHT_INTERLACE_MODE_2 / 2);
 
 						word <<= 4;
 						word |= x_distance < VDP::VRAM::TILE_WIDTH / 8 && y_distance < VDP::VRAM::TILE_HEIGHT_INTERLACE_MODE_2 / 8 ? colour : 0;
@@ -113,7 +114,7 @@ void _EntryPoint()
 			DoTile(1, 1);
 			DoTile(2, 2);
 			DoTile(3, 3);
-			DoTile(3, 4);
+			DoTile(4, 4);
 		}
 	);
 
