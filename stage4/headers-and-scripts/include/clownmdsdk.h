@@ -813,7 +813,7 @@ namespace ClownMDSDK
 							"move.l	%1,-(%%sp)\n"
 						"	move.l	(%%sp)+,%0"
 						: "=Qm" (control_port_word)
-						: "daim" (MakeCommand(ram, Access::DMA, address)) // TODO: Other holders?
+						: "daim" (MakeCommand(ram, Access::DMA, address))/* TODO: Other holders? */, "m" (*(const unsigned short (*)[length])data)
 						: "cc"
 					);
 				}
