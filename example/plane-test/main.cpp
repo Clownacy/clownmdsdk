@@ -16,31 +16,15 @@
 
 #include <clownmdsdk.h>
 
+#include "../common/control-pad-manager.h"
+
 using namespace ClownMDSDK::MainCPU;
 
 static constexpr unsigned int SCREEN_WIDTH = 320;
 static constexpr unsigned int SCREEN_HEIGHT = 224 * 2;
 
-struct Controller
-{
-	struct Buttons
-	{
-		bool start : 1;
-		bool a : 1;
-		bool c : 1;
-		bool b : 1;
-		bool right : 1;
-		bool left : 1;
-		bool down : 1;
-		bool up : 1;
-	};
-
-	Buttons held;
-	Buttons pressed;
-};
-
 static std::atomic<bool> waiting_for_v_int;
-static std::array<Controller, 2> controllers;
+static ControlPadManager<2> control_pad_manager;
 
 static constexpr unsigned int VRAM_HSCROLL = 0x7C00;
 static constexpr unsigned int VRAM_PLANE_A = 0x8000;
@@ -91,18 +75,6 @@ void _EntryPoint()
 	VDP::VRAM::SetPlaneBLocation(VRAM_PLANE_B);
 	VDP::VRAM::SetSpriteTableLocation(VRAM_SPRITE_TABLE);
 	UpdateWindowBoundaries();
-
-	// Initialise IO ports.
-	Z80::Bus::Lock(
-		[](auto &z80_bus)
-		{
-			for (unsigned int i = 0; i < controllers.size(); ++i)
-			{
-				z80_bus.IOCtrl(i) = 0x40;
-				z80_bus.IOData(i) = 0x40;
-			}
-		}
-	);
 
 	// Write colours to CRAM.
 	for (unsigned int i = 0; i < 4; ++i)
@@ -176,26 +148,28 @@ void _EntryPoint()
 	{
 		WaitForVInt();
 
-		if (controllers[0].held.c)
+		const auto &control_pad = control_pad_manager.GetControlPad(0);
+
+		if (control_pad.held.c)
 		{
-			if (controllers[0].pressed.left)
+			if (control_pad.pressed.left)
 				--window_x_boundary;
-			if (controllers[0].pressed.right)
+			if (control_pad.pressed.right)
 				++window_x_boundary;
-			if (controllers[0].pressed.up)
+			if (control_pad.pressed.up)
 				--window_y_boundary;
-			if (controllers[0].pressed.down)
+			if (control_pad.pressed.down)
 				++window_y_boundary;
 		}
 		else
 		{
-			if (controllers[0].held.left)
+			if (control_pad.held.left)
 				--camera_x;
-			if (controllers[0].held.right)
+			if (control_pad.held.right)
 				++camera_x;
-			if (controllers[0].held.up)
+			if (control_pad.held.up)
 				--camera_y;
-			if (controllers[0].held.down)
+			if (control_pad.held.down)
 				++camera_y;
 		}
 	}
@@ -306,41 +280,7 @@ void _VerticalInterruptHandler()
 
 	waiting_for_v_int = false;
 
-	static constexpr auto ReadController = []()
-	{
-		return Z80::Bus::Lock(
-			[]([[maybe_unused]] auto &z80_bus)
-			{
-				std::array<unsigned char, controllers.size()> data;
-
-				for (unsigned int i = 0; i < data.size(); ++i)
-				{
-					z80_bus.IOData(i) = 0x00;
-					asm("nop");
-					asm("nop");
-					data[i] = z80_bus.IOData(i) << 2 & 0xC0;
-					z80_bus.IOData(i) = 0x40;
-					asm("nop");
-					asm("nop");
-					data[i] |= z80_bus.IOData(i) & 0x3F;
-				}
-
-				return data;
-			}
-		);
-	};
-
-	const auto controller_data = ReadController();
-
-	for (unsigned int i = 0; i < controllers.size(); ++i)
-	{
-		const unsigned char new_held = ~controller_data[i];
-		const unsigned char old_held = std::bit_cast<unsigned char>(controllers[i].held);
-		const unsigned char new_pressed = new_held & ~old_held;
-
-		controllers[i].held = std::bit_cast<Controller::Buttons>(new_held);
-		controllers[i].pressed = std::bit_cast<Controller::Buttons>(new_pressed);
-	}
+	control_pad_manager.Update();
 
 	VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, VRAM_HSCROLL);
 	VDP::Write(VDP::DataValueLongword(camera_x / 2, -(camera_x / 3)));
