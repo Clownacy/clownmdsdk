@@ -64,7 +64,7 @@
 	.ascii	"U               "	| Region
 
 	.org	0x200
-	.incbin	"bin/ip.bin"
+	.incbin	"ip.bin"
 
 	.org	0x8800
-	.incbin	"bin/sp.bin"
+	.incbin	"sp.bin"

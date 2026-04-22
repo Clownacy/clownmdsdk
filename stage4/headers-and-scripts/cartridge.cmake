@@ -1,0 +1,5 @@
+include("${CMAKE_CURRENT_LIST_DIR}/generic.cmake")
+
+set(CLOWNMDSDK_CARTRIDGE 1)
+
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-T${CLOWNMDSDK_LOCATION}/cartridge.ld")

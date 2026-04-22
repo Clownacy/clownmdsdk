@@ -15,7 +15,7 @@ bin/sp.bin: sp.cpp
 
 bin/template-cd.o: disc.s bin/ip.bin bin/sp.bin
 	mkdir -p $(@D)
-	$(AS) $< -o $@
+	$(AS) -I bin $< -o $@
 
 bin/template-cd.iso: bin/template-cd.o
 	mkdir -p $(@D)
