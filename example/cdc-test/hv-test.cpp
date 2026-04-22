@@ -35,11 +35,11 @@ ModeID HVTest::Update()
 			break;
 
 		case 2:
-			do_sample = true;
+			do_sample = 1;
 			++state;
 			[[fallthrough]];
 		case 3:
-			if (!do_sample)
+			if (do_sample == 3)
 				state = 10;
 
 			break;
@@ -50,9 +50,9 @@ ModeID HVTest::Update()
 			for (unsigned int line = 0; line < 224 / 8; ++line)
 			{
 				SetupPlaneWrite(0, line);
-				DrawHexWord(values[line].v_counter);
+				DrawHexWord(values[200 + line].v_counter);
 				SetupPlaneWrite(5, line);
-				DrawHexWord(values[line].h_blank);
+				DrawHexWord(values[200 + line].h_blank);
 			}
 
 			++state;
@@ -176,17 +176,18 @@ void HVTest::HorizontalInterrupt()
 
 void HVTest::VerticalInterrupt()
 {
-	values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
+	//values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
 
-	if (do_sample)
+	if (do_sample == 1)
 	{
-		do_sample = false;
+		do_sample = 2;
 
 		line = 0;
 		MD::VDP::Write(MD::VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = true, .lock_hv_counter = false});
 	}
-	else
+	else if (do_sample == 2)
 	{
 		MD::VDP::Write(MD::VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = false, .lock_hv_counter = false});
+		do_sample = 3;
 	}
 }

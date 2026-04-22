@@ -16,7 +16,7 @@ private:
 	};
 
 	unsigned int state;
-	std::atomic<bool> do_sample = false;
+	std::atomic<unsigned char> do_sample = 0;
 	unsigned int line = 0;
 	std::array<Values, 0x200> values = {};
 

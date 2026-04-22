@@ -231,6 +231,8 @@ void _EntryPoint()
 	auto vdp_register01 = MD::VDP::Register01{.enable_display = false, .enable_vertical_interrupt = false, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
 	MD::VDP::Write(vdp_register01);
 
+	MD::VDP::Write(MD::VDP::Register0C{.enable_h40_cell_mode_1 = false, .enable_shadow_highlight_mode = false, .interlace_mode = 0, .enable_h40_cell_mode_2 = false});
+
 #ifdef CD
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 #else
@@ -266,7 +268,7 @@ void _EntryPoint()
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, (32 + 1) * 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{2, 2, 7});
 
-	mode.emplace<MainMenu>();
+	mode.emplace<HVTest>(2, 0);
 
 	// Finished setup.
 	vdp_register01.enable_display = true;
@@ -309,6 +311,10 @@ void _EntryPoint()
 
 			case ModeID::HV_TEST_H_INT_0:
 				mode.emplace<HVTest>(2, 0); // Starts with 0xE1, then counts up from 0.
+				break;
+
+			case ModeID::HV_TEST_H_INT_1:
+				mode.emplace<HVTest>(2, 1); // Starts with 0xE1, then counts up from 0.
 				break;
 
 			case ModeID::HV_TEST_H_INT_223:

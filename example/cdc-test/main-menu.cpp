@@ -18,6 +18,7 @@ static constexpr auto options = std::to_array<OptionsMenuEntry>({
 	{ModeID::CDC_TEST     , "CDC Test"     },
 	{ModeID::GRAPHICS_TEST, "Graphics Test"},
 	{ModeID::HV_TEST_H_INT_0      , "H/V at V-Int and H-Int (0)"},
+	{ModeID::HV_TEST_H_INT_1      , "H/V at V-Int and H-Int (1)"},
 	{ModeID::HV_TEST_H_INT_223    , "H/V at V-Int and H-Int (223)"},
 	{ModeID::HV_TEST_H_INT_224    , "H/V at V-Int and H-Int (224)"},
 	{ModeID::HV_TEST_H_INT_225    , "H/V at V-Int and H-Int (225)"},
