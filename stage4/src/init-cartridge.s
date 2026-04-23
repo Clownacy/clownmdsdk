@@ -54,6 +54,41 @@
 	.ascii	"                "
 	.ascii	"F               " | Region
 
+| Fallbacks; can be overridden by application code to hook these.
+_BusErrorHandler:
+_AddressErrorHandler:
+_IllegalInstructionHandler:
+_DivisionByZeroHandler:
+_CHKHandler:
+_TRAPVHandler:
+_PrivilegeViolationHandler:
+_TraceHandler:
+_UnimplementedInstructionLineAHandler:
+_UnimplementedInstructionLineFHandler:
+_UnassignedHandler:
+_UninitialisedInterruptHandler:
+_SpuriousInterruptHandler:
+_ControllerInterruptHandler:
+_HorizontalInterruptHandler:
+_VerticalInterruptHandler:
+_TRAP0Handler:
+_TRAP1Handler:
+_TRAP2Handler:
+_TRAP3Handler:
+_TRAP4Handler:
+_TRAP5Handler:
+_TRAP6Handler:
+_TRAP7Handler:
+_TRAP8Handler:
+_TRAP9Handler:
+_TRAP10Handler:
+_TRAP11Handler:
+_TRAP12Handler:
+_TRAP13Handler:
+_TRAP14Handler:
+_TRAP15Handler:
+	rte
+
 .Ldata:
 	dc.w	0x8000
 	dc.w	0x100
