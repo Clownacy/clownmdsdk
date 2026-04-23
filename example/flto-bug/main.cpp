@@ -15,6 +15,166 @@
 
 #include <array>
 
+void _BusErrorHandler()
+{
+
+}
+
+void _AddressErrorHandler()
+{
+
+}
+
+void _IllegalInstructionHandler()
+{
+
+}
+
+void _DivisionByZeroHandler()
+{
+
+}
+
+void _CHKHandler()
+{
+
+}
+
+void _TRAPVHandler()
+{
+
+}
+
+void _PrivilegeViolationHandler()
+{
+
+}
+
+void _TraceHandler()
+{
+
+}
+
+void _UnimplementedInstructionLineAHandler()
+{
+
+}
+
+void _UnimplementedInstructionLineFHandler()
+{
+
+}
+
+void _UnassignedHandler()
+{
+
+}
+
+void _UninitialisedInterruptHandler()
+{
+
+}
+
+void _SpuriousInterruptHandler()
+{
+
+}
+
+void _ControllerInterruptHandler()
+{
+
+}
+
+void _HorizontalInterruptHandler()
+{
+
+}
+
+void _VerticalInterruptHandler()
+{
+
+}
+
+void _TRAP0Handler()
+{
+
+}
+
+void _TRAP1Handler()
+{
+
+}
+
+void _TRAP2Handler()
+{
+
+}
+
+void _TRAP3Handler()
+{
+
+}
+
+void _TRAP4Handler()
+{
+
+}
+
+void _TRAP5Handler()
+{
+
+}
+
+void _TRAP6Handler()
+{
+
+}
+
+void _TRAP7Handler()
+{
+
+}
+
+void _TRAP8Handler()
+{
+
+}
+
+void _TRAP9Handler()
+{
+
+}
+
+void _TRAP10Handler()
+{
+
+}
+
+void _TRAP11Handler()
+{
+
+}
+
+void _TRAP12Handler()
+{
+
+}
+
+void _TRAP13Handler()
+{
+
+}
+
+void _TRAP14Handler()
+{
+
+}
+
+void _TRAP15Handler()
+{
+
+}
+
 void _EntryPoint()
 {
 	// https://github.com/Clownacy/clownmdsdk/issues/3
