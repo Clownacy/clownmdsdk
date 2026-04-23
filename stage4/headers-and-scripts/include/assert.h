@@ -27,11 +27,11 @@
 /* TODO: Proper assert handling. */
 #ifdef NDEBUG
 	#define assert(CONDITION) ((void)0)
+	#define _assertm(CONDITION, MESSAGE) ((void)0)
 #else
 	#define assert(CONDITION) _assert_internal(CONDITION, "", "", "")
+	#define _assertm(CONDITION, MESSAGE) _assert_internal(CONDITION, " with message '", MESSAGE, "'")
 #endif
-
-#define _assertm(CONDITION, MESSAGE) _assert_internal(CONDITION, " with message '", MESSAGE, "'")
 
 #include <clownmdsdk.h>
 
