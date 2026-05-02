@@ -39,7 +39,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_EXECUTABLE_SUFFIX_C ".bin")
 set(CMAKE_EXECUTABLE_SUFFIX_CXX ".bin")
 
-# Enabled link-time optimisations for Release builds, because the
+# Enable link-time optimisations for Release builds, because the
 # Mega Drive sure does need it...
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
