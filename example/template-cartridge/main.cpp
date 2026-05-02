@@ -14,6 +14,7 @@
 #include <clownmdsdk.h>
 
 // M68000 exception handlers.
+// These are all optional: you can delete any of them and a stubbed-out fallback will be used instead.
 void _BusErrorHandler()
 {
 
