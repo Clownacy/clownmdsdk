@@ -17,10 +17,6 @@ all: ../bin/install/lib/libc.a ../bin/install/lib/libstubs-cartridge.a ../bin/in
 	mkdir -p $(@D)
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
-../bin/install/%.o: %.s
-	mkdir -p $(@D)
-	$(AS) -c $< -o $@
-
 ../bin/%.o: %.s
 	mkdir -p $(@D)
 	$(AS) -c $< -o $@
