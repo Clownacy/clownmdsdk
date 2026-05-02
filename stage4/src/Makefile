@@ -21,9 +21,12 @@ all: ../bin/install/lib/libc.a ../bin/install/lib/libstubs-cartridge.a ../bin/in
 	mkdir -p $(@D)
 	$(AS) -c $< -o $@
 
-../bin/install/init-cartridge.o: ../bin/init-z80.bin
-
-../bin/init-z80.bin: init-z80.asm
+../bin/%.p: %.asm
 	mkdir -p $(@D)
-	asl -q $< -o ../bin/init-z80.p
-	p2bin -q ../bin/init-z80.p $@
+	asl -q $< -o $@
+
+../bin/%.bin: ../bin/%.p
+	mkdir -p $(@D)
+	p2bin -q $< $@
+
+../bin/install/init-cartridge.o: ../bin/init-z80.bin
