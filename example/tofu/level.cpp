@@ -15,7 +15,7 @@ static Coordinate::Block camera_previous;
 
 static constexpr auto SplitLength(const auto offset, const auto length, const auto limit)
 {
-	const auto second_length = std::sub_sat(offset + length, limit);
+	const auto second_length = std::saturating_sub(offset + length, limit);
 	const auto first_length = length - second_length;
 
 	return std::pair(first_length, second_length);

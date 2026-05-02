@@ -1,0 +1,19 @@
+*** 16.1.0/optional	2026-05-02 10:04:26 +0100
+--- 16.1.0/optional-patched	2026-05-02 10:19:57 +0100
+***************
+*** 36,42 ****
+  
+  #define __glibcxx_want_freestanding_optional
+  #define __glibcxx_want_optional
+! #define __glibcxx_want_optional_range_support
+  #define __glibcxx_want_constrained_equality
+  #define __glibcxx_want_constexpr_exceptions
+  #include <bits/version.h>
+--- 36,42 ----
+  
+  #define __glibcxx_want_freestanding_optional
+  #define __glibcxx_want_optional
+! //#define __glibcxx_want_optional_range_support
+  #define __glibcxx_want_constrained_equality
+  #define __glibcxx_want_constexpr_exceptions
+  #include <bits/version.h>
