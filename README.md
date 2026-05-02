@@ -26,11 +26,18 @@ completely installed and ready for use.
 ## Using
 
 The toolchain will be installed at `/opt/clownmdsdk`. The simplest way to use
-the toolchain is with a Makefile: by adding the line
-` include /opt/clownmdsdk/cartridge.mk` to the start, the `CC`, `CXX`, `CPP`,
-`AS`, `CFLAGS`, `CXXFLAGS`, `LDFLAGS` variables will all be configured to use
-the toolchain, and the rest of the Makefile can be written as it would be for
-any other platform.
+the toolchain is with CMake or a Makefile:
+
+### Makefile
+By adding the line ` include /opt/clownmdsdk/cartridge.mk` to the start of the
+Makefile, the `CC`, `CXX`, `CPP`, `AS`, `CFLAGS`, `CXXFLAGS`, `LDFLAGS`
+variables will all be configured to use the toolchain, and the rest of the
+Makefile can be written as it would be for any other platform.
+
+### CMake
+Pass `--toolchain=/opt/clownmdsdk/cartridge.cmake` to the initial `cmake`
+command to make CMake use ClownMDSDK. From there, projects can be compiled like
+any other CMake project.
 
 
 ## Examples
