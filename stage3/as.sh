@@ -1,7 +1,6 @@
 export PREFIX="/opt/clownmdsdk"
 
-
-mkdir build
-cmake -B build asl-releases -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_INSTALL_PREFIX=$PREFIX
+mkdir -p build
+cmake -B build asl-releases -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
 cmake --build build --config Release
-cmake --build build --target install
+cmake --install build --config Release --strip --prefix $PREFIX
