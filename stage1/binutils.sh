@@ -5,6 +5,6 @@ export PATH="$PREFIX/bin:$PATH"
 mkdir -p build-binutils
 cd build-binutils
 ../binutils-2.46.0/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
-make LDFLAGS=--static
+make
 make install-strip
 cd ..

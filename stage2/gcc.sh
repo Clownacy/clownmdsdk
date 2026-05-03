@@ -8,9 +8,9 @@ patch -sNd gcc-16.1.0 -p1 < FixMinGWClang.patch
 mkdir -p build-gcc
 cd build-gcc
 ../gcc-16.1.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers --disable-multilib --with-cpu=68000 --disable-hosted-libstdcxx
-make LDFLAGS=--static all-gcc
-make LDFLAGS=--static all-target-libgcc
-make LDFLAGS=--static all-target-libstdc++-v3
+make all-gcc
+make all-target-libgcc
+make all-target-libstdc++-v3
 make install-strip-gcc
 make install-strip-target-libgcc
 make install-strip-target-libstdc++-v3
