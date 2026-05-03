@@ -11,7 +11,6 @@ make -C src -B
 cp -r bin/install/* $PREFIX/m68k-elf
 
 # Install host build of ClownLZSS, for its compression utility.
-rm -rf bin/clownlzss-host
 mkdir -p bin/clownlzss-host
 cmake -B bin/clownlzss-host ../../clownlzss \
     -DCMAKE_BUILD_TYPE=Release \
@@ -21,7 +20,6 @@ cmake --build bin/clownlzss-host --config Release --parallel ${1:-$(nproc)}
 cmake --install bin/clownlzss-host --config Release --strip --prefix $PREFIX
 
 # Install target build of ClownLZSS, for its decompression libraries.
-rm -rf bin/clownlzss-target
 mkdir -p bin/clownlzss-target
 cmake -B bin/clownlzss-target ../../clownlzss \
     --toolchain=$PREFIX/generic.cmake \
