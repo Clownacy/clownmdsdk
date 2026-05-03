@@ -17,7 +17,8 @@ cmake -B bin/clownlzss-host ../../clownlzss \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$PREFIX \
     -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
-    -DCMAKE_POLICY_DEFAULT_CMP0069=NEW
+    -DCMAKE_POLICY_DEFAULT_CMP0069=NEW \
+    -DCMAKE_EXE_LINKER_FLAGS=-static
 cmake --build bin/clownlzss-host --config Release --parallel ${1:-$(nproc)}
 cmake --build bin/clownlzss-host --target install
 
@@ -30,6 +31,7 @@ cmake -B bin/clownlzss-target ../../clownlzss \
     -DCMAKE_INSTALL_PREFIX=$PREFIX/m68k-elf \
     -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
     -DCMAKE_POLICY_DEFAULT_CMP0069=NEW \
+    -DCMAKE_EXE_LINKER_FLAGS=-static \
     -DCLOWNLZSS_TOOL=OFF \
     -DCLOWNLZSS_COMPRESSORS=OFF
 cmake --build bin/clownlzss-target --config Release --parallel ${1:-$(nproc)}
