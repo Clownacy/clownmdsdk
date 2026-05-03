@@ -1,4 +1,4 @@
-STARTUP(../../../../init-cartridge.o)
+STARTUP(../../../../m68k-elf/init-cartridge.o)
  # This is needed so that _EntryPoint is not
  # optimised-away due to being "unused".
 ENTRY(_EntryPoint)

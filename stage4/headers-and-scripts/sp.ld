@@ -1,4 +1,4 @@
-STARTUP(../../../../init-sp.o)
+STARTUP(../../../../m68k-elf/init-sp.o)
  # This is needed so that _SP_Init is not
  # optimised-away due to being "unused".
 ENTRY(_SP_Init)

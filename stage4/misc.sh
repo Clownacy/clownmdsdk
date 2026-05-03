@@ -8,7 +8,7 @@ cp -r headers-and-scripts/* $PREFIX
 make -C src -B
 
 # Copy the libraries to the install location.
-cp -r bin/install/* $PREFIX
+cp -r bin/install/* $PREFIX/m68k-elf
 
 # Install host build of ClownLZSS, for its compression utility.
 rm -rf bin/clownlzss-host
