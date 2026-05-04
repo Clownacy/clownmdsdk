@@ -128,7 +128,7 @@ __attribute__((interrupt)) static void VerticalInterrupt()
 void _VerticalInterruptHandler()
 #endif
 {
-//	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;
+	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;
 
 	control_pad_manager.Update();
 
@@ -151,11 +151,11 @@ void _EntryPoint()
 #ifdef CD
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 #else
-//	static constexpr auto subcpu_payload = std::to_array<unsigned char>({
-//		#embed "bin/sp.bin"
-//	});
+	static constexpr auto subcpu_payload = std::to_array<unsigned char>({
+		#embed "bin/sp.bin"
+	});
 
-//	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
+	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
 
 	// Upload the font to VRAM.
 	{
