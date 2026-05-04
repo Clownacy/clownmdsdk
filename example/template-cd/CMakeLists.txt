@@ -10,13 +10,13 @@ set_target_properties(sp PROPERTIES CXX_STANDARD 23)
 
 add_custom_command(
 	OUTPUT "template-cd.o"
-	COMMAND ${CLOWNMDSDK_LOCATION}/bin/m68k-elf-as "${CMAKE_CURRENT_SOURCE_DIR}/disc.s" -o "template-cd.o"
+	COMMAND "${CLOWNMDSDK_LOCATION}/bin/m68k-elf-as" "${CMAKE_CURRENT_SOURCE_DIR}/disc.s" -o "template-cd.o"
 	DEPENDS ip sp
 )
 
 add_custom_command(
 	OUTPUT "template-cd.iso"
-	COMMAND ${CLOWNMDSDK_LOCATION}/bin/m68k-elf-ld -shared "template-cd.o" -o "template-cd.iso" --oformat=binary
+	COMMAND "${CLOWNMDSDK_LOCATION}/bin/m68k-elf-ld" -shared "template-cd.o" -o "template-cd.iso" --oformat=binary
 	DEPENDS template-cd.o
 )
 

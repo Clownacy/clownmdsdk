@@ -13,13 +13,13 @@ set_target_properties(sp PROPERTIES CXX_STANDARD 23)
 
 add_custom_command(
 	OUTPUT "cdc-test-cd.o"
-	COMMAND ${CLOWNMDSDK_LOCATION}/bin/m68k-elf-as "${CMAKE_CURRENT_SOURCE_DIR}/disc.s" -o "cdc-test-cd.o"
+	COMMAND "${CLOWNMDSDK_LOCATION}/bin/m68k-elf-as" "${CMAKE_CURRENT_SOURCE_DIR}/disc.s" -o "cdc-test-cd.o"
 	DEPENDS ip sp
 )
 
 add_custom_command(
 	OUTPUT "cdc-test-cd.iso"
-	COMMAND ${CLOWNMDSDK_LOCATION}/bin/m68k-elf-ld -shared "cdc-test-cd.o" -o "cdc-test-cd.iso" --oformat=binary
+	COMMAND "${CLOWNMDSDK_LOCATION}/bin/m68k-elf-ld" -shared "cdc-test-cd.o" -o "cdc-test-cd.iso" --oformat=binary
 	DEPENDS cdc-test-cd.o
 )
 
