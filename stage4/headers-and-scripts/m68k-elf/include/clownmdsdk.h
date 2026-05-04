@@ -1374,11 +1374,11 @@ namespace ClownMDSDK
 					}
 					memory_mode.prg_ram_bank = 0;
 
-					// Decompress SUB-CPU BIOS payload to PRG-RAM.
+					// Decompress BIOS SUB-CPU payload to PRG-RAM.
 					ClownLZSS::KosinskiDecompress(&boot_rom<unsigned char>[sub_cpu_bios_payload_offset], &prg_ram_window<unsigned char>[0]);
 
-					// Upload our SUB-CPU payload to PRG-RAM.
-					std::copy(std::cbegin(subcpu_payload), std::cend(subcpu_payload), &prg_ram_window<unsigned char>[0x6000]);
+					// Decompress our SUB-CPU payload to PRG-RAM.
+					ClownLZSS::KosinskiDecompress(&subcpu_payload[0], &prg_ram_window<unsigned char>[0x6000]);
 
 					// Send WORD-RAM to SUB-CPU.
 					GiveWordRAMToSubCPU();

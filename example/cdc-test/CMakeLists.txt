@@ -26,6 +26,11 @@ add_library(cdc-test-cd INTERFACE cdc-test-cd.iso)
 
 # Cartridge Build
 
-add_cartridge_executable(cdc-test-cartridge "ip.cpp" "cdc-test.cpp" "graphics-test.cpp" "hv-test.cpp" "main-menu.cpp" "utility.cpp")
+add_custom_command(
+	OUTPUT "sp.kos"
+	COMMAND "${CLOWNMDSDK_LOCATION}/bin/clownlzss" -k -i sp.bin -o sp.kos
+	DEPENDS sp
+)
+
+add_cartridge_executable(cdc-test-cartridge "ip.cpp" "cdc-test.cpp" "graphics-test.cpp" "hv-test.cpp" "main-menu.cpp" "utility.cpp" "sp.kos")
 set_target_properties(cdc-test-cartridge PROPERTIES CXX_STANDARD 23)
-add_dependencies(cdc-test-cartridge sp)

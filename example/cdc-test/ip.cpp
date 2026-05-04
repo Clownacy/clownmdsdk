@@ -152,7 +152,7 @@ void _EntryPoint()
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 #else
 	static constexpr auto subcpu_payload = std::to_array<unsigned char>({
-		#embed "build/sp.bin"
+		#embed "build/sp.kos"
 	});
 
 	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
