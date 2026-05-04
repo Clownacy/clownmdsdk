@@ -28,3 +28,4 @@ add_library(cdc-test-cd INTERFACE cdc-test-cd.iso)
 
 add_cartridge_executable(cdc-test-cartridge "ip.cpp" "cdc-test.cpp" "graphics-test.cpp" "hv-test.cpp" "main-menu.cpp" "utility.cpp")
 set_target_properties(cdc-test-cartridge PROPERTIES CXX_STANDARD 23)
+add_dependencies(cdc-test-cartridge sp)
