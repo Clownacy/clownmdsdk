@@ -23,4 +23,4 @@ bin/cdc-test-cd.iso: bin/cdc-test-cd.o
 
 bin/cdc-test-cartridge.bin: ip.cpp cdc-test.cpp graphics-test.cpp hv-test.cpp main-menu.cpp utility.cpp
 	mkdir -p $(@D)
-	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) -T $(CLOWNMDSDK_LOCATION)/cartridge.ld
+	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) -lstubs-cartridge -T $(CLOWNMDSDK_LOCATION)/cartridge.ld
