@@ -1006,12 +1006,23 @@ namespace ClownMDSDK
 					return callback(bus);
 				}
 
-				static auto LockInterruptSafe(const auto &callback, const bool wait_for_bus = true)
+				template<typename... Ts>
+				static auto LockInterruptSafe(Ts &&...args)
 				{
-					const unsigned int interrupt_mask = M68k::DisableInterrupts();
-					const auto result = Lock(callback, wait_for_bus);
-					M68k::SetInterruptMask(interrupt_mask);
-					return result;
+					class InterruptManager
+					{
+					private:
+						const unsigned int interrupt_mask = M68k::DisableInterrupts();
+
+					public:
+						~InterruptManager()
+						{
+							M68k::SetInterruptMask(interrupt_mask);
+						}
+					};
+
+					InterruptManager interrupt_manager;
+					return Lock(std::forward<Ts>(args)...);
 				}
 
 				~Bus()
