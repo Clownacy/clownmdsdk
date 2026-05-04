@@ -43,3 +43,19 @@ set(CMAKE_EXECUTABLE_SUFFIX_CXX ".bin")
 # Mega Drive sure does need it...
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+
+function(add_cartridge_executable name)
+	add_executable(${ARGV})
+	target_link_libraries(${name} PUBLIC stubs-cartridge)
+	target_link_options(${name} PUBLIC "-T${CLOWNMDSDK_LOCATION}/cartridge.ld")
+endfunction()
+
+function(add_ip_executable name)
+	add_executable(${ARGV})
+	target_link_options(${name} PUBLIC "-T${CLOWNMDSDK_LOCATION}/ip.ld")
+endfunction()
+
+function(add_sp_executable name)
+	add_executable(${ARGV})
+	target_link_options(${name} PUBLIC "-T${CLOWNMDSDK_LOCATION}/sp.ld")
+endfunction()

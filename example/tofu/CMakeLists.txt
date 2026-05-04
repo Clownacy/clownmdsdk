@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0...4.0)
 
 project(tofu LANGUAGES CXX)
 
-add_executable(tofu
+add_cartridge_executable(tofu
 	"objects/base.cpp"
 	"objects/base.h"
 	"objects/bullet.cpp"
