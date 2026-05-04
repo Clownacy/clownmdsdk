@@ -158,18 +158,15 @@ void _EntryPoint()
 	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
 
 	// Upload the font to VRAM.
-	{
-		static constexpr auto font = std::to_array<unsigned char>({
-			#embed "../common/font.unc"
-		});
-
-		MD::Z80::Bus::Lock(
-			[&](auto &z80_bus)
-			{
-				z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(font), std::size(font) / sizeof(short));
-			}
-		);
-	}
+	MD::Z80::Bus::Lock(
+		[&](auto &z80_bus)
+		{
+			static constexpr auto font = std::to_array<unsigned char>({
+				#embed "../common/font.unc"
+			});
+			z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(font), std::size(font) / sizeof(short));
+		}
+	);
 #endif
 
 	// Write colours to CRAM.
