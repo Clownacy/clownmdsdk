@@ -18,7 +18,7 @@ LD := $(CLOWNMDSDK_PREFIX)ld
 # destructors are stripped-out by the linker anyway (since Mega Drive
 # games never exit), so it doesn't matter what they do so long as they
 # don't produce errors.
-CLOWNMDSDK_CANDCXXFLAGS := -mshort -D__MEGA_DRIVE__ -ffreestanding -nodefaultlibs -fno-ident -isystem $(CLOWNMDSDK_LOCATION)/include -L $(CLOWNMDSDK_LOCATION)/lib
+CLOWNMDSDK_CANDCXXFLAGS := -mshort -D__MEGA_DRIVE__=1 -D__CLOWNMDSDK__=1 -ffreestanding -nodefaultlibs -fno-ident -isystem $(CLOWNMDSDK_LOCATION)/include -L $(CLOWNMDSDK_LOCATION)/lib
 CFLAGS := $(CLOWNMDSDK_CANDCXXFLAGS)
 CXXFLAGS := $(CLOWNMDSDK_CANDCXXFLAGS) -fno-exceptions -fno-rtti -fno-use-cxa-atexit
 LDFLAGS := -lgcc -lc

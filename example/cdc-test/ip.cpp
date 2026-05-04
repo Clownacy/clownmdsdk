@@ -28,7 +28,7 @@
 
 namespace MD = ClownMDSDK::MainCPU;
 
-#ifdef CD
+#ifdef __CLOWNMDSDK_IP__
 namespace MCD_RAM = MD::MegaCD::CDBoot;
 #else
 namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
@@ -36,7 +36,7 @@ namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
 
 static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 
-#ifndef CD
+#ifndef __CLOWNMDSDK_IP__
 [[noreturn]] static void ErrorTrap()
 {
 	MD::VDP::CRAM::Fill({7, 0, 0});
@@ -122,7 +122,7 @@ void _HorizontalInterruptHandler()
 }
 #endif
 
-#ifdef CD
+#ifdef __CLOWNMDSDK_IP__
 __attribute__((interrupt)) static void VerticalInterrupt()
 #else
 void _VerticalInterruptHandler()
@@ -148,7 +148,7 @@ void _EntryPoint()
 
 	MD::VDP::Write(MD::VDP::Register0C{.enable_h40_cell_mode_1 = false, .enable_shadow_highlight_mode = false, .interlace_mode = 0, .enable_h40_cell_mode_2 = false});
 
-#ifdef CD
+#ifdef __CLOWNMDSDK_IP__
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 #else
 	static constexpr auto subcpu_payload = std::to_array<unsigned char>({

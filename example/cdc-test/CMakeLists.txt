@@ -6,7 +6,6 @@ project(cdc-test LANGUAGES CXX)
 
 add_ip_executable(ip "ip.cpp" "cdc-test.cpp" "graphics-test.cpp" "hv-test.cpp" "main-menu.cpp" "utility.cpp")
 set_target_properties(ip PROPERTIES CXX_STANDARD 23)
-target_compile_definitions(ip PRIVATE CD)
 
 add_sp_executable(sp "sp.cpp")
 set_target_properties(sp PROPERTIES CXX_STANDARD 23)
