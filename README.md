@@ -35,7 +35,7 @@ variables will all be configured to use the toolchain, and the rest of the
 Makefile can be written as it would be for any other platform.
 
 ### CMake
-Pass `--toolchain=/opt/clownmdsdk/cartridge.cmake` to the initial `cmake`
+Pass `--toolchain=/opt/clownmdsdk/toolchain.cmake` to the initial `cmake`
 command to make CMake use ClownMDSDK. From there, projects can be compiled like
 any other CMake project.
 

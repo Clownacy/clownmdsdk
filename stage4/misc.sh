@@ -23,7 +23,7 @@ cmake --install bin/clownlzss-host --config Release --strip
 # Install target build of ClownLZSS, for its decompression libraries.
 mkdir -p bin/clownlzss-target
 cmake -B bin/clownlzss-target ../../clownlzss \
-    --toolchain=$PREFIX/generic.cmake \
+    --toolchain=$PREFIX/toolchain.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
     -DCMAKE_POLICY_DEFAULT_CMP0069=NEW \
