@@ -18,7 +18,7 @@ cmake -B bin/clownlzss-host ../../clownlzss \
     -DCMAKE_POLICY_DEFAULT_CMP0069=NEW \
     -DCMAKE_INSTALL_PREFIX=$PREFIX
 cmake --build bin/clownlzss-host --config Release --parallel ${1:-$(nproc)}
-cmake --install bin/clownlzss-host --config Release --strip
+cmake --install bin/clownlzss-host --config Release --prefix $PREFIX --strip
 
 # Install target build of ClownLZSS, for its decompression libraries.
 mkdir -p bin/clownlzss-target
@@ -31,4 +31,4 @@ cmake -B bin/clownlzss-target ../../clownlzss \
     -DCLOWNLZSS_TOOL=OFF \
     -DCLOWNLZSS_COMPRESSORS=OFF
 cmake --build bin/clownlzss-target --config Release --parallel ${1:-$(nproc)}
-cmake --install bin/clownlzss-target --config Release --strip
+cmake --install bin/clownlzss-target --config Release --prefix $PREFIX/m68k-elf --strip
