@@ -1,4 +1,4 @@
-STARTUP(../../../../m68k-elf/init-cartridge.o)
+STARTUP(crt0-cartridge.o)
  # This is needed so that _EntryPoint is not
  # optimised-away due to being "unused".
 ENTRY(_EntryPoint)
@@ -13,7 +13,7 @@ MEMORY
 SECTIONS
 {
 	.rom : {
-		*(.text.init)  # init.s
+		*(.text.init)  # crt0-cartridge.s
 		*(.init)       # Global constructors
 		*(.text.entry) # _EntryPoint
 		*(.text)

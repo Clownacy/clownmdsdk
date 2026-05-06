@@ -1,4 +1,4 @@
-STARTUP(../../../../m68k-elf/init-sp.o)
+STARTUP(crt0-sp.o)
  # This is needed so that _SP_Init is not
  # optimised-away due to being "unused".
 ENTRY(_SP_Init)
@@ -13,7 +13,7 @@ MEMORY
 SECTIONS
 {
 	.ram : {
-		*(.text.init)  # init-sp.s
+		*(.text.init)  # crt0-sp.s
 		*(.init)       # Global constructors
 		*(.text.entry) # _SP_Init
 		*(.text)

@@ -1,4 +1,4 @@
-STARTUP(../../../../m68k-elf/init-ip.o)
+STARTUP(crt0-ip.o)
  # This is needed so that _EntryPoint is not
  # optimised-away due to being "unused".
 ENTRY(_EntryPoint)
@@ -13,7 +13,7 @@ MEMORY
 SECTIONS
 {
 	.ram : {
-		*(.text.init)  # init-ip.s
+		*(.text.init)  # crt0-ip.s
 		*(.init)       # Global constructors
 		*(.text.entry) # _EntryPoint
 		*(.text)
