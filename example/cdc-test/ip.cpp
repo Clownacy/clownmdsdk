@@ -180,7 +180,7 @@ void _EntryPoint()
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, (32 + 1) * 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{2, 2, 7});
 
-	mode.emplace<HVTest>(2, 0);
+	mode.emplace<MainMenu>();
 
 	// Finished setup.
 	vdp_register01.enable_display = true;

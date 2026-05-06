@@ -5,7 +5,7 @@
 
 namespace MD = ClownMDSDK::MainCPU;
 
-#ifdef CD
+#ifdef __CLOWNMDSDK_IP__
 namespace MCD_RAM = MD::MegaCD::CDBoot;
 #else
 namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
