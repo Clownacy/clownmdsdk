@@ -817,6 +817,16 @@ namespace ClownMDSDK
 						: "cc"
 					);
 				}
+
+				// The Mega CD suffers from a bug where DMA-transferred data is offset by a word.
+				// To mitigate this, the source is offset by a word, and the skipped first word is manually written afterwards.
+				inline void CopyWordsWithDMAFromWordRAM(const RAM ram, const unsigned int address, const void* const data, const unsigned int length)
+				{
+					const auto source = static_cast<const unsigned short*>(data);
+					CopyWordsWithDMA(RAM::VRAM, address, source + 1, length);
+					SendCommand(RAM::VRAM, Access::WRITE, address);
+					Write(DataValueWord(source[0]));
+				}
 			}
 
 			inline void CopyWordsWithoutDMA(const RAM ram, const unsigned int address, const void* const data, const unsigned int length)
@@ -1120,6 +1130,11 @@ namespace ClownMDSDK
 				void CopyWordsToVDPWithDMA(const VDP::RAM ram, const unsigned int address, const void* const data, const unsigned int length)
 				{
 					VDP::Unsafe::CopyWordsWithDMA(ram, address, data, length);
+				}
+
+				void CopyWordsToVDPWithDMAFromWordRAM(const VDP::RAM ram, const unsigned int address, const void* const data, const unsigned int length)
+				{
+					VDP::Unsafe::CopyWordsWithDMAFromWordRAM(ram, address, data, length);
 				}
 
 				struct ControlPad3Button

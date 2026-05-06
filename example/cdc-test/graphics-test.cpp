@@ -32,21 +32,17 @@ GraphicsTest::GraphicsTest()
 
 	// Send the transformed graphics to VRAM, for display.
 	SubmitSubCPUCommand(Command::REQUEST_WORD_RAM);
-
-	// The Mega CD suffers from a bug where DMA-transferred data is offset by a word.
-	// To mitigate this, the source is offset by a word, and the skipped first word is manually written afterwards.
-	// TODO: This should be integrated into 'clownmdsdk.h' somehow.
-	const unsigned short* const source = &MCD_RAM::word_ram_2m<unsigned short>[0x20000 / 2];
-	const auto destination = 0x100 * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL;
-	const auto total_words = width * height * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL / 2;
 	MD::Z80::Bus::Lock(
 		[&](auto &z80_bus)
 		{
-			z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, destination, source + 1, total_words);
+			z80_bus.CopyWordsToVDPWithDMAFromWordRAM(
+				MD::VDP::RAM::VRAM,
+				0x100 * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL,
+				&MCD_RAM::word_ram_2m<unsigned short>[0x20000 / 2],
+				width * height * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL / 2
+			);
 		}
 	);
-	MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, destination);
-	MD::VDP::Write(MD::VDP::DataValueWord(source[0]));
 }
 
 ModeID GraphicsTest::Update()
