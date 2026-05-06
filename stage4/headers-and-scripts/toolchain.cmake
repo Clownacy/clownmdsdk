@@ -63,3 +63,24 @@ function(add_sp_executable name)
 	target_compile_definitions(${name} PRIVATE "__CLOWNMDSDK_SP__=1")
 	target_link_options(${name} PUBLIC "-T${CLOWNMDSDK_LOCATION}/sp.ld")
 endfunction()
+
+function(add_iso_stub name ip sp)
+	add_custom_command(
+		OUTPUT "${name}.s"
+		COMMAND "${CLOWNMDSDK_LOCATION}/bin/m68k-elf-cpp" "${CLOWNMDSDK_LOCATION}/iso-stub.s" -o "${name}.s" -DIP_FILENAME=\\"${ip}.bin\\" -DSP_FILENAME=\\"${sp}.bin\\"
+	)
+
+	add_custom_command(
+		OUTPUT "${name}.o"
+		COMMAND "${CLOWNMDSDK_LOCATION}/bin/m68k-elf-as" "${name}.s" -o "${name}.o"
+		DEPENDS ${name}.s ${ip} ${sp}
+	)
+
+	add_custom_command(
+		OUTPUT "${name}.iso"
+		COMMAND "${CLOWNMDSDK_LOCATION}/bin/m68k-elf-ld" -shared "${name}.o" -o "${name}.iso" --oformat=binary
+		DEPENDS ${name}.o
+	)
+
+	add_library(${name} INTERFACE ${name}.iso)
+endfunction()
