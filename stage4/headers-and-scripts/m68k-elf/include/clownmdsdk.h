@@ -157,6 +157,33 @@ namespace ClownMDSDK
 			{
 				return SetInterruptMask(7);
 			}
+
+			inline auto SetInterruptMaskTemporarily(const unsigned int level, const auto &callback)
+			{
+				class InterruptManager
+				{
+				private:
+					const unsigned int previous_interrupt_mask;
+
+				public:
+					InterruptManager(const unsigned int level)
+						: previous_interrupt_mask(SetInterruptMask(level))
+					{}
+
+					~InterruptManager()
+					{
+						SetInterruptMask(previous_interrupt_mask);
+					}
+				};
+
+				InterruptManager interrupt_manager(level);
+				return callback();
+			}
+
+			inline auto DisableInterruptsTemporarily(const auto &callback)
+			{
+				return SetInterruptMaskTemporarily(7, callback);
+			}
 		}
 
 		namespace FM
@@ -1019,20 +1046,12 @@ namespace ClownMDSDK
 				template<typename... Ts>
 				static auto LockInterruptSafe(Ts &&...args)
 				{
-					class InterruptManager
-					{
-					private:
-						const unsigned int interrupt_mask = M68k::DisableInterrupts();
-
-					public:
-						~InterruptManager()
+					return M68k::DisableInterruptsTemporarily(
+						[&]()
 						{
-							M68k::SetInterruptMask(interrupt_mask);
+							return Lock(std::forward<Ts>(args)...);
 						}
-					};
-
-					InterruptManager interrupt_manager;
-					return Lock(std::forward<Ts>(args)...);
+					);
 				}
 
 				~Bus()
