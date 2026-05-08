@@ -124,6 +124,6 @@ void _EntryPoint()
 		);
 
 		// Sleep until the next frame.
-		asm("stop #0x2300");
+		MD::M68k::WaitForInterrupt(3);
 	}
 }

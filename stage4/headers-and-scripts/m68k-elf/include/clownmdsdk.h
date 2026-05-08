@@ -184,6 +184,16 @@ namespace ClownMDSDK
 			{
 				return SetInterruptMaskTemporarily(7, callback);
 			}
+
+			inline void WaitForInterrupt(const unsigned int interrupt_mask)
+			{
+				asm(
+					"stop %0"
+					:
+					: "i" (0x2000 | (interrupt_mask << 8))
+					: "cc"
+				);
+			}
 		}
 
 		namespace FM

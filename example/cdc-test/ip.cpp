@@ -42,7 +42,7 @@ static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 	MD::VDP::CRAM::Fill({7, 0, 0});
 
 	for (;;)
-		asm("stop #0x2700");
+		MD::M68k::WaitForInterrupt(7);
 }
 
 void _BusErrorHandler()
@@ -192,14 +192,12 @@ void _EntryPoint()
 	vdp_register01.enable_vertical_interrupt = true;
 	MD::VDP::Write(vdp_register01);
 
-	MD::M68k::SetInterruptMask(0);
-
 	MD::VDP::VRAM::SetPlaneALocation(VRAM_PLANE_A);
 
 	for (;;)
 	{
 		// Wait for vertical interrupt.
-		asm("stop #0x2000");
+		MD::M68k::WaitForInterrupt(0);
 
 		const auto mode_id = std::visit(
 			[](auto &&mode)
