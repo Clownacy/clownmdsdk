@@ -151,27 +151,35 @@ void _EntryPoint()
 #ifdef __CLOWNMDSDK_IP__
 	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
 #else
-	static constexpr auto subcpu_payload = std::to_array<unsigned char>({
-		#embed "build/sp.kos"
-	});
+	// Upload Sub-CPU payload.
+	{
+		static constexpr auto subcpu_payload = std::to_array<unsigned char>({
+			#embed "build/sp.kos"
+		});
 
-	MCD_RAM::InitialiseSubCPU(std::data(subcpu_payload));
+		MCD_RAM::InitialiseSubCPU(std::data(subcpu_payload));
+	}
 
-	// Upload the font to VRAM.
-	MD::Z80::Bus::Lock(
-		[&](auto &z80_bus)
-		{
-			static constexpr auto font_uncompressed = std::to_array<unsigned char>({
-				#embed "../common/font.unc"
-			});
-			static constexpr auto font_compressed = std::to_array<unsigned char>({
-				#embed "build/font.kos"
-			});
-			std::array<unsigned char, std::size(font_uncompressed)> buffer;
-			ClownLZSS::KosinskiDecompress(std::begin(font_compressed), std::begin(buffer));
-			z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(buffer), std::size(buffer) / sizeof(short));
-		}
-	);
+	// Upload font.
+	{
+		static constexpr auto font_uncompressed = std::to_array<unsigned char>({
+			#embed "../common/font.unc"
+		});
+
+		static constexpr auto font_compressed = std::to_array<unsigned char>({
+			#embed "build/font.kos"
+		});
+
+		std::array<unsigned char, std::size(font_uncompressed)> buffer;
+		ClownLZSS::KosinskiDecompress(std::begin(font_compressed), std::begin(buffer));
+
+		MD::Z80::Bus::Lock(
+			[&](auto &z80_bus)
+			{
+				z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(buffer), std::size(buffer) / sizeof(short));
+			}
+		);
+	}
 #endif
 
 	// Write colours to CRAM.
