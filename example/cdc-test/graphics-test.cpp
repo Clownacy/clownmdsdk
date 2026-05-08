@@ -17,7 +17,13 @@ GraphicsTest::GraphicsTest()
 	{
 		MD::VDP::SendCommand(MD::VDP::RAM::VRAM, MD::VDP::Access::WRITE, VRAM_PLANE_A + y * PLANE_WIDTH * 2);
 		for (unsigned int x = 0; x < width; ++x)
-			MD::VDP::Write(MD::VDP::DataValueWord(0x100 + x * height + y));
+			MD::VDP::Write(MD::VDP::VRAM::TileMetadata{
+				.priority = false,
+				.palette_line = 0,
+				.y_flip = false,
+				.x_flip = false,
+				.tile_index = 0x100 + x * height + y
+			});
 	}
 
 	// Copy ASCII tiles from VRAM to Word-RAM to serve as the stamp.
