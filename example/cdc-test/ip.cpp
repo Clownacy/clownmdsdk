@@ -155,7 +155,7 @@ void _EntryPoint()
 		#embed "build/sp.kos"
 	});
 
-	MCD_RAM::InitialiseSubCPU<unsigned char>(subcpu_payload);
+	MCD_RAM::InitialiseSubCPU(std::data(subcpu_payload));
 
 	// Upload the font to VRAM.
 	MD::Z80::Bus::Lock(

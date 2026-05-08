@@ -1376,8 +1376,7 @@ namespace ClownMDSDK
 					memory_mode.dmna = true;
 				}
 
-				template<typename T>
-				static inline bool InitialiseSubCPU(const std::span<const T> &subcpu_payload)
+				static inline bool InitialiseSubCPU(const unsigned char* const subcpu_payload)
 				{
 					if (!Z80::Bus::Lock([](auto &z80_bus){return z80_bus.IsMegaCDConnected();}))
 						return false;
@@ -1422,7 +1421,7 @@ namespace ClownMDSDK
 					ClownLZSS::KosinskiDecompress(&boot_rom<unsigned char>[sub_cpu_bios_payload_offset], &prg_ram_window<unsigned char>[0]);
 
 					// Decompress our SUB-CPU payload to PRG-RAM.
-					ClownLZSS::KosinskiDecompress(&subcpu_payload[0], &prg_ram_window<unsigned char>[0x6000]);
+					ClownLZSS::KosinskiDecompress(subcpu_payload, &prg_ram_window<unsigned char>[0x6000]);
 
 					// Send WORD-RAM to SUB-CPU.
 					GiveWordRAMToSubCPU();
