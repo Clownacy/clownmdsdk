@@ -68,17 +68,18 @@ ModeID HVTest::Update()
 		case 20:
 			line = 0;
 
-			MD::M68k::DisableInterrupts();
+			MD::M68k::DisableInterruptsTemporarily(
+				[&]()
+				{
+					// Wait for V-blank to end.
+					while (MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to end.
-			while (MD::VDP::ReadStatus().vertical_blanking);
+					// Wait for V-blank to start.
+					while (!MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to start.
-			while (!MD::VDP::ReadStatus().vertical_blanking);
-
-			values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
-
-			MD::M68k::SetInterruptMask(0);
+					values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
+				}
+			);
 
 			// Print.
 			state = 10;
@@ -88,17 +89,18 @@ ModeID HVTest::Update()
 		case 30:
 			line = 0;
 
-			MD::M68k::DisableInterrupts();
+			MD::M68k::DisableInterruptsTemporarily(
+				[&]()
+				{
+					// Wait for V-blank to start.
+					while (!MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to start.
-			while (!MD::VDP::ReadStatus().vertical_blanking);
+					// Wait for V-blank to end.
+					while (MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to end.
-			while (MD::VDP::ReadStatus().vertical_blanking);
-
-			values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
-
-			MD::M68k::SetInterruptMask(0);
+					values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
+				}
+			);
 
 			// Print.
 			state = 10;
@@ -108,24 +110,25 @@ ModeID HVTest::Update()
 		case 40:
 			line = 0;
 
-			MD::M68k::DisableInterrupts();
+			MD::M68k::DisableInterruptsTemporarily(
+				[&]()
+				{
+					// Wait for V-blank to start.
+					while (!MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to start.
-			while (!MD::VDP::ReadStatus().vertical_blanking);
+					// Wait for V-blank to end.
+					while (MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to end.
-			while (MD::VDP::ReadStatus().vertical_blanking);
+					for (unsigned int i = 0; i < 224; ++i)
+					{
+						// Wait for H-blank to start.
+						while (!MD::VDP::ReadStatus().horizontal_blanking);
 
-			for (unsigned int i = 0; i < 224; ++i)
-			{
-				// Wait for H-blank to start.
-				while (!MD::VDP::ReadStatus().horizontal_blanking);
-
-				// Log V-counter.
-				values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
-			}
-
-			MD::M68k::SetInterruptMask(0);
+						// Log V-counter.
+						values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
+					}
+				}
+			);
 
 			// Print.
 			state = 10;
@@ -135,27 +138,28 @@ ModeID HVTest::Update()
 		case 50:
 			line = 0;
 
-			MD::M68k::DisableInterrupts();
+			MD::M68k::DisableInterruptsTemporarily(
+				[&]()
+				{
+					// Wait for V-blank to start.
+					while (!MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to start.
-			while (!MD::VDP::ReadStatus().vertical_blanking);
+					// Wait for V-blank to end.
+					while (MD::VDP::ReadStatus().vertical_blanking);
 
-			// Wait for V-blank to end.
-			while (MD::VDP::ReadStatus().vertical_blanking);
+					for (unsigned int i = 0; i < 224; ++i)
+					{
+						// Wait for H-blank to start.
+						while (!MD::VDP::ReadStatus().horizontal_blanking);
 
-			for (unsigned int i = 0; i < 224; ++i)
-			{
-				// Wait for H-blank to start.
-				while (!MD::VDP::ReadStatus().horizontal_blanking);
+						// Wait for H-blank to end.
+						while (MD::VDP::ReadStatus().horizontal_blanking);
 
-				// Wait for H-blank to end.
-				while (MD::VDP::ReadStatus().horizontal_blanking);
-
-				// Log V-counter.
-				values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
-			}
-
-			MD::M68k::SetInterruptMask(0);
+						// Log V-counter.
+						values[line++] = {MD::VDP::hv_counter, MD::VDP::ReadStatus().horizontal_blanking};
+					}
+				}
+			);
 
 			// Print.
 			state = 10;
