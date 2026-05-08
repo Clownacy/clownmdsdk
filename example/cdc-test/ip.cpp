@@ -161,10 +161,15 @@ void _EntryPoint()
 	MD::Z80::Bus::Lock(
 		[&](auto &z80_bus)
 		{
-			static constexpr auto font = std::to_array<unsigned char>({
+			static constexpr auto font_uncompressed = std::to_array<unsigned char>({
 				#embed "../common/font.unc"
 			});
-			z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(font), std::size(font) / sizeof(short));
+			static constexpr auto font_compressed = std::to_array<unsigned char>({
+				#embed "build/font.kos"
+			});
+			std::array<unsigned char, std::size(font_uncompressed)> buffer;
+			ClownLZSS::KosinskiDecompress(std::begin(font_compressed), std::begin(buffer));
+			z80_bus.CopyWordsToVDPWithDMA(MD::VDP::RAM::VRAM, ' ' * MD::VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL, std::data(buffer), std::size(buffer) / sizeof(short));
 		}
 	);
 #endif
