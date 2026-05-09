@@ -3,9 +3,13 @@
 # TODO: Use '-flto' here once GCC fixes whatever ridiculous bug of theirs is causing `memset` to resolve to address 0.
 CFLAGS += -O3 -DNDEBUG -Wall -Wextra -Wpedantic -fvisibility=hidden
 
-all: ../bin/install/lib/libc.a ../bin/install/lib/libstubs-cartridge.a ../bin/install/lib/crt0-cartridge.o ../bin/install/lib/crt0-ip.o ../bin/install/lib/crt0-sp.o 
+all: ../bin/install/lib/libc.a ../bin/install/lib/libm.a ../bin/install/lib/libstubs-cartridge.a ../bin/install/lib/crt0-cartridge.o ../bin/install/lib/crt0-ip.o ../bin/install/lib/crt0-sp.o 
 
 ../bin/install/lib/libc.a: ../bin/stdlib.o ../bin/string.o
+	mkdir -p $(@D)
+	$(AR) rcs $@ $^
+
+../bin/install/lib/libm.a: ../bin/libm.o
 	mkdir -p $(@D)
 	$(AR) rcs $@ $^
 
