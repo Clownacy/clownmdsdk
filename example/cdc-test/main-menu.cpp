@@ -36,7 +36,7 @@ void MainMenu::DoEverything()
 
 	for (unsigned int i = 0; i < std::size(options); ++i)
 	{
-		SetupPlaneWrite(8, tile_y - option_index * 2 + i * 2);
+		SetupPlaneWrite(2, tile_y - option_index * 2 + i * 2);
 		DrawString(options[i].label, i == option_index ? 0 : 1);
 	}
 }
