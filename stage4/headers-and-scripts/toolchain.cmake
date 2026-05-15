@@ -45,6 +45,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
 function(clownmdsdk_add_executable name)
 	add_executable(${ARGV})
+	# So we can study the generated assembly.
 	target_link_options(${name} PUBLIC -save-temps=obj "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/${name}.map")
 endfunction()
 
