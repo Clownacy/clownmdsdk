@@ -1286,8 +1286,8 @@ namespace ClownMDSDK
 			{
 				struct Trampoline
 				{
-					unsigned short jmp_opcode;
-					void (*address)();
+					std::atomic<unsigned short> jmp_opcode;
+					std::atomic<void(*)()> address;
 				};
 
 				Trampoline reset;
@@ -1305,7 +1305,7 @@ namespace ClownMDSDK
 				Trampoline trace;
 			};
 
-			__BIND_ADDRESS(0xFFFFFD00, jump_table, volatile JumpTable);
+			__BIND_ADDRESS(0xFFFFFD00, jump_table, JumpTable);
 
 			namespace CDBoot
 			{
