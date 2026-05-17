@@ -14,7 +14,7 @@
 #include <clownmdsdk.h>
 
 // Runs once per frame, either 50 or 60 times a second for PAL or NTSC respectively.
-__attribute__((interrupt)) static void VerticalInterrupt()
+static void VerticalInterrupt()
 {
 	// Raise vertical interrupt on the Sub-CPU.
 	ClownMDSDK::MainCPU::MegaCD::subcpu.raise_interrupt_level_2 = true;
@@ -24,7 +24,7 @@ __attribute__((interrupt)) static void VerticalInterrupt()
 void _EntryPoint()
 {
 	// Register vertical interrupt.
-	ClownMDSDK::MainCPU::MegaCD::jump_table.level_6.address = VerticalInterrupt;
+	ClownMDSDK::MainCPU::MegaCD::jump_table.vertical_interrupt.SetAddress<VerticalInterrupt>();
 
 	// Do initialisation here.
 

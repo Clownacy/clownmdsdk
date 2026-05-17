@@ -1300,9 +1300,9 @@ namespace ClownMDSDK
 			struct JumpTable
 			{
 				M68kInterruptTrampoline reset;
-				M68kInterruptTrampoline level_6;
-				M68kInterruptTrampoline level_4;
-				M68kInterruptTrampoline level_2;
+				M68kInterruptTrampoline vertical_interrupt;
+				M68kInterruptTrampoline horizontal_interrupt;
+				M68kInterruptTrampoline controller_interrupt;
 				std::array<M68kInterruptTrampoline, 0x10> trap;
 				M68kInterruptTrampoline chk;
 				M68kInterruptTrampoline address_error;

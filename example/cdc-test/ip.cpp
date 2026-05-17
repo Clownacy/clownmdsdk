@@ -166,7 +166,7 @@ void _EntryPoint()
 	MD::VDP::Write(MD::VDP::Register0C{.enable_h40_cell_mode_1 = false, .enable_shadow_highlight_mode = false, .interlace_mode = 0, .enable_h40_cell_mode_2 = false});
 
 #ifdef __CLOWNMDSDK_IP__
-	MD::MegaCD::jump_table.level_6.SetAddress<VerticalInterrupt>();
+	MD::MegaCD::jump_table.vertical_interrupt.SetAddress<VerticalInterrupt>();
 #else
 	// Upload Sub-CPU payload.
 	{
