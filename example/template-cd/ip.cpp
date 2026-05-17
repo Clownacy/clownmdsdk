@@ -13,6 +13,11 @@
 
 #include <clownmdsdk.h>
 
+static void HorizontalInterrupt()
+{
+
+}
+
 // Runs once per frame, either 50 or 60 times a second for PAL or NTSC respectively.
 static void VerticalInterrupt()
 {
@@ -23,7 +28,10 @@ static void VerticalInterrupt()
 // Run indefinitely; should not return. Handles the bulk of operations.
 void _EntryPoint()
 {
-	// Register vertical interrupt.
+	// Register interrupt handlers.
+	// 'jump_table.horizontal_interrupt.SetAddress' could be used for this instead,
+	// but 'SetHorizontalInterruptVector' is more efficient due to bypassing a jump instruction.
+	ClownMDSDK::MainCPU::MegaCD::SetHorizontalInterruptVector<HorizontalInterrupt>();
 	ClownMDSDK::MainCPU::MegaCD::jump_table.vertical_interrupt.SetAddress<VerticalInterrupt>();
 
 	// Do initialisation here.
