@@ -1274,13 +1274,28 @@ namespace ClownMDSDK
 				__BIND_ADDRESS(0xA12008, host_data, volatile unsigned short);
 			}
 
-			__BIND_ADDRESS(0xA12006, horizontal_interrupt_vector, volatile unsigned short);
+			__BIND_ADDRESS(0xA12006, horizontal_interrupt_vector, volatile unsigned short); // TODO: Hide this somewhere since `SetHorizontalInterruptVector` makes it redundant?
 			__BIND_ADDRESS(0xA1200C, stop_watch, volatile unsigned short);
 			__BIND_ADDRESS(0xA1200E, communication_flag, std::atomic<unsigned short>);
 			__BIND_ADDRESS(0xA1200E, communication_flag_ours, std::atomic<unsigned char>);
 			__BIND_ADDRESS(0xA1200F, communication_flag_theirs, std::atomic<unsigned char>);
 			__BIND_ADDRESS(0xA12010, communication_command, std::array<std::atomic<unsigned short>, 8>);
 			__BIND_ADDRESS(0xA12020, communication_status, std::array<std::atomic<unsigned short>, 8>);
+
+			template<auto Callback>
+			static inline void SetHorizontalInterruptVector()
+			{
+				const auto &Handler = []() static __attribute__((interrupt))
+				{
+					Callback();
+				};
+
+				const auto address = reinterpret_cast<std::uintptr_t>(&Handler.operator());
+
+				_assertm(address >= 0xFFFF0000, "Horizontal interrupt handler can only exist in WORK-RAM!");
+
+				horizontal_interrupt_vector = address;
+			}
 
 			struct JumpTable
 			{
