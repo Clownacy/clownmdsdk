@@ -145,18 +145,14 @@ static void SetMode(Args &&...args)
 {
 	mode.emplace<T>(std::forward<Args>(args)...);
 
-	const auto &SetHorizontalInterruptHandler = []<auto Callback>()
+#ifdef __CLOWNMDSDK_CARTRIDGE__
+	_HorizontalInterruptHandler.SetAddress
+#else
+	MD::MegaCD::SetHorizontalInterruptHandler
+#endif
+	<[]()
 	{
-	#ifdef __CLOWNMDSDK_CARTRIDGE__
-		_HorizontalInterruptHandler.SetAddress<Callback>();
-	#else
-		MD::MegaCD::SetHorizontalInterruptHandler<Callback>();
-	#endif
-	};
-
-	SetHorizontalInterruptHandler.template operator()<[]()
-	{
-		// Surely this is a GCC extension? Does the C++ standard actually permit this?
+		// TODO: Surely this is a GCC extension? Does the C++ standard actually permit this?
 		reinterpret_cast<T&>(mode).HorizontalInterrupt();
 	}>();
 }
