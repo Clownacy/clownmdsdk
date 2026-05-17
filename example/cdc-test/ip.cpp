@@ -139,12 +139,21 @@ template<typename T, typename... Args>
 static void SetMode(Args &&...args)
 {
 	mode.emplace<T>(std::forward<Args>(args)...);
-	_HorizontalInterruptHandler.SetAddress<[]()
+	const auto &SetHorizontalInterruptHandler = []<auto Callback>()
+	{
+	#ifdef __CLOWNMDSDK_IP__
+		MD::MegaCD::jump_table.level_4.address = Callback;
+	#else
+		_HorizontalInterruptHandler.SetAddress<Callback>();
+	#endif
+	};
+
+	SetHorizontalInterruptHandler.template operator()<[]()
 	{
 		// Surely this is a GCC extension? Does the C++ standard actually permit this?
 		reinterpret_cast<T&>(mode).HorizontalInterrupt();
 	}>();
-};
+}
 
 void _EntryPoint()
 {
