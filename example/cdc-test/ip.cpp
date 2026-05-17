@@ -31,17 +31,17 @@
 
 namespace MD = ClownMDSDK::MainCPU;
 
-#ifdef __CLOWNMDSDK_IP__
-namespace MCD_RAM = MD::MegaCD::CDBoot;
-#else
+#ifdef __CLOWNMDSDK_CARTRIDGE__
 namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
+#else
+namespace MCD_RAM = MD::MegaCD::CDBoot;
 #endif
 
 _HORIZONTALINTERRUPTHANDLER _HorizontalInterruptHandler;
 
 static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 
-#ifndef __CLOWNMDSDK_IP__
+#ifdef __CLOWNMDSDK_CARTRIDGE__
 [[noreturn]] static void ErrorTrap()
 {
 	MD::VDP::CRAM::Fill({7, 0, 0});
@@ -118,10 +118,10 @@ void _SpuriousInterruptHandler()
 }
 #endif
 
-#ifdef __CLOWNMDSDK_IP__
-static void VerticalInterrupt()
-#else
+#ifdef __CLOWNMDSDK_CARTRIDGE__
 void _VerticalInterruptHandler()
+#else
+static void VerticalInterrupt()
 #endif
 {
 #ifdef __CLOWNMDSDK_CARTRIDGE__
@@ -147,10 +147,10 @@ static void SetMode(Args &&...args)
 
 	const auto &SetHorizontalInterruptHandler = []<auto Callback>()
 	{
-	#ifdef __CLOWNMDSDK_IP__
-		MD::MegaCD::SetHorizontalInterruptHandler<Callback>();
-	#else
+	#ifdef __CLOWNMDSDK_CARTRIDGE__
 		_HorizontalInterruptHandler.SetAddress<Callback>();
+	#else
+		MD::MegaCD::SetHorizontalInterruptHandler<Callback>();
 	#endif
 	};
 
@@ -168,9 +168,7 @@ void _EntryPoint()
 
 	MD::VDP::Write(MD::VDP::Register0C{.enable_h40_cell_mode_1 = false, .enable_shadow_highlight_mode = false, .interlace_mode = 0, .enable_h40_cell_mode_2 = false});
 
-#ifdef __CLOWNMDSDK_IP__
-	MD::MegaCD::jump_table.vertical_interrupt.SetAddress<VerticalInterrupt>();
-#else
+#ifdef __CLOWNMDSDK_CARTRIDGE__
 	// Upload Sub-CPU payload.
 	{
 		static constexpr auto subcpu_payload = std::to_array<unsigned char>({
@@ -200,6 +198,8 @@ void _EntryPoint()
 			}
 		);
 	}
+#else
+	MD::MegaCD::jump_table.vertical_interrupt.SetAddress<VerticalInterrupt>();
 #endif
 
 	// Write colours to CRAM.
