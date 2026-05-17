@@ -14,6 +14,7 @@
 #include <array>
 #include <variant>
 
+#define _HORIZONTALINTERRUPTHANDLER ClownMDSDK::MainCPU::M68k::InterruptTrampoline
 #include <clownmdsdk.h>
 
 #include "../common/control-pad-manager.h"
@@ -34,6 +35,8 @@ namespace MCD_RAM = MD::MegaCD::CDBoot;
 namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
 #endif
 
+_HORIZONTALINTERRUPTHANDLER _HorizontalInterruptHandler;
+
 static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 
 #ifndef __CLOWNMDSDK_IP__
@@ -43,6 +46,8 @@ static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 
 	for (;;)
 		MD::M68k::WaitForInterrupt(7);
+
+	std::unreachable();
 }
 
 void _BusErrorHandler()
@@ -109,17 +114,6 @@ void _SpuriousInterruptHandler()
 {
 	ErrorTrap();
 }
-
-void _HorizontalInterruptHandler()
-{
-	std::visit(
-		[](auto &&mode)
-		{
-			mode.HorizontalInterrupt();
-		},
-		mode
-	);
-}
 #endif
 
 #ifdef __CLOWNMDSDK_IP__
@@ -140,6 +134,17 @@ void _VerticalInterruptHandler()
 		mode
 	);
 }
+
+template<typename T, typename... Args>
+static void SetMode(Args &&...args)
+{
+	mode.emplace<T>(std::forward<Args>(args)...);
+	_HorizontalInterruptHandler.SetAddress<[]()
+	{
+		// Surely this is a GCC extension? Does the C++ standard actually permit this?
+		reinterpret_cast<T&>(mode).HorizontalInterrupt();
+	}>();
+};
 
 void _EntryPoint()
 {
@@ -193,7 +198,7 @@ void _EntryPoint()
 	MD::VDP::SendCommand(MD::VDP::RAM::CRAM, MD::VDP::Access::WRITE, (32 + 1) * 2);
 	MD::VDP::Write(MD::VDP::CRAM::Colour{2, 2, 7});
 
-	mode.emplace<MainMenu>();
+	SetMode<MainMenu>();
 
 	// Finished setup.
 	vdp_register01.enable_display = true;
@@ -227,51 +232,51 @@ void _EntryPoint()
 							break;
 
 						case ModeID::MAIN_MENU:
-							mode.emplace<MainMenu>();
+							SetMode<MainMenu>();
 							break;
 
 						case ModeID::CDC_TEST:
-							mode.emplace<CDCTest>();
+							SetMode<CDCTest>();
 							break;
 
 						case ModeID::GRAPHICS_TEST:
-							mode.emplace<GraphicsTest>();
+							SetMode<GraphicsTest>();
 							break;
 
 						case ModeID::HV_TEST_H_INT_0:
-							mode.emplace<HVTest>(2, 0); // Starts with 0xE1, then counts up from 0.
+							SetMode<HVTest>(2, 0); // Starts with 0xE1, then counts up from 0.
 							break;
 
 						case ModeID::HV_TEST_H_INT_1:
-							mode.emplace<HVTest>(2, 1); // Starts with 0xE1, then counts up from 0.
+							SetMode<HVTest>(2, 1); // Starts with 0xE1, then counts up from 0.
 							break;
 
 						case ModeID::HV_TEST_H_INT_223:
-							mode.emplace<HVTest>(2, 223); // Starts with 0xE1, then counts up from 0.
+							SetMode<HVTest>(2, 223); // Starts with 0xE1, then counts up from 0.
 							break;
 
 						case ModeID::HV_TEST_H_INT_224:
-							mode.emplace<HVTest>(2, 224); // Starts with 0xE1, then counts up from 0.
+							SetMode<HVTest>(2, 224); // Starts with 0xE1, then counts up from 0.
 							break;
 
 						case ModeID::HV_TEST_H_INT_225:
-							mode.emplace<HVTest>(2, 225); // Starts with 0xE1, then counts up from 0.
+							SetMode<HVTest>(2, 225); // Starts with 0xE1, then counts up from 0.
 							break;
 
 						case ModeID::HV_TEST_V_START:
-							mode.emplace<HVTest>(20, 0); // Should be 0xE0.
+							SetMode<HVTest>(20, 0); // Should be 0xE0.
 							break;
 
 						case ModeID::HV_TEST_V_END:
-							mode.emplace<HVTest>(30, 0); // Should be 0xFF.
+							SetMode<HVTest>(30, 0); // Should be 0xFF.
 							break;
 
 						case ModeID::HV_TEST_H_START:
-							mode.emplace<HVTest>(40, 0); // Counts up from 0xFF.
+							SetMode<HVTest>(40, 0); // Counts up from 0xFF.
 							break;
 
 						case ModeID::HV_TEST_H_END:
-							mode.emplace<HVTest>(50, 0); // Counts up from 0xFF.
+							SetMode<HVTest>(50, 0); // Counts up from 0xFF.
 							break;
 					}
 				}

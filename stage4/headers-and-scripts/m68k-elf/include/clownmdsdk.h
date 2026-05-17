@@ -19,47 +19,12 @@ PERFORMANCE OF THIS SOFTWARE.
 #ifdef __cplusplus
 #define __VISIBILITY extern "C"
 #else
-#define __VISIBILITY
+#define __VISIBILITY extern
 #endif
 
 #define __ENTRY_POINT __VISIBILITY  __attribute__((section(".text.entry"))) [[noreturn]]
-#define __INTERRUPT_HANDLER __VISIBILITY __attribute__((interrupt))
 
 __ENTRY_POINT void _EntryPoint(void);
-
-// M68000 exception handlers.
-__INTERRUPT_HANDLER void _BusErrorHandler(void);
-__INTERRUPT_HANDLER void _AddressErrorHandler(void);
-__INTERRUPT_HANDLER void _IllegalInstructionHandler(void);
-__INTERRUPT_HANDLER void _DivisionByZeroHandler(void);
-__INTERRUPT_HANDLER void _CHKHandler(void);
-__INTERRUPT_HANDLER void _TRAPVHandler(void);
-__INTERRUPT_HANDLER void _PrivilegeViolationHandler(void);
-__INTERRUPT_HANDLER void _TraceHandler(void);
-__INTERRUPT_HANDLER void _UnimplementedInstructionLineAHandler(void);
-__INTERRUPT_HANDLER void _UnimplementedInstructionLineFHandler(void);
-__INTERRUPT_HANDLER void _UnassignedHandler(void);
-__INTERRUPT_HANDLER void _UninitialisedInterruptHandler(void);
-__INTERRUPT_HANDLER void _SpuriousInterruptHandler(void);
-__INTERRUPT_HANDLER void _ControllerInterruptHandler(void);
-__INTERRUPT_HANDLER void _HorizontalInterruptHandler(void);
-__INTERRUPT_HANDLER void _VerticalInterruptHandler(void);
-__INTERRUPT_HANDLER void _TRAP0Handler(void);
-__INTERRUPT_HANDLER void _TRAP1Handler(void);
-__INTERRUPT_HANDLER void _TRAP2Handler(void);
-__INTERRUPT_HANDLER void _TRAP3Handler(void);
-__INTERRUPT_HANDLER void _TRAP4Handler(void);
-__INTERRUPT_HANDLER void _TRAP5Handler(void);
-__INTERRUPT_HANDLER void _TRAP6Handler(void);
-__INTERRUPT_HANDLER void _TRAP7Handler(void);
-__INTERRUPT_HANDLER void _TRAP8Handler(void);
-__INTERRUPT_HANDLER void _TRAP9Handler(void);
-__INTERRUPT_HANDLER void _TRAP10Handler(void);
-__INTERRUPT_HANDLER void _TRAP11Handler(void);
-__INTERRUPT_HANDLER void _TRAP12Handler(void);
-__INTERRUPT_HANDLER void _TRAP13Handler(void);
-__INTERRUPT_HANDLER void _TRAP14Handler(void);
-__INTERRUPT_HANDLER void _TRAP15Handler(void);
 
 // Runs once at startup, before anything else.
 __VISIBILITY __attribute__((section(".text.entry"))) void _SP_Init(void);
@@ -118,6 +83,23 @@ namespace ClownMDSDK
 
 		namespace M68k
 		{
+			struct InterruptTrampoline
+			{
+			private:
+				const std::atomic<unsigned short> jmp_opcode = 0x4EF9;
+				std::atomic<void(*)()> address = std::atomic<void(*)()>([]() static __attribute__((interrupt)){});
+
+			public:
+				template<auto callback>
+				void SetAddress()
+				{
+					address = []() static __attribute__((interrupt))
+					{
+						callback();
+					};
+				}
+			};
+
 			static constexpr unsigned long clock = master_clock / 7;
 
 			inline unsigned int GetStatusRegister()
@@ -1302,25 +1284,25 @@ namespace ClownMDSDK
 
 			struct JumpTable
 			{
-				struct Entry
+				struct Trampoline
 				{
 					unsigned short jmp_opcode;
 					void (*address)();
 				};
 
-				Entry reset;
-				Entry level_6;
-				Entry level_4;
-				Entry level_2;
-				std::array<Entry, 0x10> trap;
-				Entry chk;
-				Entry address_error;
-				Entry divide_by_zero;
-				Entry trapv;
-				Entry illegal_instruction_1;
-				Entry illegal_instruction_2;
-				Entry supervisor_error;
-				Entry trace;
+				Trampoline reset;
+				Trampoline level_6;
+				Trampoline level_4;
+				Trampoline level_2;
+				std::array<Trampoline, 0x10> trap;
+				Trampoline chk;
+				Trampoline address_error;
+				Trampoline divide_by_zero;
+				Trampoline trapv;
+				Trampoline illegal_instruction_1;
+				Trampoline illegal_instruction_2;
+				Trampoline supervisor_error;
+				Trampoline trace;
 			};
 
 			__BIND_ADDRESS(0xFFFFFD00, jump_table, volatile JumpTable);
@@ -1991,5 +1973,142 @@ namespace ClownMDSDK
 }
 
 #endif /* defined(__cplusplus) && __cplusplus >= 202302L */
+
+// M68000 exception handlers.
+typedef void __InterruptHandler(void);
+
+#ifndef __INTERRUPT_HANDLER
+#define __INTERRUPT_HANDLER __attribute__((interrupt)) __InterruptHandler
+#endif
+
+#ifndef _BUSERRORHANDLER
+#define _BUSERRORHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _ADDRESSERRORHANDLER
+#define _ADDRESSERRORHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _ILLEGALINSTRUCTIONHANDLER
+#define _ILLEGALINSTRUCTIONHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _DIVISIONBYZEROHANDLER
+#define _DIVISIONBYZEROHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _CHKHANDLER
+#define _CHKHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAPVHANDLER
+#define _TRAPVHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _PRIVILEGEVIOLATIONHANDLER
+#define _PRIVILEGEVIOLATIONHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRACEHANDLER
+#define _TRACEHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _UNIMPLEMENTEDINSTRUCTIONLINEAHANDLER
+#define _UNIMPLEMENTEDINSTRUCTIONLINEAHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _UNIMPLEMENTEDINSTRUCTIONLINEFHANDLER
+#define _UNIMPLEMENTEDINSTRUCTIONLINEFHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _UNASSIGNEDHANDLER
+#define _UNASSIGNEDHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _UNINITIALISEDINTERRUPTHANDLER
+#define _UNINITIALISEDINTERRUPTHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _SPURIOUSINTERRUPTHANDLER
+#define _SPURIOUSINTERRUPTHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _CONTROLLERINTERRUPTHANDLER
+#define _CONTROLLERINTERRUPTHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _HORIZONTALINTERRUPTHANDLER
+#define _HORIZONTALINTERRUPTHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _VERTICALINTERRUPTHANDLER
+#define _VERTICALINTERRUPTHANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP0HANDLER
+#define _TRAP0HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP1HANDLER
+#define _TRAP1HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP2HANDLER
+#define _TRAP2HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP3HANDLER
+#define _TRAP3HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP4HANDLER
+#define _TRAP4HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP5HANDLER
+#define _TRAP5HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP6HANDLER
+#define _TRAP6HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP7HANDLER
+#define _TRAP7HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP8HANDLER
+#define _TRAP8HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP9HANDLER
+#define _TRAP9HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP10HANDLER
+#define _TRAP10HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP11HANDLER
+#define _TRAP11HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP12HANDLER
+#define _TRAP12HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP13HANDLER
+#define _TRAP13HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP14HANDLER
+#define _TRAP14HANDLER __INTERRUPT_HANDLER
+#endif
+#ifndef _TRAP15HANDLER
+#define _TRAP15HANDLER __INTERRUPT_HANDLER
+#endif
+
+__VISIBILITY _BUSERRORHANDLER _BusErrorHandler;
+__VISIBILITY _ADDRESSERRORHANDLER _AddressErrorHandler;
+__VISIBILITY _ILLEGALINSTRUCTIONHANDLER _IllegalInstructionHandler;
+__VISIBILITY _DIVISIONBYZEROHANDLER _DivisionByZeroHandler;
+__VISIBILITY _CHKHANDLER _CHKHandler;
+__VISIBILITY _TRAPVHANDLER _TRAPVHandler;
+__VISIBILITY _PRIVILEGEVIOLATIONHANDLER _PrivilegeViolationHandler;
+__VISIBILITY _TRACEHANDLER _TraceHandler;
+__VISIBILITY _UNIMPLEMENTEDINSTRUCTIONLINEAHANDLER _UnimplementedInstructionLineAHandler;
+__VISIBILITY _UNIMPLEMENTEDINSTRUCTIONLINEFHANDLER _UnimplementedInstructionLineFHandler;
+__VISIBILITY _UNASSIGNEDHANDLER _UnassignedHandler;
+__VISIBILITY _UNINITIALISEDINTERRUPTHANDLER _UninitialisedInterruptHandler;
+__VISIBILITY _SPURIOUSINTERRUPTHANDLER _SpuriousInterruptHandler;
+__VISIBILITY _CONTROLLERINTERRUPTHANDLER _ControllerInterruptHandler;
+__VISIBILITY _HORIZONTALINTERRUPTHANDLER _HorizontalInterruptHandler;
+__VISIBILITY _VERTICALINTERRUPTHANDLER _VerticalInterruptHandler;
+__VISIBILITY _TRAP0HANDLER _TRAP0Handler;
+__VISIBILITY _TRAP1HANDLER _TRAP1Handler;
+__VISIBILITY _TRAP2HANDLER _TRAP2Handler;
+__VISIBILITY _TRAP3HANDLER _TRAP3Handler;
+__VISIBILITY _TRAP4HANDLER _TRAP4Handler;
+__VISIBILITY _TRAP5HANDLER _TRAP5Handler;
+__VISIBILITY _TRAP6HANDLER _TRAP6Handler;
+__VISIBILITY _TRAP7HANDLER _TRAP7Handler;
+__VISIBILITY _TRAP8HANDLER _TRAP8Handler;
+__VISIBILITY _TRAP9HANDLER _TRAP9Handler;
+__VISIBILITY _TRAP10HANDLER _TRAP10Handler;
+__VISIBILITY _TRAP11HANDLER _TRAP11Handler;
+__VISIBILITY _TRAP12HANDLER _TRAP12Handler;
+__VISIBILITY _TRAP13HANDLER _TRAP13Handler;
+__VISIBILITY _TRAP14HANDLER _TRAP14Handler;
+__VISIBILITY _TRAP15HANDLER _TRAP15Handler;
 
 #endif /* CLOWNSDK_MD_HEADER_GUARD */

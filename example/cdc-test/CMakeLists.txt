@@ -5,7 +5,7 @@ project(cdc-test LANGUAGES CXX)
 # CD Build
 
 add_ip_executable(ip "ip.cpp" "cdc-test.cpp" "graphics-test.cpp" "hv-test.cpp" "main-menu.cpp" "utility.cpp")
-set_target_properties(ip PROPERTIES CXX_STANDARD 23)
+set_target_properties(ip PROPERTIES CXX_STANDARD 26)
 
 add_sp_executable(sp "sp.cpp")
 set_target_properties(sp PROPERTIES CXX_STANDARD 23)
@@ -26,4 +26,4 @@ add_custom_command(
 )
 
 add_cartridge_executable(cdc-test-cartridge "ip.cpp" "cdc-test.cpp" "graphics-test.cpp" "hv-test.cpp" "main-menu.cpp" "utility.cpp" "font.kos" "sp.kos")
-set_target_properties(cdc-test-cartridge PROPERTIES CXX_STANDARD 23)
+set_target_properties(cdc-test-cartridge PROPERTIES CXX_STANDARD 26)
