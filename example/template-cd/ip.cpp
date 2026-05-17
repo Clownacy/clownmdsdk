@@ -16,8 +16,8 @@
 // Runs once per frame, either 50 or 60 times a second for PAL or NTSC respectively.
 static void VerticalInterrupt()
 {
-	// Raise vertical interrupt on the Sub-CPU.
-	ClownMDSDK::MainCPU::MegaCD::subcpu.raise_interrupt_level_2 = true;
+	// There is no need to manually raise the Sub-CPU's vertical interrupt here,
+	// as 'vertical_interrupt.SetAddress' ensures that this is done automatically.
 }
 
 // Run indefinitely; should not return. Handles the bulk of operations.

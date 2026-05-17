@@ -1204,6 +1204,8 @@ namespace ClownMDSDK
 				bool bit11 : 1 = false;
 				bool bit10 : 1 = false;
 				bool bit9 : 1 = false;
+				// There is no need to set this manually in IP software, as the JumpTable's VerticalInterrupt class does it automatically.
+				// Note that 'mode 1' cartridge software DOES still need to set this manually!
 				bool raise_interrupt_level_2 : 1;
 				bool bit7 : 1 = false;
 				bool bit6 : 1 = false;
@@ -1299,8 +1301,21 @@ namespace ClownMDSDK
 
 			struct JumpTable
 			{
+				struct VerticalInterrupt : public M68kInterruptTrampoline
+				{
+					template<auto Callback>
+					void SetAddress()
+					{
+						M68kInterruptTrampoline::SetAddress<[]()
+						{
+							subcpu.raise_interrupt_level_2 = true;
+							Callback();
+						}>();
+					}
+				};
+
 				M68kInterruptTrampoline reset;
-				M68kInterruptTrampoline vertical_interrupt;
+				VerticalInterrupt vertical_interrupt;
 				M68kInterruptTrampoline horizontal_interrupt;
 				M68kInterruptTrampoline controller_interrupt;
 				std::array<M68kInterruptTrampoline, 0x10> trap;

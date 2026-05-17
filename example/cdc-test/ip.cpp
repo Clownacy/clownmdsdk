@@ -124,7 +124,10 @@ static void VerticalInterrupt()
 void _VerticalInterruptHandler()
 #endif
 {
+#ifdef __CLOWNMDSDK_CARTRIDGE__
+	// We need to do this manually in 'mode 1' cartridge software.
 	MD::MegaCD::subcpu.raise_interrupt_level_2 = true;
+#endif
 
 	control_pad_manager.Update();
 
