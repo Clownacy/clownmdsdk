@@ -148,7 +148,7 @@ static void SetMode(Args &&...args)
 	const auto &SetHorizontalInterruptHandler = []<auto Callback>()
 	{
 	#ifdef __CLOWNMDSDK_IP__
-		MD::MegaCD::SetHorizontalInterruptVector<Callback>();
+		MD::MegaCD::SetHorizontalInterruptHandler<Callback>();
 	#else
 		_HorizontalInterruptHandler.SetAddress<Callback>();
 	#endif

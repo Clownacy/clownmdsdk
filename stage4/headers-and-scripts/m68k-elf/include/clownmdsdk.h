@@ -1276,7 +1276,7 @@ namespace ClownMDSDK
 				__BIND_ADDRESS(0xA12008, host_data, volatile unsigned short);
 			}
 
-			__BIND_ADDRESS(0xA12006, horizontal_interrupt_vector, volatile unsigned short); // TODO: Hide this somewhere since `SetHorizontalInterruptVector` makes it redundant?
+			__BIND_ADDRESS(0xA12006, horizontal_interrupt_vector, volatile unsigned short); // TODO: Hide this somewhere since `SetHorizontalInterruptHandler` makes it redundant?
 			__BIND_ADDRESS(0xA1200C, stop_watch, volatile unsigned short);
 			__BIND_ADDRESS(0xA1200E, communication_flag, std::atomic<unsigned short>);
 			__BIND_ADDRESS(0xA1200E, communication_flag_ours, std::atomic<unsigned char>);
@@ -1285,7 +1285,7 @@ namespace ClownMDSDK
 			__BIND_ADDRESS(0xA12020, communication_status, std::array<std::atomic<unsigned short>, 8>);
 
 			template<auto Callback>
-			static inline void SetHorizontalInterruptVector()
+			static inline void SetHorizontalInterruptHandler()
 			{
 				const auto &Handler = []() static __attribute__((interrupt))
 				{

@@ -30,8 +30,8 @@ void _EntryPoint()
 {
 	// Register interrupt handlers.
 	// 'jump_table.horizontal_interrupt.SetAddress' could be used for this instead,
-	// but 'SetHorizontalInterruptVector' is more efficient due to bypassing a jump instruction.
-	ClownMDSDK::MainCPU::MegaCD::SetHorizontalInterruptVector<HorizontalInterrupt>();
+	// but 'SetHorizontalInterruptHandler' is more efficient due to bypassing a jump instruction.
+	ClownMDSDK::MainCPU::MegaCD::SetHorizontalInterruptHandler<HorizontalInterrupt>();
 	ClownMDSDK::MainCPU::MegaCD::jump_table.vertical_interrupt.SetAddress<VerticalInterrupt>();
 
 	// Do initialisation here.
