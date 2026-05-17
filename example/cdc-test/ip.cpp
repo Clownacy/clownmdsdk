@@ -14,7 +14,9 @@
 #include <array>
 #include <variant>
 
-#define _HORIZONTALINTERRUPTHANDLER ClownMDSDK::MainCPU::M68k::InterruptTrampoline
+#ifdef __CLOWNMDSDK_CARTRIDGE__
+#define _HORIZONTALINTERRUPTHANDLER ClownMDSDK::M68kInterruptTrampoline
+#endif
 #include <clownmdsdk.h>
 
 #include "../common/control-pad-manager.h"
@@ -117,7 +119,7 @@ void _SpuriousInterruptHandler()
 #endif
 
 #ifdef __CLOWNMDSDK_IP__
-__attribute__((interrupt)) static void VerticalInterrupt()
+static void VerticalInterrupt()
 #else
 void _VerticalInterruptHandler()
 #endif
@@ -139,10 +141,11 @@ template<typename T, typename... Args>
 static void SetMode(Args &&...args)
 {
 	mode.emplace<T>(std::forward<Args>(args)...);
+
 	const auto &SetHorizontalInterruptHandler = []<auto Callback>()
 	{
 	#ifdef __CLOWNMDSDK_IP__
-		MD::MegaCD::jump_table.level_4.address = Callback;
+		MD::MegaCD::jump_table.level_4.SetAddress<Callback>();
 	#else
 		_HorizontalInterruptHandler.SetAddress<Callback>();
 	#endif
@@ -163,7 +166,7 @@ void _EntryPoint()
 	MD::VDP::Write(MD::VDP::Register0C{.enable_h40_cell_mode_1 = false, .enable_shadow_highlight_mode = false, .interlace_mode = 0, .enable_h40_cell_mode_2 = false});
 
 #ifdef __CLOWNMDSDK_IP__
-	MD::MegaCD::jump_table.level_6.address = VerticalInterrupt;
+	MD::MegaCD::jump_table.level_6.SetAddress<VerticalInterrupt>();
 #else
 	// Upload Sub-CPU payload.
 	{

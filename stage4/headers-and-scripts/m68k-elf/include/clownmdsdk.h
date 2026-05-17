@@ -58,6 +58,23 @@ __VISIBILITY void _SP_User(void);
 // TODO: Move this to its own translation unit? Optimisation can be handled by LTO.
 namespace ClownMDSDK
 {
+	struct M68kInterruptTrampoline
+	{
+	private:
+		const std::atomic<unsigned short> jmp_opcode = 0x4EF9;
+		std::atomic<void(*)()> address = std::atomic<void(*)()>([]() static __attribute__((interrupt)){});
+
+	public:
+		template<auto callback>
+		void SetAddress()
+		{
+			address = []() static __attribute__((interrupt))
+			{
+				callback();
+			};
+		}
+	};
+
 	namespace MainCPU
 	{
 		namespace Unsafe
@@ -83,23 +100,6 @@ namespace ClownMDSDK
 
 		namespace M68k
 		{
-			struct InterruptTrampoline
-			{
-			private:
-				const std::atomic<unsigned short> jmp_opcode = 0x4EF9;
-				std::atomic<void(*)()> address = std::atomic<void(*)()>([]() static __attribute__((interrupt)){});
-
-			public:
-				template<auto callback>
-				void SetAddress()
-				{
-					address = []() static __attribute__((interrupt))
-					{
-						callback();
-					};
-				}
-			};
-
 			static constexpr unsigned long clock = master_clock / 7;
 
 			inline unsigned int GetStatusRegister()
@@ -1284,25 +1284,19 @@ namespace ClownMDSDK
 
 			struct JumpTable
 			{
-				struct Trampoline
-				{
-					std::atomic<unsigned short> jmp_opcode;
-					std::atomic<void(*)()> address;
-				};
-
-				Trampoline reset;
-				Trampoline level_6;
-				Trampoline level_4;
-				Trampoline level_2;
-				std::array<Trampoline, 0x10> trap;
-				Trampoline chk;
-				Trampoline address_error;
-				Trampoline divide_by_zero;
-				Trampoline trapv;
-				Trampoline illegal_instruction_1;
-				Trampoline illegal_instruction_2;
-				Trampoline supervisor_error;
-				Trampoline trace;
+				M68kInterruptTrampoline reset;
+				M68kInterruptTrampoline level_6;
+				M68kInterruptTrampoline level_4;
+				M68kInterruptTrampoline level_2;
+				std::array<M68kInterruptTrampoline, 0x10> trap;
+				M68kInterruptTrampoline chk;
+				M68kInterruptTrampoline address_error;
+				M68kInterruptTrampoline divide_by_zero;
+				M68kInterruptTrampoline trapv;
+				M68kInterruptTrampoline illegal_instruction_1;
+				M68kInterruptTrampoline illegal_instruction_2;
+				M68kInterruptTrampoline supervisor_error;
+				M68kInterruptTrampoline trace;
 			};
 
 			__BIND_ADDRESS(0xFFFFFD00, jump_table, JumpTable);
