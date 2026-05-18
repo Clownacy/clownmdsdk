@@ -27,21 +27,17 @@
 #include "hv-test.h"
 #include "main-menu.h"
 #include "mode.h"
+#include "system.h"
 #include "utility.h"
 
-namespace MD = ClownMDSDK::MainCPU;
-
 #ifdef __CLOWNMDSDK_CARTRIDGE__
-namespace MCD_RAM = MD::MegaCD::CartridgeBoot;
-#else
-namespace MCD_RAM = MD::MegaCD::CDBoot;
-#endif
-
 _HORIZONTALINTERRUPTHANDLER _HorizontalInterruptHandler;
+#endif
 
 static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 
 #ifdef __CLOWNMDSDK_CARTRIDGE__
+// TODO: Move these to a debug-only version of the 'stubs' library.
 [[noreturn]] static void ErrorTrap()
 {
 	MD::VDP::CRAM::Fill({7, 0, 0});
