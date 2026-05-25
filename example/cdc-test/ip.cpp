@@ -22,6 +22,7 @@
 #include "../common/control-pad-manager.h"
 
 #include "cdc-test.h"
+#include "command.h"
 #include "control-pad.h"
 #include "graphics-test.h"
 #include "hv-test.h"
@@ -284,6 +285,42 @@ void _EntryPoint()
 
 						case ModeID::HV_TEST_H_END:
 							SetMode<HVTest>(50, 0); // Counts up from 0xFF.
+							break;
+
+						case ModeID::MUSIC_STOP:
+							SubmitSubCPUCommand(Command::MUSIC_STOP);
+							break;
+
+						case ModeID::MUSIC_PLAY:
+							SubmitSubCPUCommand(Command::MUSIC_PLAY);
+							break;
+
+						case ModeID::MUSIC_PLAY_ONCE:
+							SubmitSubCPUCommand(Command::MUSIC_PLAY_ONCE);
+							break;
+
+						case ModeID::MUSIC_PLAY_REPEAT:
+							SubmitSubCPUCommand(Command::MUSIC_PLAY_REPEAT);
+							break;
+
+						case ModeID::MUSIC_PAUSE:
+							SubmitSubCPUCommand(Command::MUSIC_PAUSE);
+							break;
+
+						case ModeID::MUSIC_UNPAUSE:
+							SubmitSubCPUCommand(Command::MUSIC_UNPAUSE);
+							break;
+
+						case ModeID::MUSIC_SCAN_FAST_FORWARD:
+							SubmitSubCPUCommand(Command::MUSIC_SCAN_FAST_FORWARD);
+							break;
+
+						case ModeID::MUSIC_SCAN_FAST_REVERSE:
+							SubmitSubCPUCommand(Command::MUSIC_SCAN_FAST_REVERSE);
+							break;
+
+						case ModeID::MUSIC_SCAN_OFF:
+							SubmitSubCPUCommand(Command::MUSIC_SCAN_OFF);
 							break;
 					}
 				}

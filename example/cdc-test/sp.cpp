@@ -266,6 +266,42 @@ void _SP_Main()
 
 				break;
 			}
+
+			case Command::MUSIC_STOP:
+				MCD::BIOS::Music::Stop();
+				break;
+
+			case Command::MUSIC_PLAY:
+				MCD::BIOS::Music::Play(3);
+				break;
+
+			case Command::MUSIC_PLAY_ONCE:
+				MCD::BIOS::Music::PlayOnce(3);
+				break;
+
+			case Command::MUSIC_PLAY_REPEAT:
+				MCD::BIOS::Music::PlayRepeat(3);
+				break;
+
+			case Command::MUSIC_PAUSE:
+				MCD::BIOS::Music::PauseOn();
+				break;
+
+			case Command::MUSIC_UNPAUSE:
+				MCD::BIOS::Music::PauseOff();
+				break;
+
+			case Command::MUSIC_SCAN_FAST_FORWARD:
+				MCD::BIOS::Music::ScanFastForward();
+				break;
+
+			case Command::MUSIC_SCAN_FAST_REVERSE:
+				MCD::BIOS::Music::ScanFastReverse();
+				break;
+
+			case Command::MUSIC_SCAN_OFF:
+				MCD::BIOS::Music::ScanOff();
+				break;
 		}
 
 		MCD::communication_flag_ours = command_value;

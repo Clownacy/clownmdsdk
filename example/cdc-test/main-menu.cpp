@@ -26,6 +26,15 @@ static constexpr auto options = std::to_array<OptionsMenuEntry>({
 	{ModeID::HV_TEST_V_END        , "H/V at V-Blank End"},
 	{ModeID::HV_TEST_H_START      , "H/V at H-Blank Start"},
 	{ModeID::HV_TEST_H_END        , "H/V at H-Blank End"},
+	{ModeID::MUSIC_STOP             , "Music - Stop"},
+	{ModeID::MUSIC_PLAY             , "Music - Play"},
+	{ModeID::MUSIC_PLAY_ONCE        , "Music - Play Once"},
+	{ModeID::MUSIC_PLAY_REPEAT      , "Music - Play Repeat"},
+	{ModeID::MUSIC_PAUSE            , "Music - Pause"},
+	{ModeID::MUSIC_UNPAUSE          , "Music - Unpause"},
+	{ModeID::MUSIC_SCAN_FAST_FORWARD, "Music - Scan Fast-Forward"},
+	{ModeID::MUSIC_SCAN_FAST_REVERSE, "Music - Scan Fast-Reverse"},
+	{ModeID::MUSIC_SCAN_OFF         , "Music - Scan Off"},
 });
 
 void MainMenu::DoEverything()
