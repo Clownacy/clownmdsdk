@@ -68,3 +68,6 @@
 
 	.org	0x8800
 	.incbin	SP_FILENAME
+
+	.org	((.+0x800)&~0x7FF)-1
+	dc.b	0
