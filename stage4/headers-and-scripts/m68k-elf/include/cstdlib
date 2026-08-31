@@ -1,12 +1,12 @@
-#ifndef CSTRING_H
-#define CSTRING_H
+#ifndef CSTDLIB_H
+#define CSTDLIB_H
 
 #include <stdlib.h>
 
 namespace std
 {
-	using abs;
-	using abort;
+	using ::abs;
+	using ::abort;
 }
 
-#endif /* CSTRING_H */
+#endif /* CSTDLIB_H */

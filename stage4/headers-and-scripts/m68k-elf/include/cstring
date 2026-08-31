@@ -6,9 +6,9 @@
 
 namespace std
 {
-	using memcpy;
-	using memmove;
-	using memset;
+	using ::memcpy;
+	using ::memmove;
+	using ::memset;
 }
 
 #endif /* CSTRING_H */
