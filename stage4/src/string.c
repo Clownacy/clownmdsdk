@@ -183,7 +183,7 @@ void* memset(void* const dest, const int ch, size_t count)
 	if (count == 0)
 		return dest;
 
-	const unsigned long value = _RepeatByteToUnsignedLong(ch);
+	const unsigned long value = _RepeatByteToUnsignedLong((unsigned char)ch);
 
 	// Process a single byte to put us on an even address, if necessary.
 	if (((uintptr_t)destination & 1) != 0)
@@ -216,7 +216,7 @@ void* memset(void* const dest, const int ch, size_t count)
 			"	subq.l	#1,%1\n"
 			"	bcc.s	0b\n"
 			: "+a" (destination), "+d" (count_div_10)
-			: "da" (-((count % 0x10 / 4) * 2)), "d" (ch)
+			: "da" (-((count % 0x10 / 4) * 2)), "d" (value)
 			: "cc"
 		);
 	}
