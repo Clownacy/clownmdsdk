@@ -68,7 +68,7 @@ void* memcpy(void* const dest, const void* const src, size_t count)
 			"	bcc.s	0b\n"
 			: "+a" (destination), "+d" (count_div_10), "+a" (source)
 			: "da" (-((count % 0x10) * 2))
-			: "cc"
+			: "cc", "memory"
 		);
 
 		return dest;
@@ -81,7 +81,7 @@ void* memcpy(void* const dest, const void* const src, size_t count)
 			"move.b	(%1)+,(%0)+\n"
 			: "+a" (destination), "+a" (source)
 			:
-			: "cc"
+			: "cc", "memory"
 		);
 
 		--count;
@@ -106,7 +106,7 @@ void* memcpy(void* const dest, const void* const src, size_t count)
 			"	bcc.s	0b\n"
 			: "+a" (destination), "+d" (count_div_10), "+a" (source)
 			: "da" (-((count % 0x10 / 4) * 2))
-			: "cc"
+			: "cc", "memory"
 		);
 	}
 
@@ -117,7 +117,7 @@ void* memcpy(void* const dest, const void* const src, size_t count)
 			"move.w	(%1)+,(%0)+\n"
 			: "+a" (destination), "+a" (source)
 			:
-			: "cc"
+			: "cc", "memory"
 		);
 	}
 
@@ -127,7 +127,7 @@ void* memcpy(void* const dest, const void* const src, size_t count)
 			"move.b	(%1)+,(%0)+\n"
 			: "+a" (destination), "+a" (source)
 			:
-			: "cc"
+			: "cc", "memory"
 		);
 	}
 
@@ -137,42 +137,110 @@ void* memcpy(void* const dest, const void* const src, size_t count)
 
 void* memmove(void* const dest, const void* const src, size_t count)
 {
-	unsigned char *source = (unsigned char*)src;
-	unsigned char *destination = (unsigned char*)dest;
-	size_t count_div_10 = count / 0x10;
+	unsigned char *source = (unsigned char*)src + count;
+	unsigned char *destination = (unsigned char*)dest + count;
 
-	if (count == 0)
+	// 'memcpy' copies forwards, which is safe unless the destination begins inside the source.
+	if ((uintptr_t)dest - (uintptr_t)src >= count)
+		return memcpy(dest, src, count);
+
+	// Otherwise, copy backwards, mirroring 'memcpy'.
+
+	// Slow path where one is word-aligned but the other isn't.
+	if ((((uintptr_t)destination ^ (uintptr_t)source) & 1) != 0)
+	{
+		size_t count_div_10 = count / 0x10;
+
+		asm volatile(
+				"jmp	1f(%%pc,%3.w)\n"
+			"0:\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"	move.b	-(%2),-(%0)\n"
+			"1:\n"
+			"	dbf	%1,0b\n"
+			"	clr.w	%1\n"
+			"	subq.l	#1,%1\n"
+			"	bcc.s	0b\n"
+			: "+a" (destination), "+d" (count_div_10), "+a" (source)
+			: "da" (-((count % 0x10) * 2))
+			: "cc", "memory"
+		);
+
 		return dest;
+	}
 
-	asm volatile(
-			"jmp	1f(%%pc,%3.w)\n"
-		"0:\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"	move.b	(%2)+,(%0)+\n"
-		"1:\n"
-		"	dbf	%1,0b\n"
-		"	clr.w	%1\n"
-		"	subq.l	#1,%1\n"
-		"	bcc.s	0b\n"
-		: "+a" (destination), "+d" (count_div_10), "+a" (source)
-		: "da" (-((count % 0x10) * 2))
-		: "cc"
-	);
+	// Process a single byte to put us on an even address, if necessary.
+	if (((uintptr_t)destination & 1) != 0)
+	{
+		asm volatile(
+			"move.b	-(%1),-(%0)\n"
+			: "+a" (destination), "+a" (source)
+			:
+			: "cc", "memory"
+		);
 
+		--count;
+	}
+
+	if (count >= 4)
+	{
+		// Process the bulk of the data as a series of longwords.
+		size_t count_div_10 = count / 0x10;
+
+		asm volatile(
+				"jmp	1f(%%pc,%3.w)\n"
+			"0:\n"
+			"	move.l	-(%2),-(%0)\n"
+			"	move.l	-(%2),-(%0)\n"
+			"	move.l	-(%2),-(%0)\n"
+			"	move.l	-(%2),-(%0)\n"
+			"1:\n"
+			"	dbf	%1,0b\n"
+			"	clr.w	%1\n"
+			"	subq.l	#1,%1\n"
+			"	bcc.s	0b\n"
+			: "+a" (destination), "+d" (count_div_10), "+a" (source)
+			: "da" (-((count % 0x10 / 4) * 2))
+			: "cc", "memory"
+		);
+	}
+
+	// Process any leading bytes.
+	if ((count & 2) != 0)
+	{
+		asm volatile(
+			"move.w	-(%1),-(%0)\n"
+			: "+a" (destination), "+a" (source)
+			:
+			: "cc", "memory"
+		);
+	}
+
+	if ((count & 1) != 0)
+	{
+		asm volatile(
+			"move.b	-(%1),-(%0)\n"
+			: "+a" (destination), "+a" (source)
+			:
+			: "cc", "memory"
+		);
+	}
+
+	// And we're done!
 	return dest;
 }
 
@@ -192,7 +260,7 @@ void* memset(void* const dest, const int ch, size_t count)
 			"move.b	%1,(%0)+\n"
 			: "+a" (destination)
 			: "d" (value)
-			: "cc"
+			: "cc", "memory"
 		);
 
 		--count;
@@ -217,7 +285,7 @@ void* memset(void* const dest, const int ch, size_t count)
 			"	bcc.s	0b\n"
 			: "+a" (destination), "+d" (count_div_10)
 			: "da" (-((count % 0x10 / 4) * 2)), "d" (value)
-			: "cc"
+			: "cc", "memory"
 		);
 	}
 
@@ -228,7 +296,7 @@ void* memset(void* const dest, const int ch, size_t count)
 			"move.w	%1,(%0)+\n"
 			: "+a" (destination)
 			: "d" (value)
-			: "cc"
+			: "cc", "memory"
 		);
 	}
 
@@ -238,7 +306,7 @@ void* memset(void* const dest, const int ch, size_t count)
 			"move.b	%1,(%0)+\n"
 			: "+a" (destination)
 			: "d" (value)
-			: "cc"
+			: "cc", "memory"
 		);
 	}
 
