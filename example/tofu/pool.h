@@ -21,7 +21,7 @@ class Pool : protected PoolCommon<T, S>
 private:
 	using Common = PoolCommon<T, S>;
 
-	struct Entry : public T, public DoublyLinkedList<Entry>::Entry
+	struct Entry : public DoublyLinkedList<Entry>::Entry, public T
 	{
 	public:
 		using T::T;
