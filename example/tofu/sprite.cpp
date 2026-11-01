@@ -2,10 +2,9 @@
 
 #include "level.h"
 
-std::array<VDP::VRAM::Sprite, 80> Sprite::table;
-unsigned char Sprite::total_sprites;
+SpriteManager sprite_manager;
 
-void Sprite::Queue(const unsigned int x, const unsigned int y, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
+void SpriteManager::QueueSprite(const unsigned int x, const unsigned int y, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
 {
 	if (total_sprites == std::size(table))
 		return;
@@ -30,7 +29,7 @@ void Sprite::Queue(const unsigned int x, const unsigned int y, const unsigned in
 	sprite.tile_metadata = tile_metadata;	
 }
 
-void Sprite::UploadTable(Z80::Bus &z80_bus)
+void SpriteManager::UploadTable(Z80::Bus &z80_bus)
 {
 	if (total_sprites == 0)
 	{

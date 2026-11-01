@@ -68,7 +68,7 @@ void _VerticalInterruptHandler()
 	Z80::Bus::Lock(
 		[&](auto &z80_bus)
 		{
-			Sprite::UploadTable(z80_bus);
+			sprite_manager.UploadTable(z80_bus);
 
 			// Set vertical scroll value.
 			VDP::SendCommand(VDP::RAM::VSRAM, VDP::Access::WRITE, 0);

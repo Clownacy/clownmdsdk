@@ -9,5 +9,5 @@ void Objects::Base::QueueForDisplay(const int x_offset, const int y_offset, cons
 		return 0x80 + coordinate / 0x10000;
 	};
 
-	Sprite::Queue(WorldCoordinateToScreen(position.x) + x_offset, WorldCoordinateToScreen(position.y) + y_offset, width, height, tile_metadata);
+	sprite_manager.QueueSprite(WorldCoordinateToScreen(position.x) + x_offset, WorldCoordinateToScreen(position.y) + y_offset, width, height, tile_metadata);
 }

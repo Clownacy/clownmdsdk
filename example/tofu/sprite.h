@@ -7,13 +7,17 @@
 
 using namespace ClownMDSDK::MainCPU;
 
-namespace Sprite
+class SpriteManager
 {
-	extern std::array<VDP::VRAM::Sprite, 80> table;
-	extern unsigned char total_sprites;
+private:
+	std::array<VDP::VRAM::Sprite, 80> table;
+	unsigned char total_sprites;
 
-	void Queue(unsigned int x, unsigned int y, unsigned int width, unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata);
+public:
+	void QueueSprite(unsigned int x, unsigned int y, unsigned int width, unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata);
 	void UploadTable(Z80::Bus &z80_bus);
-}
+};
+
+extern SpriteManager sprite_manager;
 
 #endif // SPRITE_H
