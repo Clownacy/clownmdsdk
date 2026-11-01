@@ -10,10 +10,16 @@
 #include "singly-linked-list.h"
 
 template<typename T, std::size_t S>
-class Pool : protected ListCommon<Pool<T, S>, T>
+class Pool;
+
+template<typename T, std::size_t S>
+using PoolCommon = ListCommon<Pool<T, S>, T>;
+
+template<typename T, std::size_t S>
+class Pool : protected PoolCommon<T, S>
 {
 private:
-	using Common = ListCommon<Pool<T, S>, T>;
+	using Common = PoolCommon<T, S>;
 
 	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(AllocatedListEntry, GetAllocatedListEntry);
 	MAKE_SINGLY_LINKED_LIST_ENTRY_TYPE(DeallocatedListEntry, GetDeallocatedListEntry);
@@ -72,6 +78,15 @@ public:
 		for (auto &entry : storage)
 			deallocated.push_back(*new(std::data(entry.bytes)) EntryEmpty());
 	}
+
+	~Pool()
+	{
+		for (auto it = begin(); it != end(); )
+			it = deallocate(*it);
+	}
+
+	Pool(const Pool &other) = delete;
+	Pool& operator=(const Pool &other) = delete;
 
 	template<typename ...Ts>
 	T& allocate_front(Ts &&...args)
