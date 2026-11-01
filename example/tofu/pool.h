@@ -87,7 +87,7 @@ public:
 
 	Common::Iterator begin()
 	{
-		return typename Common::Iterator(static_cast<Entry*>(&*allocated.begin()));
+		return typename Common::Iterator(allocated.begin().GetEntryPointer());
 	}
 
 	Common::Iterator end()

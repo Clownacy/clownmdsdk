@@ -45,10 +45,16 @@ public:
 		}
 
 		template<typename Self>
+		auto* GetEntryPointer(this Self &&self)
+		{
+			return static_cast<copy_const_t<Self, BaseType>*>(self.entry);
+		}
+
+		template<typename Self>
 		auto* operator->(this Self &&self)
 		{
 			assert(self.entry != Derived::Entry::GetNull());
-			return static_cast<copy_const_t<Self, BaseType>*>(self.entry);
+			return self.GetEntryPointer();
 		}
 
 		template<typename Self>
@@ -56,7 +62,6 @@ public:
 		{
 			return *self.operator->();
 		}
-
 	};
 };
 
