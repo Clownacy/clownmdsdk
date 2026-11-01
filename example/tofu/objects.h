@@ -10,7 +10,7 @@
 
 namespace Objects
 {
-	using Pool = ::Pool<std::variant<std::monostate, Bullet, Player>, 0x10>;
+	using Pool = ::Pool<std::variant<Bullet, Player>, 0x10>;
 
 	extern Pool pool;
 
@@ -20,7 +20,8 @@ namespace Objects
 		if (pool.full())
 			return nullptr;
 
-		return &pool.allocate_front().emplace<T>(std::forward<Args>(args)...);
+		auto &entry = pool.allocate_front(std::in_place_type<T>, std::forward<Args>(args)...);
+		return std::get_if<T>(&entry);
 	}
 
 	template<typename T, typename... Args>
@@ -29,7 +30,8 @@ namespace Objects
 		if (pool.full())
 			return nullptr;
 
-		return &pool.allocate_back().emplace<T>(std::forward<Args>(args)...);
+		auto &entry = pool.allocate_back(std::in_place_type<T>, std::forward<Args>(args)...);
+		return std::get_if<T>(&entry);
 	}
 
 	void Update();

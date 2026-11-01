@@ -52,22 +52,24 @@ public:
 			deallocated.push_back(entry);
 	}
 
-	T& allocate_front()
+	template<typename... Args>
+	T& allocate_front(Args &&...args)
 	{
 		Entry &entry = deallocated.pop_front();
 
 		allocated.push_front(entry);
 
-		return *static_cast<T*>(&entry.emplace());
+		return *static_cast<T*>(&entry.emplace(std::forward<Args>(args)...));
 	}
 
-	T& allocate_back()
+	template<typename... Args>
+	T& allocate_back(Args &&...args)
 	{
 		Entry &entry = deallocated.pop_back();
 
 		allocated.push_back(entry);
 
-		return *static_cast<T*>(&entry.emplace());
+		return *static_cast<T*>(&entry.emplace(std::forward<Args>(args)...));
 	}
 
 	Common::Iterator deallocate(Common::Iterator &iterator)
