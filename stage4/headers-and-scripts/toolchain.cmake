@@ -25,8 +25,8 @@ add_compile_options(-mshort -ffreestanding -nodefaultlibs -fno-ident -fvisibilit
 add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions> $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti> $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>)
 
 macro(clownmdsdk_do_language_flags language)
-	set(CMAKE_${language}_STANDARD_INCLUDE_DIRECTORIES "${CLOWNMDSDK_LOCATION}/include")
-	set(CMAKE_${language}_STANDARD_LINK_DIRECTORIES "${CLOWNMDSDK_LOCATION}/lib")
+	set(CMAKE_${language}_STANDARD_INCLUDE_DIRECTORIES "${CLOWNMDSDK_LOCATION}/m68k-elf/include")
+	set(CMAKE_${language}_STANDARD_LINK_DIRECTORIES "${CLOWNMDSDK_LOCATION}/m68k-elf/lib")
 	set(CMAKE_EXECUTABLE_SUFFIX_${language} ".bin")
 endmacro()
 
