@@ -7,17 +7,6 @@
 
 #include "list-common.h"
 
-#define MAKE_SINGLY_LINKED_LIST_ENTRY_TYPE(NAME, GETTER) \
-template<typename Derived> \
-class NAME : public SinglyLinkedList<Derived, NAME<Derived>>::Entry \
-{ \
-public: \
-	auto& GETTER() \
-	{ \
-		return *this; \
-	} \
-}
-
 class SinglyLinkedListBase
 {
 protected:
@@ -36,59 +25,59 @@ protected:
 	bool Empty() const;
 };
 
-template<typename BaseType, typename EntryType>
-class SinglyLinkedList : protected SinglyLinkedListBase, protected ListCommon<SinglyLinkedList<BaseType, EntryType>, BaseType>
+template<typename Derived>
+class SinglyLinkedList : protected SinglyLinkedListBase, protected ListCommon<SinglyLinkedList<Derived>, Derived>
 {
 private:
-	using Common = ListCommon<SinglyLinkedList<BaseType, EntryType>, BaseType>;
+	using Common = ListCommon<SinglyLinkedList<Derived>, Derived>;
 
 public:
 	class Entry : protected SinglyLinkedListBase::Entry
 	{
 	public:
-		friend SinglyLinkedList<BaseType, EntryType>;
+		friend SinglyLinkedList<Derived>;
 
 		static constexpr auto GetNull()
 		{
-			return static_cast<BaseType*>(static_cast<SinglyLinkedListBase::Entry*>(nullptr));
+			return static_cast<Derived*>(static_cast<SinglyLinkedListBase::Entry*>(nullptr));
 		}
 
 		template<typename Self>
 		auto* GetNext(this Self &&self)
 		{
-			return static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->next);
+			return static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->next);
 		}
 	};
 
-	void push_front(BaseType &entry)
+	void push_front(Derived &entry)
 	{
 		SinglyLinkedListBase::PushFront(&entry);
 	}
 
-	void push_back(BaseType &entry)
+	void push_back(Derived &entry)
 	{
 		SinglyLinkedListBase::PushBack(&entry);
 	}
 
-	BaseType& pop_front()
+	Derived& pop_front()
 	{
 		const auto pointer = SinglyLinkedListBase::PopFront();
 		_assertm(pointer != nullptr, "Tried to pop empty list.");
-		return *static_cast<BaseType*>(static_cast<Entry*>(pointer));
+		return *static_cast<Derived*>(static_cast<Entry*>(pointer));
 	}
 
 	template<typename Self>
 	auto& front(this Self &&self)
 	{
-		assert(self.head != nullptr);
-		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.head));
+		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
+		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.head));
 	}
 
 	template<typename Self>
 	auto& back(this Self &&self)
 	{
-		assert(self.tail != nullptr);
-		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.tail));
+		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
+		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.tail));
 	}
 
 	Common::Iterator begin()

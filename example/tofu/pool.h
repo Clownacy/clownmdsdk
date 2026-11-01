@@ -21,17 +21,14 @@ class Pool : protected PoolCommon<T, S>
 private:
 	using Common = PoolCommon<T, S>;
 
-	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(AllocatedListEntry, GetAllocatedListEntry);
-	MAKE_SINGLY_LINKED_LIST_ENTRY_TYPE(DeallocatedListEntry, GetDeallocatedListEntry);
-
-	struct Entry : public T, public AllocatedListEntry<Entry>
+	struct Entry : public T, public DoublyLinkedList<Entry>::Entry
 	{
 	public:
 		using T::T;
 
 		Entry* GetNext()
 		{
-			return AllocatedListEntry<Entry>::GetNext();
+			return DoublyLinkedList<Entry>::Entry::GetNext();
 		}
 
 		const auto& GetPoolEntry() const
@@ -51,7 +48,7 @@ private:
 		alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
 	};
 
-	class EntryEmpty : public DeallocatedListEntry<EntryEmpty> {};
+	class EntryEmpty : public SinglyLinkedList<EntryEmpty>::Entry {};
 
 	std::array<AlignedUnion<Entry, EntryEmpty>, S> storage;
 
@@ -59,8 +56,8 @@ public:
 	using Entry = Entry;
 
 private:
-	DoublyLinkedList<Entry, AllocatedListEntry<Entry>> allocated;
-	SinglyLinkedList<EntryEmpty, DeallocatedListEntry<EntryEmpty>> deallocated;
+	DoublyLinkedList<Entry> allocated;
+	SinglyLinkedList<EntryEmpty> deallocated;
 
 	template<typename ...Ts>
 	Entry& pop_from_deallocated(Ts &&...args)

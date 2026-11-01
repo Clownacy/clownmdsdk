@@ -7,17 +7,6 @@
 
 #include "list-common.h"
 
-#define MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(NAME, GETTER) \
-template<typename Derived> \
-class NAME : public DoublyLinkedList<Derived, NAME<Derived>>::Entry \
-{ \
-public: \
-	auto& GETTER() \
-	{ \
-		return *this; \
-	} \
-}
-
 class DoublyLinkedListBase
 {
 public:
@@ -37,63 +26,63 @@ public:
 	bool Empty() const;
 };
 
-template<typename BaseType, typename EntryType>
-class DoublyLinkedList : protected DoublyLinkedListBase, protected ListCommon<DoublyLinkedList<BaseType, EntryType>, BaseType>
+template<typename Derived>
+class DoublyLinkedList : protected DoublyLinkedListBase, protected ListCommon<DoublyLinkedList<Derived>, Derived>
 {
 private:
-	using Common = ListCommon<DoublyLinkedList<BaseType, EntryType>, BaseType>;
+	using Common = ListCommon<DoublyLinkedList<Derived>, Derived>;
 
 public:
 	class Entry : protected DoublyLinkedListBase::Entry
 	{
 	public:
-		friend DoublyLinkedList<BaseType, EntryType>;
+		friend DoublyLinkedList<Derived>;
 
 		static constexpr auto GetNull()
 		{
-			return static_cast<BaseType*>(static_cast<DoublyLinkedListBase::Entry*>(nullptr));
+			return static_cast<Derived*>(static_cast<DoublyLinkedListBase::Entry*>(nullptr));
 		}
 
 		template<typename Self>
 		auto* GetNext(this Self &&self)
 		{
-			return static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(&self)->next);
+			return static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->next);
 		}
 
 		template<typename Self>
 		auto* GetPrevious(this Self &&self)
 		{
-			return static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(&self)->previous);
+			return static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->previous);
 		}
 	};
 
-	void push_front(BaseType &entry)
+	void push_front(Derived &entry)
 	{
 		DoublyLinkedListBase::PushFront(&entry);
 	}
 
-	void push_back(BaseType &entry)
+	void push_back(Derived &entry)
 	{
 		DoublyLinkedListBase::PushBack(&entry);
 	}
 
-	BaseType& pop_front()
+	Derived& pop_front()
 	{
 		auto &entry = front();
 		erase(entry);
 		return entry;
 	}
 
-	BaseType& pop_back()
+	Derived& pop_back()
 	{
 		auto &entry = back();
 		erase(entry);
 		return entry;
 	}
 
-	BaseType* erase(Entry &entry)
+	Derived* erase(Entry &entry)
 	{
-		const auto next = static_cast<BaseType*>(entry.GetNext());
+		const auto next = static_cast<Derived*>(entry.GetNext());
 		DoublyLinkedListBase::Remove(&entry);
 		return next;
 	}
@@ -102,14 +91,14 @@ public:
 	auto& front(this Self &&self)
 	{
 		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
-		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(self.head));
+		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.head));
 	}
 
 	template<typename Self>
 	auto& back(this Self &&self)
 	{
 		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
-		return *static_cast<Common::template copy_const_t<Self, BaseType>*>(static_cast<Common::template copy_const_t<Self, EntryType>*>(self.tail));
+		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.tail));
 	}
 
 	Common::Iterator begin()
