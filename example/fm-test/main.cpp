@@ -124,6 +124,6 @@ void _EntryPoint()
 		);
 
 		// Sleep until the next frame.
-		MD::M68k::WaitForInterrupt(3);
+		ClownMDSDK::MainCPU::M68k::WaitForInterrupt(3);
 	}
 }
