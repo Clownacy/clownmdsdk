@@ -1,24 +1,32 @@
 #ifndef POOL_H
 #define POOL_H
 
+#include <array>
 #include <cstddef>
+#include <optional>
 #include <span>
 
 #include "doubly-linked-list.h"
 
-template<typename T>
-class Pool : protected ListCommon<Pool<T>, T>
+template<typename T, std::size_t count>
+class Pool;
+
+template<typename T, std::size_t count>
+using PoolCommon = ListCommon<Pool<T, count>, std::optional<T>>;
+
+template<typename T, std::size_t count>
+class Pool : protected PoolCommon<T, count>
 {
 private:
-	using Common = ListCommon<Pool<T>, T>;
+	using Common = PoolCommon<T, count>;
 
 public:
 	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(ListEntryBase, GetListEntryBase);
 
-	class Entry : public ListEntryBase<Entry>
+	class Entry : public std::optional<T>, public ListEntryBase<Entry>
 	{
 	public:
-		friend Pool<T>;
+		friend Pool<T, count>;
 
 		const auto& GetPoolEntry() const
 		{
@@ -32,13 +40,15 @@ public:
 	};
 
 private:
+	std::array<Entry, count> entry_buffer;
+
 	DoublyLinkedList<Entry, ListEntryBase<Entry>> allocated;
 	DoublyLinkedList<Entry, ListEntryBase<Entry>> deallocated;
 
 public:
-	Pool(const std::span<T> &array)
+	Pool()
 	{
-		for (auto &entry : array)
+		for (auto &entry : entry_buffer)
 			deallocated.push_back(entry);
 	}
 
@@ -48,7 +58,7 @@ public:
 
 		allocated.push_front(entry);
 
-		return *static_cast<T*>(&entry);
+		return *static_cast<T*>(&entry.emplace());
 	}
 
 	T& allocate_back()
@@ -57,16 +67,18 @@ public:
 
 		allocated.push_back(entry);
 
-		return *static_cast<T*>(&entry);
+		return *static_cast<T*>(&entry.emplace());
 	}
 
-	Common::Iterator deallocate(T &entry)
+	Common::Iterator deallocate(Common::Iterator &iterator)
 	{
 		// Remove from allocated object list.
-		const auto next = static_cast<T*>(allocated.erase(entry));
+		auto* const next = allocated.erase(static_cast<Entry&>(*iterator));
+
+		*iterator = std::nullopt;
 
 		// Add to deallocated object list.
-		deallocated.push_front(entry);
+		deallocated.push_front(static_cast<Entry&>(*iterator));
 
 		return typename Common::Iterator(next);
 	}

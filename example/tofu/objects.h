@@ -10,10 +10,9 @@
 
 namespace Objects
 {
-	class PoolEntry : public std::variant<std::monostate, Bullet, Player>, public Pool<PoolEntry>::Entry {};
+	using Pool = ::Pool<std::variant<std::monostate, Bullet, Player>, 0x10>;
 
-	extern std::array<PoolEntry, 0x10> pool_buffer;
-	extern Pool<PoolEntry> pool;
+	extern Pool pool;
 
 	template<typename T, typename... Args>
 	T* EmplaceFront(Args &&...args)
