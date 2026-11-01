@@ -1,32 +1,32 @@
 #ifndef POOL_H
 #define POOL_H
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <optional>
-#include <span>
+#include <type_traits>
 
 #include "doubly-linked-list.h"
+#include "singly-linked-list.h"
 
-template<typename T, std::size_t count>
-class Pool;
-
-template<typename T, std::size_t count>
-using PoolCommon = ListCommon<Pool<T, count>, std::optional<T>>;
-
-template<typename T, std::size_t count>
-class Pool : protected PoolCommon<T, count>
+template<typename T, std::size_t S>
+class Pool : protected ListCommon<Pool<T, S>, T>
 {
 private:
-	using Common = PoolCommon<T, count>;
+	using Common = ListCommon<Pool<T, S>, T>;
 
-public:
-	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(ListEntryBase, GetListEntryBase);
+	MAKE_DOUBLY_LINKED_LIST_ENTRY_TYPE(AllocatedListEntry, GetAllocatedListEntry);
+	MAKE_SINGLY_LINKED_LIST_ENTRY_TYPE(DeallocatedListEntry, GetDeallocatedListEntry);
 
-	class Entry : public std::optional<T>, public ListEntryBase<Entry>
+	struct Entry : public T, public AllocatedListEntry<Entry>
 	{
 	public:
-		friend Pool<T, count>;
+		using T::T;
+
+		Entry* GetNext()
+		{
+			return AllocatedListEntry<Entry>::GetNext();
+		}
 
 		const auto& GetPoolEntry() const
 		{
@@ -39,50 +39,72 @@ public:
 		}
 	};
 
-private:
-	std::array<Entry, count> entry_buffer;
+	template<typename... Ts>
+	struct AlignedUnion
+	{
+		alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
+	};
 
-	DoublyLinkedList<Entry, ListEntryBase<Entry>> allocated;
-	DoublyLinkedList<Entry, ListEntryBase<Entry>> deallocated;
+	class EntryEmpty : public DeallocatedListEntry<EntryEmpty> {};
+
+	std::array<AlignedUnion<Entry, EntryEmpty>, S> storage;
+
+public:
+	using Entry = Entry;
+
+private:
+	DoublyLinkedList<Entry, AllocatedListEntry<Entry>> allocated;
+	SinglyLinkedList<EntryEmpty, DeallocatedListEntry<EntryEmpty>> deallocated;
+
+	template<typename ...Ts>
+	Entry& pop_from_deallocated(Ts &&...args)
+	{
+		auto &entry = deallocated.pop_front();
+
+		entry.~EntryEmpty();
+
+		return *new(&entry) Entry(std::forward<Ts>(args)...);
+	}
 
 public:
 	Pool()
 	{
-		for (auto &entry : entry_buffer)
-			deallocated.push_back(entry);
+		for (auto &entry : storage)
+			deallocated.push_back(*new(std::data(entry.bytes)) EntryEmpty());
 	}
 
-	template<typename... Args>
-	T& allocate_front(Args &&...args)
+	template<typename ...Ts>
+	T& allocate_front(Ts &&...args)
 	{
-		Entry &entry = deallocated.pop_front();
-
+		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_front(entry);
-
-		return *static_cast<T*>(&entry.emplace(std::forward<Args>(args)...));
+		return entry;
 	}
 
-	template<typename... Args>
-	T& allocate_back(Args &&...args)
+	template<typename ...Ts>
+	T& allocate_back(Ts &&...args)
 	{
-		Entry &entry = deallocated.pop_back();
-
+		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_back(entry);
-
-		return *static_cast<T*>(&entry.emplace(std::forward<Args>(args)...));
+		return entry;
 	}
 
-	Common::Iterator deallocate(Common::Iterator &iterator)
+	// TODO: Make this take an iterator, like a standard library container does.
+	Common::Iterator deallocate(T &thing)
 	{
-		// Remove from allocated object list.
-		auto* const next = allocated.erase(static_cast<Entry&>(*iterator));
+		auto &entry = static_cast<Entry&>(thing);
 
-		*iterator = std::nullopt;
+		typename Common::Iterator next = entry.GetNext();
+
+		// Remove from allocated object list.
+		allocated.erase(entry);
+
+		entry.~Entry();
 
 		// Add to deallocated object list.
-		deallocated.push_front(static_cast<Entry&>(*iterator));
+		deallocated.push_front(*new(&entry) EntryEmpty());
 
-		return typename Common::Iterator(next);
+		return next;
 	}
 
 	Common::Iterator begin()
