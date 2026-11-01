@@ -20,7 +20,6 @@ add_cartridge_executable(tofu
 	"main.cpp"
 	"objects.cpp"
 	"objects.h"
-	"pool.cpp"
 	"pool.h"
 	"singly-linked-list.cpp"
 	"singly-linked-list.h"

@@ -18,7 +18,6 @@ SOURCES := \
 	objects/base \
 	objects/bullet \
 	objects/player \
-	pool \
 	singly-linked-list \
 	sprite
 
