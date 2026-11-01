@@ -6,19 +6,20 @@ void Objects::Update()
 {
 	for (auto it = pool.begin(); it != pool.end(); )
 	{
-		it->visit([&]<typename T>(T &&object)
-		{
-			if constexpr (!std::is_same_v<std::remove_cvref_t<T>, std::monostate>)
+		it->visit(
+			[&](auto &object)
 			{
 				if (!object.Update())
 				{
-					// Destruct object.
+					// Destruct object and move onto the next.
 					it = pool.deallocate(*it);
-					return;
+				}
+				else
+				{
+					// Next object.
+					++it;
 				}
 			}
-
-			++it;
-		});
+		);
 	}
 }
