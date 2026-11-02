@@ -18,11 +18,12 @@ public:
 
 	Entry *head = nullptr;
 	Entry *tail = nullptr;
+	std::size_t total_entries = 0;
 
 	void PushFront(Entry *entry);
 	void PushBack(Entry *entry);
 	void Remove(Entry *entry);
-	std::size_t Length() const;
+	std::size_t Size() const;
 	bool Empty() const;
 };
 
@@ -109,6 +110,11 @@ public:
 	Common::Iterator end()
 	{
 		return typename Common::Iterator();
+	}
+
+	std::size_t size() const
+	{
+		return DoublyLinkedListBase::Size();
 	}
 
 	bool empty() const

@@ -2,6 +2,8 @@
 
 void DoublyLinkedListBase::PushFront(Entry* const entry)
 {
+	++total_entries;
+
 	if (head == nullptr)
 		tail = entry;
 	else
@@ -15,6 +17,8 @@ void DoublyLinkedListBase::PushFront(Entry* const entry)
 
 void DoublyLinkedListBase::PushBack(Entry* const entry)
 {
+	++total_entries;
+
 	if (tail == nullptr)
 		head = entry;
 	else
@@ -28,6 +32,8 @@ void DoublyLinkedListBase::PushBack(Entry* const entry)
 
 void DoublyLinkedListBase::Remove(Entry* const entry)
 {
+	--total_entries;
+
 	if (entry->previous == nullptr)
 		head = entry->next;
 	else
@@ -37,6 +43,11 @@ void DoublyLinkedListBase::Remove(Entry* const entry)
 		tail = entry->previous;
 	else
 		entry->next->previous = entry->previous;
+}
+
+std::size_t DoublyLinkedListBase::Size() const
+{
+	return total_entries;
 }
 
 bool DoublyLinkedListBase::Empty() const

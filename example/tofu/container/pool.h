@@ -137,9 +137,14 @@ public:
 		return self.allocated.back();
 	}
 
-	std::size_t length() const
+	std::size_t size() const
 	{
-		return allocated.length();
+		return allocated.size();
+	}
+
+	std::size_t max_size() const
+	{
+		return S;
 	}
 
 	bool empty() const
