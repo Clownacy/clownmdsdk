@@ -1,7 +1,6 @@
 #ifndef OBJECT_MANAGER_H
 #define OBJECT_MANAGER_H
 
-#include <array>
 #include <variant>
 
 #include "container/pool.h"
@@ -11,9 +10,7 @@
 class ObjectManager
 {
 private:
-	using Pool = ::Pool<std::variant<Objects::Bullet, Objects::Player>, 0x10>;
-
-	Pool pool;
+	Pool<std::variant<Objects::Bullet, Objects::Player>, 0x10> pool;
 
 public:
 	template<typename T, typename... Args>
