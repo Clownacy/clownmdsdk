@@ -21,6 +21,7 @@ add_cartridge_executable(tofu
 	"level-manager.cpp"
 	"level-manager.h"
 	"main.cpp"
+	"mega-drive.h"
 	"object-manager.cpp"
 	"object-manager.h"
 	"sprite-manager.cpp"

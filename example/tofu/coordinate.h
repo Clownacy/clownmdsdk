@@ -3,7 +3,7 @@
 
 #include <type_traits>
 
-#include <clownmdsdk.h>
+#include "mega-drive.h"
 
 #define COORDINATE_BASE_MAKE_OPERATOR(OPERATOR) \
 	template<typename Self> \
@@ -16,8 +16,6 @@
 	{ \
 		return {self.x OPERATOR value, self.y OPERATOR value}; \
 	}
-
-using namespace ClownMDSDK::MainCPU;
 
 namespace Coordinate
 {

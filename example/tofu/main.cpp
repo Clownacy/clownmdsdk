@@ -15,16 +15,13 @@
 #include <atomic>
 #include <initializer_list>
 
-#include <clownmdsdk.h>
-
 #include "coordinate.h"
 #include "controller-manager.h"
 #include "level-manager.h"
+#include "mega-drive.h"
 #include "object-manager.h"
 #include "sprite-manager.h"
 #include "vram-addresses.h"
-
-using namespace ClownMDSDK::MainCPU;
 
 static std::atomic<bool> waiting_for_vertical_interrupt;
 

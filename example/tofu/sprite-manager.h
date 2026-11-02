@@ -1,11 +1,8 @@
 #ifndef SPRITE_MANAGER_H
 #define SPRITE_MANAGER_H
 
-#include <clownmdsdk.h>
-
+#include "mega-drive.h"
 #include "objects/base.h"
-
-using namespace ClownMDSDK::MainCPU;
 
 class SpriteManager
 {

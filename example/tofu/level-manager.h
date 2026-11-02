@@ -3,11 +3,8 @@
 
 #include <array>
 
-#include <clownmdsdk.h>
-
 #include "coordinate.h"
-
-using namespace ClownMDSDK::MainCPU;
+#include "mega-drive.h"
 
 class LevelManager
 {

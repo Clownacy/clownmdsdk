@@ -1,11 +1,8 @@
 #ifndef OBJECTS_BASE_H
 #define OBJECTS_BASE_H
 
-#include <clownmdsdk.h>
-
 #include "../coordinate.h"
-
-using namespace ClownMDSDK::MainCPU;
+#include "../mega-drive.h"
 
 namespace Objects
 {
