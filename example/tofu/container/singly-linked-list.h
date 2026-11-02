@@ -19,7 +19,6 @@ protected:
 
 	void PushFront(Entry *entry);
 	Entry* PopFront();
-	std::size_t Length() const;
 	bool Empty() const;
 };
 
