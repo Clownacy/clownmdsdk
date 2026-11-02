@@ -1,8 +1,8 @@
 #include "objects.h"
 
-Objects::Pool Objects::pool;
+ObjectManager object_manager;
 
-void Objects::Update()
+void ObjectManager::Update()
 {
 	for (auto it = pool.begin(); it != pool.end(); )
 	{

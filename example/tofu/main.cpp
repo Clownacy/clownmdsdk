@@ -189,7 +189,7 @@ void _EntryPoint()
 	VDP::Write(vdp_register_01);
 
 	// Spawn player.
-	Objects::EmplaceFront<Objects::Player>(Coordinate::Block(7, 3));
+	object_manager.EmplaceFront<Objects::Player>(Coordinate::Block(7, 3));
 
 	for (;;)
 	{
@@ -201,7 +201,7 @@ void _EntryPoint()
 		// We will disable it in the horizontal interrupt to end it mid-way through the screen.
 		VDP::Write(VDP::Register00{.blank_leftmode_8_pixels = false, .enable_horizontal_interrupt = true, .lock_hv_counter = false});
 
-		Objects::Update();
+		object_manager.Update();
 		WaitForVerticalInterrupt();
 	}
 }

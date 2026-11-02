@@ -8,12 +8,14 @@
 #include "objects/player.h"
 #include "pool.h"
 
-namespace Objects
+class ObjectManager
 {
-	using Pool = ::Pool<std::variant<Bullet, Player>, 0x10>;
+private:
+	using Pool = ::Pool<std::variant<Objects::Bullet, Objects::Player>, 0x10>;
 
-	extern Pool pool;
+	Pool pool;
 
+public:
 	template<typename T, typename... Args>
 	T* EmplaceFront(Args &&...args)
 	{
@@ -35,6 +37,8 @@ namespace Objects
 	}
 
 	void Update();
-}
+};
+
+extern ObjectManager object_manager;
 
 #endif // OBJECTS_H
