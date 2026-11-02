@@ -20,11 +20,92 @@ public:
 	Entry *tail = nullptr;
 	std::size_t total_entries = 0;
 
-	void PushFront(Entry *entry);
-	void PushBack(Entry *entry);
-	void Remove(Entry *entry);
-	std::size_t Size() const;
-	bool Empty() const;
+	template<typename Self>
+	auto& front(this Self &&self)
+	{
+		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
+		return *self.head;
+	}
+
+	template<typename Self>
+	auto& back(this Self &&self)
+	{
+		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
+		return *self.tail;
+	}
+
+	void push_front(Entry &entry)
+	{
+		++total_entries;
+
+		if (head == nullptr)
+			tail = &entry;
+		else
+			head->previous = &entry;
+
+		entry.next = head;
+		entry.previous = nullptr;
+
+		head = &entry;
+	}
+
+	void push_back(Entry &entry)
+	{
+		++total_entries;
+
+		if (tail == nullptr)
+			head = &entry;
+		else
+			tail->next = &entry;
+
+		entry.next = nullptr;
+		entry.previous = tail;
+
+		tail = &entry;
+	}
+
+	Entry* erase(Entry &entry)
+	{
+		--total_entries;
+
+		Entry* const next = entry.next;
+
+		if (entry.previous == nullptr)
+			head = entry.next;
+		else
+			entry.previous->next = entry.next;
+
+		if (entry.next == nullptr)
+			tail = entry.previous;
+		else
+			entry.next->previous = entry.previous;
+
+		return next;
+	}
+
+	Entry& pop_front()
+	{
+		auto &entry = front();
+		erase(entry);
+		return entry;
+	}
+
+	Entry& pop_back()
+	{
+		auto &entry = back();
+		erase(entry);
+		return entry;
+	}
+
+	std::size_t size() const
+	{
+		return total_entries;
+	}
+
+	bool empty() const
+	{
+		return head == nullptr;
+	}
 };
 
 template<typename Derived>
@@ -57,49 +138,16 @@ public:
 		}
 	};
 
-	void push_front(Derived &entry)
-	{
-		DoublyLinkedListBase::PushFront(&entry);
-	}
-
-	void push_back(Derived &entry)
-	{
-		DoublyLinkedListBase::PushBack(&entry);
-	}
-
-	Derived& pop_front()
-	{
-		auto &entry = front();
-		erase(entry);
-		return entry;
-	}
-
-	Derived& pop_back()
-	{
-		auto &entry = back();
-		erase(entry);
-		return entry;
-	}
-
-	Derived* erase(Entry &entry)
-	{
-		const auto next = static_cast<Derived*>(entry.GetNext());
-		DoublyLinkedListBase::Remove(&entry);
-		return next;
-	}
-
 	template<typename Self>
 	auto& front(this Self &&self)
 	{
-		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
-		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.head));
+		return static_cast<Common::template copy_const_t<Self, Derived>&>(DoublyLinkedListBase::front(self));
 	}
 
 	template<typename Self>
 	auto& back(this Self &&self)
 	{
-		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
-		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.tail));
+		return static_cast<Common::template copy_const_t<Self, Derived>&>(DoublyLinkedListBase::back(self));
 	}
 
 	Common::Iterator begin()
@@ -112,14 +160,39 @@ public:
 		return typename Common::Iterator();
 	}
 
+	void push_front(Derived &entry)
+	{
+		DoublyLinkedListBase::push_front(entry);
+	}
+
+	void push_back(Derived &entry)
+	{
+		DoublyLinkedListBase::push_back(entry);
+	}
+
+	Derived& pop_front()
+	{
+		return static_cast<Derived&>(DoublyLinkedListBase::pop_front());
+	}
+
+	Derived& pop_back()
+	{
+		return static_cast<Derived&>(DoublyLinkedListBase::pop_back());
+	}
+
+	Derived* erase(Entry &entry)
+	{
+		return static_cast<Derived*>(DoublyLinkedListBase::erase(entry));
+	}
+
 	std::size_t size() const
 	{
-		return DoublyLinkedListBase::Size();
+		return DoublyLinkedListBase::size();
 	}
 
 	bool empty() const
 	{
-		return DoublyLinkedListBase::Empty();
+		return DoublyLinkedListBase::empty();
 	}
 };
 

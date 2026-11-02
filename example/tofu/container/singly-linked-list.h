@@ -7,6 +7,7 @@
 
 #include "list-common.h"
 
+// Split from the templated class to minimise duplicate code across each specialisation.
 class SinglyLinkedListBase
 {
 protected:
@@ -17,9 +18,30 @@ protected:
 
 	Entry *head = nullptr;
 
-	void PushFront(Entry *entry);
-	Entry* PopFront();
-	bool Empty() const;
+	template<typename Self>
+	auto& front(this Self &&self)
+	{
+		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
+		return *self.head;
+	}
+
+	void push_front(Entry &entry)
+	{
+		entry.next = head;
+		head = &entry;
+	}
+
+	Entry& pop_front()
+	{
+		Entry &entry = front();
+		head = entry.next;
+		return entry;
+	}
+
+	bool empty() const
+	{
+		return head == nullptr;
+	}
 };
 
 template<typename Derived>
@@ -42,27 +64,14 @@ public:
 		template<typename Self>
 		auto* GetNext(this Self &&self)
 		{
-			return static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->next);
+			return static_cast<Common::template copy_const_t<Self, Derived>*>(self.next);
 		}
 	};
-
-	void push_front(Derived &entry)
-	{
-		SinglyLinkedListBase::PushFront(&entry);
-	}
-
-	Derived& pop_front()
-	{
-		const auto pointer = SinglyLinkedListBase::PopFront();
-		_assertm(pointer != nullptr, "Tried to pop empty list.");
-		return *static_cast<Derived*>(static_cast<Entry*>(pointer));
-	}
 
 	template<typename Self>
 	auto& front(this Self &&self)
 	{
-		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
-		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.head));
+		return static_cast<Common::template copy_const_t<Self, Derived>&>(SinglyLinkedListBase::front(self));
 	}
 
 	Common::Iterator begin()
@@ -75,9 +84,19 @@ public:
 		return typename Common::Iterator();
 	}
 
+	void push_front(Derived &entry)
+	{
+		SinglyLinkedListBase::push_front(entry);
+	}
+
+	Derived& pop_front()
+	{
+		return static_cast<Derived&>(SinglyLinkedListBase::pop_front());
+	}
+
 	bool empty() const
 	{
-		return SinglyLinkedListBase::Empty();
+		return SinglyLinkedListBase::empty();
 	}
 };
 
