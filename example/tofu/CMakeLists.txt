@@ -12,6 +12,7 @@ add_cartridge_executable(tofu
 	"container/doubly-linked-list.h"
 	"container/list-common.h"
 	"container/pool.h"
+	"container/singly-linked-list.cpp"
 	"container/singly-linked-list.h"
 	"controller-manager.cpp"
 	"controller-manager.h"

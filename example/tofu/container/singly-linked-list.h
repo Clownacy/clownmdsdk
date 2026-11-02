@@ -8,9 +8,8 @@
 #include "list-common.h"
 
 // Split from the templated class to minimise duplicate code across each specialisation.
-class SinglyLinkedListBase
+struct SinglyLinkedListBase
 {
-protected:
 	struct Entry
 	{
 		struct Entry *next;
@@ -45,10 +44,12 @@ protected:
 };
 
 template<typename Derived>
-class SinglyLinkedList : protected SinglyLinkedListBase, protected ListCommon<SinglyLinkedList<Derived>, Derived>
+class SinglyLinkedList : protected ListCommon<SinglyLinkedList<Derived>, Derived>
 {
 private:
 	using Common = ListCommon<SinglyLinkedList<Derived>, Derived>;
+
+	SinglyLinkedListBase base;
 
 public:
 	class Entry : protected SinglyLinkedListBase::Entry
@@ -71,12 +72,12 @@ public:
 	template<typename Self>
 	constexpr auto& front(this Self &&self)
 	{
-		return static_cast<Common::template copy_const_t<Self, Derived>&>(SinglyLinkedListBase::front(self));
+		return static_cast<Common::template copy_const_t<Self, Derived>&>(self.base.front());
 	}
 
 	constexpr Common::Iterator begin()
 	{
-		return typename Common::Iterator(static_cast<Entry*>(head));
+		return typename Common::Iterator(static_cast<Entry*>(base.head));
 	}
 
 	constexpr Common::Iterator end()
@@ -86,17 +87,17 @@ public:
 
 	constexpr void push_front(Derived &entry)
 	{
-		SinglyLinkedListBase::push_front(entry);
+		base.push_front(entry);
 	}
 
 	constexpr Derived& pop_front()
 	{
-		return static_cast<Derived&>(SinglyLinkedListBase::pop_front());
+		return static_cast<Derived&>(base.pop_front());
 	}
 
 	constexpr bool empty() const
 	{
-		return SinglyLinkedListBase::empty();
+		return base.empty();
 	}
 };
 
