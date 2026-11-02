@@ -9,10 +9,20 @@
 
 using namespace ClownMDSDK::MainCPU;
 
-namespace Level
+class LevelManager
 {
-	extern const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> blocks;
-	extern Coordinate::Pixel camera;
+private:
+	static const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> blocks;
+
+	Coordinate::Block camera_previous;
+
+	template<bool vertical>
+	void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, unsigned int total_lines);
+	void DrawRows(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, unsigned int total_rows);
+	void DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, unsigned int total_columns);
+
+public:
+	Coordinate::Pixel camera;
 
 	void DrawWholeScreen(Z80::Bus &z80_bus);
 	void Draw(Z80::Bus &z80_bus);
@@ -21,6 +31,8 @@ namespace Level
 	{
 		return blocks[position.y * Coordinate::level_size.blocks.x + position.x];
 	}
-}
+};
+
+extern LevelManager level_manager;
 
 #endif // LEVEL_H

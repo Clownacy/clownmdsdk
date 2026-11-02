@@ -24,7 +24,7 @@ bool Objects::Player::Update()
 		const bool collision = [&]()
 		{
 			for (Coordinate::Block block_position = lower; block_position.Dimension(!vertical) <= upper.Dimension(!vertical); ++block_position.Dimension(!vertical))
-				if (Level::GetBlock(block_position) != 0)
+				if (level_manager.GetBlock(block_position) != 0)
 					return true;
 
 			return false;
@@ -91,15 +91,15 @@ bool Objects::Player::Update()
 		Objects::EmplaceBack<Bullet>(position + Coordinate::Pixel(facing_left ? -6 : 6, -2).ToWorld(), facing_left ? -0x68000 : 0x68000);
 
 	// Updata camera.
-	Level::camera = Coordinate::Pixel(position);
+	level_manager.camera = Coordinate::Pixel(position);
 
 	// Restrict camera to bounds of level.
-	Level::camera.x = std::clamp(Level::camera.x, Coordinate::screen_size.pixels.x / 2, Coordinate::level_size.blocks.x * Coordinate::block_size.pixels.x - Coordinate::screen_size.pixels.x / 2);
-	Level::camera.y = std::clamp(Level::camera.y, Coordinate::screen_size.pixels.y / 2, Coordinate::level_size.blocks.y * Coordinate::block_size.pixels.y - Coordinate::screen_size.pixels.y / 2);
+	level_manager.camera.x = std::clamp(level_manager.camera.x, Coordinate::screen_size.pixels.x / 2, Coordinate::level_size.blocks.x * Coordinate::block_size.pixels.x - Coordinate::screen_size.pixels.x / 2);
+	level_manager.camera.y = std::clamp(level_manager.camera.y, Coordinate::screen_size.pixels.y / 2, Coordinate::level_size.blocks.y * Coordinate::block_size.pixels.y - Coordinate::screen_size.pixels.y / 2);
 
 	// Centre camera on target.
-	Level::camera.x -= Coordinate::screen_size.pixels.x / 2;
-	Level::camera.y -= Coordinate::screen_size.pixels.y / 2;
+	level_manager.camera.x -= Coordinate::screen_size.pixels.x / 2;
+	level_manager.camera.y -= Coordinate::screen_size.pixels.y / 2;
 
 	QueueForDisplay(facing_left ? -2 : 2, -2, 1, 3, {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = facing_left, .tile_index = 8});
 

@@ -3,15 +3,11 @@
 #include <numeric>
 #include <utility>
 
-namespace Level
-{
+LevelManager level_manager;
 
-const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> blocks = {
+const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> LevelManager::blocks = {
 	#embed "assets/level.unc"
 };
-
-Coordinate::Pixel camera;
-static Coordinate::Block camera_previous;
 
 static constexpr auto SplitLength(const auto offset, const auto length, const auto limit)
 {
@@ -22,7 +18,7 @@ static constexpr auto SplitLength(const auto offset, const auto length, const au
 }
 
 template<bool vertical>
-static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_lines)
+void LevelManager::DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_lines)
 {
 	constexpr auto line_stride = sizeof(VDP::VRAM::TileMetadata) * (vertical ? 1 : Coordinate::plane_size.tiles.x);
 	const auto starting_tile_position_in_plane = starting_block_position.ToTiles() % Coordinate::plane_size.tiles;
@@ -91,12 +87,12 @@ static void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_bloc
 	DoLine(vertical ? 0 : vram_offset_x, vertical ? vram_offset_y : 0, second_line_length);
 }
 
-static void DrawRows(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_rows)
+void LevelManager::DrawRows(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_rows)
 {
 	DrawBlocks<false>(z80_bus, starting_block_position, total_rows);
 }
 
-static void DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_columns)
+void LevelManager::DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, const unsigned int total_columns)
 {
 	// Ensure that the DMA transfers write along the Y axis rather than the X axis.
 	VDP::SetAddressIncrement(sizeof(VDP::VRAM::TileMetadata) * Coordinate::plane_size.tiles.x);
@@ -107,7 +103,7 @@ static void DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_blo
 	VDP::SetAddressIncrement(2);
 }
 
-void DrawWholeScreen(Z80::Bus &z80_bus)
+void LevelManager::DrawWholeScreen(Z80::Bus &z80_bus)
 {
 	// Chooses whichever is more efficient for the screen resolution.
 	if constexpr (Coordinate::screen_size.blocks.x >= Coordinate::screen_size.blocks.y)
@@ -119,7 +115,7 @@ void DrawWholeScreen(Z80::Bus &z80_bus)
 }
 
 // Checks how much the camera has moved in this frame, and loads blocks at the edges of the screen.
-void Draw(Z80::Bus &z80_bus)
+void LevelManager::Draw(Z80::Bus &z80_bus)
 {
 	const auto camera_block_position = camera.ToBlocks();
 
@@ -135,6 +131,4 @@ void Draw(Z80::Bus &z80_bus)
 		DrawRows(z80_bus, camera_block_position + Coordinate::Block(0, Coordinate::screen_size.blocks.y), 1);
 
 	camera_previous = camera_block_position;
-}
-
 }

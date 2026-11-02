@@ -14,8 +14,8 @@ void SpriteManager::QueueSprite(const unsigned int x, const unsigned int y, cons
 		return position - (size + 1) * 8 / 2;
 	};
 
-	const auto screen_x = OffsetCoordinate(x, width ) - Level::camera.x;
-	const auto screen_y = OffsetCoordinate(y, height) - Level::camera.y;
+	const auto screen_x = OffsetCoordinate(x, width ) - level_manager.camera.x;
+	const auto screen_y = OffsetCoordinate(y, height) - level_manager.camera.y;
 
 	if (screen_x >= 0x200 || screen_y >= 0x200)
 		return;

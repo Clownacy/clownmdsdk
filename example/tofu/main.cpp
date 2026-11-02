@@ -72,13 +72,13 @@ void _VerticalInterruptHandler()
 
 			// Set vertical scroll value.
 			VDP::SendCommand(VDP::RAM::VSRAM, VDP::Access::WRITE, 0);
-			VDP::Write(VDP::DataValueWord(Level::camera.y));
+			VDP::Write(VDP::DataValueWord(level_manager.camera.y));
 
 			// Set horizontal scroll value.
 			VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, 0xDC00);
-			VDP::Write(VDP::DataValueWord(-Level::camera.x));
+			VDP::Write(VDP::DataValueWord(-level_manager.camera.x));
 
-			Level::Draw(z80_bus);
+			level_manager.Draw(z80_bus);
 		}
 	);
 }
@@ -179,7 +179,7 @@ void _EntryPoint()
 			z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VDP::VRAM::TILE_SIZE_IN_BYTES_NORMAL * 0x100, std::data(font), std::size(font));
 
 			// Draw level.
-			Level::DrawWholeScreen(z80_bus);
+			level_manager.DrawWholeScreen(z80_bus);
 		}
 	);
 
