@@ -5,7 +5,7 @@
 #include "../controller.h"
 #include "../coordinate.h"
 #include "../level.h"
-#include "../objects.h"
+#include "../object-manager.h"
 #include "../sprite.h"
 
 bool Objects::Player::Update()

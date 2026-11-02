@@ -1,5 +1,5 @@
-#ifndef OBJECTS_H
-#define OBJECTS_H
+#ifndef OBJECT_MANAGER_H
+#define OBJECT_MANAGER_H
 
 #include <array>
 #include <variant>
@@ -41,4 +41,4 @@ public:
 
 extern ObjectManager object_manager;
 
-#endif // OBJECTS_H
+#endif // OBJECT_MANAGER_H

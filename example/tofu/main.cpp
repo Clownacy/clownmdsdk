@@ -20,7 +20,7 @@
 #include "coordinate.h"
 #include "controller.h"
 #include "level.h"
-#include "objects.h"
+#include "object-manager.h"
 #include "sprite.h"
 
 using namespace ClownMDSDK::MainCPU;

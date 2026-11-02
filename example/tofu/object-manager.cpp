@@ -1,4 +1,4 @@
-#include "objects.h"
+#include "object-manager.h"
 
 ObjectManager object_manager;
 
