@@ -19,26 +19,26 @@ protected:
 	Entry *head = nullptr;
 
 	template<typename Self>
-	auto& front(this Self &&self)
+	constexpr auto& front(this Self &&self)
 	{
 		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
 		return *self.head;
 	}
 
-	void push_front(Entry &entry)
+	constexpr void push_front(Entry &entry)
 	{
 		entry.next = head;
 		head = &entry;
 	}
 
-	Entry& pop_front()
+	constexpr Entry& pop_front()
 	{
 		Entry &entry = front();
 		head = entry.next;
 		return entry;
 	}
 
-	bool empty() const
+	constexpr bool empty() const
 	{
 		return head == nullptr;
 	}
@@ -62,39 +62,39 @@ public:
 		}
 
 		template<typename Self>
-		auto* GetNext(this Self &&self)
+		constexpr auto* GetNext(this Self &&self)
 		{
 			return static_cast<Common::template copy_const_t<Self, Derived>*>(self.next);
 		}
 	};
 
 	template<typename Self>
-	auto& front(this Self &&self)
+	constexpr auto& front(this Self &&self)
 	{
 		return static_cast<Common::template copy_const_t<Self, Derived>&>(SinglyLinkedListBase::front(self));
 	}
 
-	Common::Iterator begin()
+	constexpr Common::Iterator begin()
 	{
 		return typename Common::Iterator(static_cast<Entry*>(head));
 	}
 
-	Common::Iterator end()
+	constexpr Common::Iterator end()
 	{
 		return typename Common::Iterator();
 	}
 
-	void push_front(Derived &entry)
+	constexpr void push_front(Derived &entry)
 	{
 		SinglyLinkedListBase::push_front(entry);
 	}
 
-	Derived& pop_front()
+	constexpr Derived& pop_front()
 	{
 		return static_cast<Derived&>(SinglyLinkedListBase::pop_front());
 	}
 
-	bool empty() const
+	constexpr bool empty() const
 	{
 		return SinglyLinkedListBase::empty();
 	}

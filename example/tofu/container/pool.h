@@ -24,17 +24,17 @@ public:
 	public:
 		using T::T;
 
-		Entry* GetNext()
+		constexpr Entry* GetNext()
 		{
 			return DoublyLinkedList<Entry>::Entry::GetNext();
 		}
 
-		const auto& GetPoolEntry() const
+		constexpr const auto& GetPoolEntry() const
 		{
 			return *this;
 		}
 
-		void SetPoolEntry(const Entry &other)
+		constexpr void SetPoolEntry(const Entry &other)
 		{
 			*this = other;
 		}
@@ -56,7 +56,7 @@ private:
 	std::array<AlignedUnion<Entry, EntryEmpty>, S> storage;
 
 	template<typename ...Ts>
-	Entry& pop_from_deallocated(Ts &&...args)
+	constexpr Entry& pop_from_deallocated(Ts &&...args)
 	{
 		auto &entry = deallocated.pop_front();
 
@@ -66,23 +66,23 @@ private:
 	}
 
 public:
-	Pool()
+	constexpr Pool()
 	{
 		for (auto &entry : storage)
 			deallocated.push_front(*new(std::data(entry.bytes)) EntryEmpty());
 	}
 
-	~Pool()
+	constexpr ~Pool()
 	{
 		for (auto it = begin(); it != end(); )
 			it = deallocate(*it);
 	}
 
-	Pool(const Pool &other) = delete;
-	Pool& operator=(const Pool &other) = delete;
+	constexpr Pool(const Pool &other) = delete;
+	constexpr Pool& operator=(const Pool &other) = delete;
 
 	template<typename ...Ts>
-	T& allocate_front(Ts &&...args)
+	constexpr T& allocate_front(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_front(entry);
@@ -90,7 +90,7 @@ public:
 	}
 
 	template<typename ...Ts>
-	T& allocate_back(Ts &&...args)
+	constexpr T& allocate_back(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_back(entry);
@@ -98,7 +98,7 @@ public:
 	}
 
 	// TODO: Make this take an iterator, like a standard library container does.
-	Common::Iterator deallocate(T &thing)
+	constexpr Common::Iterator deallocate(T &thing)
 	{
 		auto &entry = static_cast<Entry&>(thing);
 
@@ -115,44 +115,44 @@ public:
 		return next;
 	}
 
-	Common::Iterator begin()
+	constexpr Common::Iterator begin()
 	{
 		return typename Common::Iterator(allocated.begin().GetEntryPointer());
 	}
 
-	Common::Iterator end()
+	constexpr Common::Iterator end()
 	{
 		return typename Common::Iterator();
 	}
 
 	template<typename Self>
-	auto& front(this Self &self)
+	constexpr auto& front(this Self &self)
 	{
 		return self.allocated.front();
 	}
 
 	template<typename Self>
-	auto& back(this Self &self)
+	constexpr auto& back(this Self &self)
 	{
 		return self.allocated.back();
 	}
 
-	std::size_t size() const
+	constexpr std::size_t size() const
 	{
 		return allocated.size();
 	}
 
-	std::size_t max_size() const
+	constexpr std::size_t max_size() const
 	{
 		return S;
 	}
 
-	bool empty() const
+	constexpr bool empty() const
 	{
 		return allocated.empty();
 	}
 
-	bool full() const
+	constexpr bool full() const
 	{
 		return deallocated.empty();
 	}

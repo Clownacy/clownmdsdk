@@ -22,43 +22,43 @@ public:
 		Derived::Entry *entry;
 
 	public:
-		Iterator(Derived::Entry* const entry = Derived::Entry::GetNull())
+		constexpr Iterator(Derived::Entry* const entry = Derived::Entry::GetNull())
 			: entry(entry)
 		{}
 
-		Iterator& operator++()
+		constexpr Iterator& operator++()
 		{
 			entry = entry->GetNext();
 			return *this;
 		}
 
-		Iterator operator++(int)
+		constexpr Iterator operator++(int)
 		{
 			const auto old = *this;
 			operator++();
 			return old;
 		}
 
-		bool operator!=(const Iterator &other) const
+		constexpr bool operator!=(const Iterator &other) const
 		{
 			return entry != other.entry;
 		}
 
 		template<typename Self>
-		auto* GetEntryPointer(this Self &&self)
+		constexpr auto* GetEntryPointer(this Self &&self)
 		{
 			return static_cast<copy_const_t<Self, BaseType>*>(self.entry);
 		}
 
 		template<typename Self>
-		auto* operator->(this Self &&self)
+		constexpr auto* operator->(this Self &&self)
 		{
 			assert(self.entry != Derived::Entry::GetNull());
 			return self.GetEntryPointer();
 		}
 
 		template<typename Self>
-		auto& operator*(this Self &&self)
+		constexpr auto& operator*(this Self &&self)
 		{
 			return *self.operator->();
 		}
