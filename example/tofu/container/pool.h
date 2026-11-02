@@ -18,9 +18,7 @@ using PoolCommon = ListCommon<Pool<T, S>, T>;
 template<typename T, std::size_t S>
 class Pool : protected PoolCommon<T, S>
 {
-private:
-	using Common = PoolCommon<T, S>;
-
+public:
 	struct Entry : public DoublyLinkedList<Entry>::Entry, public T
 	{
 	public:
@@ -42,6 +40,9 @@ private:
 		}
 	};
 
+private:
+	using Common = PoolCommon<T, S>;
+
 	template<typename... Ts>
 	struct AlignedUnion
 	{
@@ -50,14 +51,9 @@ private:
 
 	class EntryEmpty : public SinglyLinkedList<EntryEmpty>::Entry {};
 
-	std::array<AlignedUnion<Entry, EntryEmpty>, S> storage;
-
-public:
-	using Entry = Entry;
-
-private:
 	DoublyLinkedList<Entry> allocated;
 	SinglyLinkedList<EntryEmpty> deallocated;
+	std::array<AlignedUnion<Entry, EntryEmpty>, S> storage;
 
 	template<typename ...Ts>
 	Entry& pop_from_deallocated(Ts &&...args)
