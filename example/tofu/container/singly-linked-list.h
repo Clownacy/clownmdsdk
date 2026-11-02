@@ -16,10 +16,8 @@ protected:
 	};
 
 	Entry *head = nullptr;
-	Entry *tail = nullptr;
 
 	void PushFront(Entry *entry);
-	void PushBack(Entry *entry);
 	Entry* PopFront();
 	std::size_t Length() const;
 	bool Empty() const;
@@ -54,11 +52,6 @@ public:
 		SinglyLinkedListBase::PushFront(&entry);
 	}
 
-	void push_back(Derived &entry)
-	{
-		SinglyLinkedListBase::PushBack(&entry);
-	}
-
 	Derived& pop_front()
 	{
 		const auto pointer = SinglyLinkedListBase::PopFront();
@@ -71,13 +64,6 @@ public:
 	{
 		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
 		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.head));
-	}
-
-	template<typename Self>
-	auto& back(this Self &&self)
-	{
-		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
-		return *static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(self.tail));
 	}
 
 	Common::Iterator begin()

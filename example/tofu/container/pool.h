@@ -73,7 +73,7 @@ public:
 	Pool()
 	{
 		for (auto &entry : storage)
-			deallocated.push_back(*new(std::data(entry.bytes)) EntryEmpty());
+			deallocated.push_front(*new(std::data(entry.bytes)) EntryEmpty());
 	}
 
 	~Pool()
