@@ -39,9 +39,9 @@ public:
 			return old;
 		}
 
-		constexpr bool operator!=(const Iterator &other) const
+		constexpr bool operator==(const Iterator &other) const
 		{
-			return entry != other.entry;
+			return entry == other.entry;
 		}
 
 		template<typename Self>

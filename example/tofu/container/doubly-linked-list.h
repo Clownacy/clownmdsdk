@@ -109,10 +109,12 @@ public:
 };
 
 template<typename Derived>
-class DoublyLinkedList : protected DoublyLinkedListBase, protected ListCommon<DoublyLinkedList<Derived>, Derived>
+class DoublyLinkedList : protected ListCommon<DoublyLinkedList<Derived>, Derived>
 {
 private:
 	using Common = ListCommon<DoublyLinkedList<Derived>, Derived>;
+
+	DoublyLinkedListBase base;
 
 public:
 	class Entry : protected DoublyLinkedListBase::Entry
@@ -141,18 +143,18 @@ public:
 	template<typename Self>
 	constexpr auto& front(this Self &&self)
 	{
-		return static_cast<Common::template copy_const_t<Self, Derived>&>(DoublyLinkedListBase::front(self));
+		return static_cast<Common::template copy_const_t<Self, Derived>&>(self.base.front());
 	}
 
 	template<typename Self>
 	constexpr auto& back(this Self &&self)
 	{
-		return static_cast<Common::template copy_const_t<Self, Derived>&>(DoublyLinkedListBase::back(self));
+		return static_cast<Common::template copy_const_t<Self, Derived>&>(self.base.back());
 	}
 
 	constexpr Common::Iterator begin()
 	{
-		return typename Common::Iterator(static_cast<Entry*>(head));
+		return typename Common::Iterator(static_cast<Entry*>(base.head));
 	}
 
 	constexpr Common::Iterator end()
@@ -162,37 +164,37 @@ public:
 
 	constexpr void push_front(Derived &entry)
 	{
-		DoublyLinkedListBase::push_front(entry);
+		base.push_front(entry);
 	}
 
 	constexpr void push_back(Derived &entry)
 	{
-		DoublyLinkedListBase::push_back(entry);
+		base.push_back(entry);
 	}
 
 	constexpr Derived& pop_front()
 	{
-		return static_cast<Derived&>(DoublyLinkedListBase::pop_front());
+		return static_cast<Derived&>(base.pop_front());
 	}
 
 	constexpr Derived& pop_back()
 	{
-		return static_cast<Derived&>(DoublyLinkedListBase::pop_back());
+		return static_cast<Derived&>(base.pop_back());
 	}
 
 	constexpr Derived* erase(Entry &entry)
 	{
-		return static_cast<Derived*>(DoublyLinkedListBase::erase(entry));
+		return static_cast<Derived*>(base.erase(entry));
 	}
 
 	constexpr std::size_t size() const
 	{
-		return DoublyLinkedListBase::size();
+		return base.size();
 	}
 
 	constexpr bool empty() const
 	{
-		return DoublyLinkedListBase::empty();
+		return base.empty();
 	}
 };
 

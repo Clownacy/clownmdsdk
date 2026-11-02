@@ -9,6 +9,7 @@ add_cartridge_executable(tofu
 	"objects/bullet.h"
 	"objects/player.cpp"
 	"objects/player.h"
+	"container/doubly-linked-list.cpp"
 	"container/doubly-linked-list.h"
 	"container/list-common.h"
 	"container/pool.h"

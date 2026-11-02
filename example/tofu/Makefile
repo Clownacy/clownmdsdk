@@ -11,6 +11,7 @@ OBJDIR := bin
 
 SOURCES := \
 	main \
+	container/doubly-linked-list \
 	container/singly-linked-list \
 	controller-manager \
 	level-manager \
