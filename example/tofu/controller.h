@@ -3,9 +3,8 @@
 
 #include "../common/control-pad-manager.h"
 
-namespace Controller
-{
-	extern ControlPadManager<1> manager;
-}
+using ControllerManager = ControlPadManager<1>;
+
+extern ControlPadManager<1> controller_manager;
 
 #endif // CONTROLLER_H

@@ -44,7 +44,7 @@ bool Objects::Player::Update()
 		}
 	};
 
-	const auto &controller = Controller::manager.GetControlPad(0);
+	const auto &controller = controller_manager.GetControlPad(0);
 
 	static constexpr auto step = 0x18000;
 

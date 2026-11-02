@@ -1,3 +1,3 @@
 #include "controller.h"
 
-ControlPadManager<1> Controller::manager;
+ControllerManager controller_manager;

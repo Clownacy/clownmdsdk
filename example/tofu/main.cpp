@@ -63,7 +63,7 @@ void _VerticalInterruptHandler()
 
 	waiting_for_vertical_interrupt = false;
 
-	Controller::manager.Update();
+	controller_manager.Update();
 
 	Z80::Bus::Lock(
 		[&](auto &z80_bus)
