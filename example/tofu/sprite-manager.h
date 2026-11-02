@@ -1,5 +1,5 @@
-#ifndef SPRITE_H
-#define SPRITE_H
+#ifndef SPRITE_MANAGER_H
+#define SPRITE_MANAGER_H
 
 #include <clownmdsdk.h>
 
@@ -20,4 +20,4 @@ public:
 
 extern SpriteManager sprite_manager;
 
-#endif // SPRITE_H
+#endif // SPRITE_MANAGER_H

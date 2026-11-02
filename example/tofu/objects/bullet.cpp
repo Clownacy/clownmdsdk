@@ -1,6 +1,6 @@
 #include "bullet.h"
 
-#include "../level.h"
+#include "../level-manager.h"
 
 bool Objects::Bullet::Update()
 {

@@ -18,10 +18,10 @@
 #include <clownmdsdk.h>
 
 #include "coordinate.h"
-#include "controller.h"
-#include "level.h"
+#include "controller-manager.h"
+#include "level-manager.h"
 #include "object-manager.h"
-#include "sprite.h"
+#include "sprite-manager.h"
 
 using namespace ClownMDSDK::MainCPU;
 

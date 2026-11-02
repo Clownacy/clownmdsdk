@@ -1,6 +1,6 @@
-#include "sprite.h"
+#include "sprite-manager.h"
 
-#include "level.h"
+#include "level-manager.h"
 
 SpriteManager sprite_manager;
 

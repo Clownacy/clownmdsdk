@@ -11,15 +11,15 @@ OBJDIR := bin
 
 SOURCES := \
 	main \
-	controller \
-	doubly-linked-list \
-	level \
-	objects \
+	container/doubly-linked-list \
+	container/singly-linked-list \
+	controller-manager \
+	level-manager \
+	object-manager \
 	objects/base \
 	objects/bullet \
 	objects/player \
-	singly-linked-list \
-	sprite
+	sprite-manager
 
 OBJECTS := $(addprefix $(OBJDIR)/, $(addsuffix .o, $(SOURCES)))
 DEPENDENCIES := $(addprefix $(OBJDIR)/, $(addsuffix .d, $(SOURCES)))

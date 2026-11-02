@@ -1,6 +1,6 @@
 #include "base.h"
 
-#include "../sprite.h"
+#include "../sprite-manager.h"
 
 void Objects::Base::QueueForDisplay(const int x_offset, const int y_offset, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
 {

@@ -1,5 +1,5 @@
-#ifndef LEVEL_H
-#define LEVEL_H
+#ifndef LEVEL_MANAGER_H
+#define LEVEL_MANAGER_H
 
 #include <array>
 
@@ -35,4 +35,4 @@ public:
 
 extern LevelManager level_manager;
 
-#endif // LEVEL_H
+#endif // LEVEL_MANAGER_H

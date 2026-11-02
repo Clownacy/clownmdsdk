@@ -2,11 +2,11 @@
 
 #include <algorithm>
 
-#include "../controller.h"
+#include "../controller-manager.h"
 #include "../coordinate.h"
-#include "../level.h"
+#include "../level-manager.h"
 #include "../object-manager.h"
-#include "../sprite.h"
+#include "../sprite-manager.h"
 
 bool Objects::Player::Update()
 {

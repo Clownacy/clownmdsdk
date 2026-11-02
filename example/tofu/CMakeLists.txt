@@ -15,16 +15,16 @@ add_cartridge_executable(tofu
 	"container/pool.h"
 	"container/singly-linked-list.cpp"
 	"container/singly-linked-list.h"
-	"controller.cpp"
-	"controller.h"
+	"controller-manager.cpp"
+	"controller-manager.h"
 	"coordinate.h"
-	"level.cpp"
-	"level.h"
+	"level-manager.cpp"
+	"level-manager.h"
 	"main.cpp"
 	"object-manager.cpp"
 	"object-manager.h"
-	"sprite.cpp"
-	"sprite.h"
+	"sprite-manager.cpp"
+	"sprite-manager.h"
 )
 
 set_target_properties(tofu PROPERTIES CXX_STANDARD 26)
