@@ -2,6 +2,8 @@
 
 #include "level-manager.h"
 
+#include "vram-addresses.h"
+
 SpriteManager sprite_manager;
 
 void SpriteManager::QueueSprite(const unsigned int x, const unsigned int y, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
@@ -43,6 +45,6 @@ void SpriteManager::UploadTable(Z80::Bus &z80_bus)
 		table[total_sprites - 1].link = 0;
 	}
 
-	z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, 0xD800, std::data(table), total_sprites * sizeof(VDP::VRAM::Sprite) / 2);
+	z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VRAMAddresses::SpriteTable, std::data(table), total_sprites * sizeof(VDP::VRAM::Sprite) / 2);
 	total_sprites = 0;
 }

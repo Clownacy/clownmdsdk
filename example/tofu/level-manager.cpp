@@ -3,6 +3,8 @@
 #include <numeric>
 #include <utility>
 
+#include "vram-addresses.h"
+
 LevelManager level_manager;
 
 const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> LevelManager::blocks = {
@@ -33,7 +35,7 @@ void LevelManager::DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starti
 
 	const auto DoLine = [&](const unsigned int vram_offset_x, const unsigned int vram_offset_y, const unsigned int total_lines)
 	{
-		auto second_transfer_vram_address = 0xC000 + (vertical ? vram_offset_x : vram_offset_y);
+		auto second_transfer_vram_address = VRAMAddresses::PlaneA + (vertical ? vram_offset_x : vram_offset_y);
 		auto first_transfer_vram_address = second_transfer_vram_address + (vertical ? vram_offset_y : vram_offset_x);
 
 		for (unsigned int block_line_in_screen = 0; block_line_in_screen < total_lines; ++block_line_in_screen)

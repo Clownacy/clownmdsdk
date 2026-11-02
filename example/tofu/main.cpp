@@ -22,6 +22,7 @@
 #include "level-manager.h"
 #include "object-manager.h"
 #include "sprite-manager.h"
+#include "vram-addresses.h"
 
 using namespace ClownMDSDK::MainCPU;
 
@@ -75,7 +76,7 @@ void _VerticalInterruptHandler()
 			VDP::Write(VDP::DataValueWord(level_manager.camera.y));
 
 			// Set horizontal scroll value.
-			VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, 0xDC00);
+			VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, VRAMAddresses::HorizontalScrollTable);
 			VDP::Write(VDP::DataValueWord(-level_manager.camera.x));
 
 			level_manager.Draw(z80_bus);
@@ -97,7 +98,7 @@ static void DrawHUD()
 			return plane_vram_address + (position.y * Coordinate::plane_size.tiles.x + position.x) * sizeof(VDP::VRAM::TileMetadata);
 		};
 
-		return ComputePlaneVRAMAddress(0xF000, position);
+		return ComputePlaneVRAMAddress(VRAMAddresses::WindowPlane, position);
 	};
 
 	// Draw background.

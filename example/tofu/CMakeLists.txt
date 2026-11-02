@@ -25,6 +25,7 @@ add_cartridge_executable(tofu
 	"object-manager.h"
 	"sprite-manager.cpp"
 	"sprite-manager.h"
+	"vram-addresses.h"
 )
 
 set_target_properties(tofu PROPERTIES CXX_STANDARD 26)
