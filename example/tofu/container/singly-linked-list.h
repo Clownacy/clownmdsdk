@@ -90,11 +90,6 @@ public:
 		return typename Common::Iterator();
 	}
 
-	std::size_t length() const
-	{
-		return SinglyLinkedListBase::Length();
-	}
-
 	bool empty() const
 	{
 		return SinglyLinkedListBase::Empty();

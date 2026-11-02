@@ -39,16 +39,6 @@ void DoublyLinkedListBase::Remove(Entry* const entry)
 		entry->next->previous = entry->previous;
 }
 
-std::size_t DoublyLinkedListBase::Length() const
-{
-	std::size_t length = 0;
-
-	for (Entry *entry = head; entry != nullptr; entry = entry->next)
-		++length;
-
-	return length;
-}
-
 bool DoublyLinkedListBase::Empty() const
 {
 	return head == nullptr;

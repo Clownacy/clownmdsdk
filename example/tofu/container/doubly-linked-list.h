@@ -111,11 +111,6 @@ public:
 		return typename Common::Iterator();
 	}
 
-	std::size_t length() const
-	{
-		return DoublyLinkedListBase::Length();
-	}
-
 	bool empty() const
 	{
 		return DoublyLinkedListBase::Empty();

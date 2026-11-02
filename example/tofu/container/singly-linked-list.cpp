@@ -32,16 +32,6 @@ SinglyLinkedListBase::Entry* SinglyLinkedListBase::PopFront()
 	return entry;
 }
 
-std::size_t SinglyLinkedListBase::Length() const
-{
-	std::size_t length = 0;
-
-	for (Entry *entry = head; entry != nullptr; entry = entry->next)
-		++length;
-
-	return length;
-}
-
 bool SinglyLinkedListBase::Empty() const
 {
 	return head == nullptr;
