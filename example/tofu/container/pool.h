@@ -9,12 +9,6 @@
 #include "doubly-linked-list.h"
 #include "singly-linked-list.h"
 
-template<typename... Ts>
-struct AlignedUnion
-{
-	alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
-};
-
 template<typename T>
 struct PoolEntry;
 
@@ -22,7 +16,16 @@ template<typename T>
 struct PoolEntryEmpty;
 
 template<typename T>
-struct PoolEntry : public DoublyLinkedListLowLevel<AlignedUnion<PoolEntry<T>, PoolEntryEmpty<T>>, PoolEntry<T>>::Entry, public T
+union PoolEntryUnion
+{
+	PoolEntry<T> entry;
+	PoolEntryEmpty<T> entry_empty;
+
+	PoolEntryUnion() {}
+};
+
+template<typename T>
+struct PoolEntry : public DoublyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntry<T>>::Entry, public T
 {
 public:
 	using T::T;
@@ -44,10 +47,7 @@ public:
 };
 
 template<typename T>
-class PoolEntryEmpty : public SinglyLinkedListLowLevel<AlignedUnion<PoolEntry<T>, PoolEntryEmpty<T>>, PoolEntryEmpty<T>>::Entry {};
-
-template<typename T>
-using PoolEntryUnion = AlignedUnion<PoolEntry<T>, PoolEntryEmpty<T>>;
+class PoolEntryEmpty : public SinglyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntryEmpty<T>>::Entry {};
 
 template<typename T, std::size_t S>
 class Pool;
