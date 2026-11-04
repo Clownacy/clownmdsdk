@@ -71,7 +71,7 @@ private:
 	public:
 		static constexpr DoublyLinkedListLowLevel<EntryUnion, Entry>::Entry& GetEntryFromHeldType(EntryUnion &held)
 		{
-			return reinterpret_cast<Entry&>(held);
+			return held.entry;
 		}
 	};
 
@@ -80,7 +80,7 @@ private:
 	public:
 		static constexpr SinglyLinkedListLowLevel<EntryUnion, EntryEmpty>::Entry& GetEntryFromHeldType(EntryUnion &held)
 		{
-			return reinterpret_cast<EntryEmpty&>(held);
+			return held.entry_empty;
 		}
 	};
 
@@ -93,11 +93,9 @@ private:
 	{
 		auto &entry_union = deallocated.pop_front();
 
-		auto &entry_empty = reinterpret_cast<EntryEmpty&>(entry_union);
-		entry_empty.~EntryEmpty();
+		entry_union.entry_empty.~EntryEmpty();
 
-		auto &entry = reinterpret_cast<Entry&>(entry_union);
-		new(&entry) Entry(std::forward<Ts>(args)...);
+		new(&entry_union.entry) Entry(std::forward<Ts>(args)...);
 
 		return entry_union;
 	}
@@ -107,7 +105,7 @@ public:
 	{
 		for (auto &entry : storage)
 		{
-			new(&reinterpret_cast<EntryEmpty&>(entry)) EntryEmpty();
+			new(&entry.entry_empty) EntryEmpty();
 			deallocated.push_front(entry);
 		}
 	}
@@ -126,7 +124,7 @@ public:
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_front(entry);
-		return reinterpret_cast<Entry&>(entry);
+		return entry.entry;
 	}
 
 	template<typename ...Ts>
@@ -134,7 +132,7 @@ public:
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_back(entry);
-		return reinterpret_cast<Entry&>(entry);
+		return entry.entry;
 	}
 
 	constexpr Common::Iterator deallocate(Common::Iterator &thing)
@@ -147,12 +145,10 @@ public:
 		// Remove from allocated object list.
 		allocated.erase(entry_union);
 
-		auto &entry = reinterpret_cast<Entry&>(entry_union);
-		entry.~Entry();
+		entry_union.entry.~Entry();
 
 		// Add to deallocated object list.
-		auto &entry_empty = reinterpret_cast<EntryEmpty&>(entry_union);
-		new(&entry_empty) EntryEmpty();
+		new(&entry_union.entry_empty) EntryEmpty();
 		deallocated.push_front(entry_union);
 
 		return next;
@@ -202,12 +198,12 @@ public:
 
 	static constexpr Entry& GetEntryFromHeldType(EntryUnion &held)
 	{
-		return reinterpret_cast<Entry&>(held);
+		return held.entry;
 	}
 
 	static constexpr T& DereferenceHeldType(EntryUnion &held)
 	{
-		return reinterpret_cast<Entry&>(held);
+		return held.entry;
 	}
 };
 
