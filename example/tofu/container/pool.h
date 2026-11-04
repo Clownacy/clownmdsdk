@@ -9,36 +9,39 @@
 #include "doubly-linked-list.h"
 #include "singly-linked-list.h"
 
+template<typename T>
+struct PoolEntry : public DoublyLinkedList<PoolEntry<T>>::Entry, public T
+{
+public:
+	using T::T;
+
+	constexpr PoolEntry* GetNext()
+	{
+		return DoublyLinkedList<PoolEntry<T>>::Entry::next;
+	}
+
+	constexpr const auto& GetPoolEntry() const
+	{
+		return *this;
+	}
+
+	constexpr void SetPoolEntry(const PoolEntry &other)
+	{
+		*this = other;
+	}
+};
+
 template<typename T, std::size_t S>
 class Pool;
 
 template<typename T, std::size_t S>
-using PoolCommon = ListCommon<Pool<T, S>, T>;
+using PoolCommon = ListCommon<Pool<T, S>, PoolEntry<T>>;
 
 template<typename T, std::size_t S>
 class Pool : protected PoolCommon<T, S>
 {
 public:
-	struct Entry : public DoublyLinkedList<Entry>::Entry, public T
-	{
-	public:
-		using T::T;
-
-		constexpr Entry* GetNext()
-		{
-			return DoublyLinkedList<Entry>::Entry::GetNext();
-		}
-
-		constexpr const auto& GetPoolEntry() const
-		{
-			return *this;
-		}
-
-		constexpr void SetPoolEntry(const Entry &other)
-		{
-			*this = other;
-		}
-	};
+	using Entry = PoolEntry<T>;
 
 private:
 	using Common = PoolCommon<T, S>;
@@ -155,6 +158,11 @@ public:
 	constexpr bool full() const
 	{
 		return deallocated.empty();
+	}
+
+	static constexpr Entry& GetEntry(Entry &held)
+	{
+		return held;
 	}
 };
 

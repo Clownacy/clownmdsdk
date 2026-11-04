@@ -7,19 +7,31 @@
 
 #include "list-common.h"
 
-class DoublyLinkedListBase
+template<typename HeldType, typename Derived>
+class DoublyLinkedListLowLevel : protected ListCommon<Derived, HeldType>
 {
+private:
+	using Common = ListCommon<Derived, HeldType>;
+
 public:
-	struct Entry
+	class Entry
 	{
-		struct Entry *next;
-		struct Entry *previous;
+	public:
+		HeldType *next;
+		HeldType *previous;
+
+		static constexpr auto GetNull()
+		{
+			return static_cast<HeldType*>(nullptr);
+		}
 	};
 
-	Entry *head = nullptr;
-	Entry *tail = nullptr;
+private:
+	HeldType *head = nullptr;
+	HeldType *tail = nullptr;
 	std::size_t total_entries = 0;
 
+public:
 	template<typename Self>
 	constexpr auto& front(this Self &&self)
 	{
@@ -34,7 +46,17 @@ public:
 		return *self.tail;
 	}
 
-	constexpr void push_front(Entry &entry)
+	constexpr Common::Iterator begin()
+	{
+		return typename Common::Iterator(head);
+	}
+
+	constexpr Common::Iterator end()
+	{
+		return typename Common::Iterator();
+	}
+
+	constexpr void push_front(HeldType &entry)
 	{
 		++total_entries;
 
@@ -49,7 +71,7 @@ public:
 		head = &entry;
 	}
 
-	constexpr void push_back(Entry &entry)
+	constexpr void push_back(HeldType &entry)
 	{
 		++total_entries;
 
@@ -64,11 +86,11 @@ public:
 		tail = &entry;
 	}
 
-	constexpr Entry* erase(Entry &entry)
+	constexpr Entry* erase(HeldType &entry)
 	{
 		--total_entries;
 
-		Entry* const next = entry.next;
+		HeldType* const next = entry.next;
 
 		if (entry.previous == nullptr)
 			head = entry.next;
@@ -108,93 +130,21 @@ public:
 	}
 };
 
-template<typename Derived>
-class DoublyLinkedList : protected ListCommon<DoublyLinkedList<Derived>, Derived>
+template<typename HeldType>
+class DoublyLinkedList;
+
+template<typename HeldType>
+using DoublyLinkedListBase = DoublyLinkedListLowLevel<HeldType, DoublyLinkedList<HeldType>>;
+
+template<typename HeldType>
+class DoublyLinkedList : public DoublyLinkedListBase<HeldType>
 {
-private:
-	using Common = ListCommon<DoublyLinkedList<Derived>, Derived>;
-
-	DoublyLinkedListBase base;
-
 public:
-	class Entry : protected DoublyLinkedListBase::Entry
+	using Base = DoublyLinkedListBase<HeldType>;
+
+	static constexpr Base::Entry& GetEntry(HeldType &held)
 	{
-	public:
-		friend DoublyLinkedList<Derived>;
-
-		static constexpr auto GetNull()
-		{
-			return static_cast<Derived*>(static_cast<DoublyLinkedListBase::Entry*>(nullptr));
-		}
-
-		template<typename Self>
-		constexpr auto* GetNext(this Self &&self)
-		{
-			return static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->next);
-		}
-
-		template<typename Self>
-		constexpr auto* GetPrevious(this Self &&self)
-		{
-			return static_cast<Common::template copy_const_t<Self, Derived>*>(static_cast<Common::template copy_const_t<Self, Entry>*>(&self)->previous);
-		}
-	};
-
-	template<typename Self>
-	constexpr auto& front(this Self &&self)
-	{
-		return static_cast<Common::template copy_const_t<Self, Derived>&>(self.base.front());
-	}
-
-	template<typename Self>
-	constexpr auto& back(this Self &&self)
-	{
-		return static_cast<Common::template copy_const_t<Self, Derived>&>(self.base.back());
-	}
-
-	constexpr Common::Iterator begin()
-	{
-		return typename Common::Iterator(static_cast<Entry*>(base.head));
-	}
-
-	constexpr Common::Iterator end()
-	{
-		return typename Common::Iterator();
-	}
-
-	constexpr void push_front(Derived &entry)
-	{
-		base.push_front(entry);
-	}
-
-	constexpr void push_back(Derived &entry)
-	{
-		base.push_back(entry);
-	}
-
-	constexpr Derived& pop_front()
-	{
-		return static_cast<Derived&>(base.pop_front());
-	}
-
-	constexpr Derived& pop_back()
-	{
-		return static_cast<Derived&>(base.pop_back());
-	}
-
-	constexpr Derived* erase(Entry &entry)
-	{
-		return static_cast<Derived*>(base.erase(entry));
-	}
-
-	constexpr std::size_t size() const
-	{
-		return base.size();
-	}
-
-	constexpr bool empty() const
-	{
-		return base.empty();
+		return held;
 	}
 };
 

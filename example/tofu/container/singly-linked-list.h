@@ -7,16 +7,28 @@
 
 #include "list-common.h"
 
-// Split from the templated class to minimise duplicate code across each specialisation.
-struct SinglyLinkedListBase
+template<typename HeldType, typename Derived>
+class SinglyLinkedListLowLevel : protected ListCommon<Derived, HeldType>
 {
-	struct Entry
+private:
+	using Common = ListCommon<Derived, HeldType>;
+
+public:
+	class Entry
 	{
-		struct Entry *next;
+	public:
+		HeldType *next;
+
+		static constexpr auto GetNull()
+		{
+			return static_cast<HeldType*>(nullptr);
+		}
 	};
 
-	Entry *head = nullptr;
+private:
+	HeldType *head = nullptr;
 
+public:
 	template<typename Self>
 	constexpr auto& front(this Self &&self)
 	{
@@ -24,15 +36,25 @@ struct SinglyLinkedListBase
 		return *self.head;
 	}
 
-	constexpr void push_front(Entry &entry)
+	constexpr Common::Iterator begin()
+	{
+		return typename Common::Iterator(head);
+	}
+
+	constexpr Common::Iterator end()
+	{
+		return typename Common::Iterator();
+	}
+
+	constexpr void push_front(HeldType &entry)
 	{
 		entry.next = head;
 		head = &entry;
 	}
 
-	constexpr Entry& pop_front()
+	constexpr HeldType& pop_front()
 	{
-		Entry &entry = front();
+		HeldType &entry = front();
 		head = entry.next;
 		return entry;
 	}
@@ -43,61 +65,21 @@ struct SinglyLinkedListBase
 	}
 };
 
-template<typename Derived>
-class SinglyLinkedList : protected ListCommon<SinglyLinkedList<Derived>, Derived>
+template<typename HeldType>
+class SinglyLinkedList;
+
+template<typename HeldType>
+using SinglyLinkedListBase = SinglyLinkedListLowLevel<HeldType, SinglyLinkedList<HeldType>>;
+
+template<typename HeldType>
+class SinglyLinkedList : public SinglyLinkedListBase<HeldType>
 {
-private:
-	using Common = ListCommon<SinglyLinkedList<Derived>, Derived>;
-
-	SinglyLinkedListBase base;
-
 public:
-	class Entry : protected SinglyLinkedListBase::Entry
+	using Base = SinglyLinkedListBase<HeldType>;
+
+	static constexpr Base::Entry& GetEntry(HeldType &held)
 	{
-	public:
-		friend SinglyLinkedList<Derived>;
-
-		static constexpr auto GetNull()
-		{
-			return static_cast<Derived*>(static_cast<SinglyLinkedListBase::Entry*>(nullptr));
-		}
-
-		template<typename Self>
-		constexpr auto* GetNext(this Self &&self)
-		{
-			return static_cast<Common::template copy_const_t<Self, Derived>*>(self.next);
-		}
-	};
-
-	template<typename Self>
-	constexpr auto& front(this Self &&self)
-	{
-		return static_cast<Common::template copy_const_t<Self, Derived>&>(self.base.front());
-	}
-
-	constexpr Common::Iterator begin()
-	{
-		return typename Common::Iterator(static_cast<Entry*>(base.head));
-	}
-
-	constexpr Common::Iterator end()
-	{
-		return typename Common::Iterator();
-	}
-
-	constexpr void push_front(Derived &entry)
-	{
-		base.push_front(entry);
-	}
-
-	constexpr Derived& pop_front()
-	{
-		return static_cast<Derived&>(base.pop_front());
-	}
-
-	constexpr bool empty() const
-	{
-		return base.empty();
+		return held;
 	}
 };
 
