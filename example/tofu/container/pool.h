@@ -31,6 +31,17 @@ public:
 	}
 };
 
+template<typename... Ts>
+struct AlignedUnion
+{
+	alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
+};
+
+class EntryEmpty : public SinglyLinkedList<EntryEmpty>::Entry {};
+
+template<typename T>
+using PoolEntryUnion = AlignedUnion<PoolEntry<T>, EntryEmpty>;
+
 template<typename T, std::size_t S>
 class Pool;
 
@@ -46,17 +57,9 @@ public:
 private:
 	using Common = PoolCommon<T, S>;
 
-	template<typename... Ts>
-	struct AlignedUnion
-	{
-		alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
-	};
-
-	class EntryEmpty : public SinglyLinkedList<EntryEmpty>::Entry {};
-
 	DoublyLinkedList<Entry> allocated;
 	SinglyLinkedList<EntryEmpty> deallocated;
-	std::array<AlignedUnion<Entry, EntryEmpty>, S> storage;
+	std::array<PoolEntryUnion<T>, S> storage;
 
 	template<typename ...Ts>
 	constexpr Entry& pop_from_deallocated(Ts &&...args)
