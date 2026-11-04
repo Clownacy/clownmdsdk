@@ -37,10 +37,11 @@ struct AlignedUnion
 	alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
 };
 
-class EntryEmpty : public SinglyLinkedList<EntryEmpty>::Entry {};
+template<typename T>
+class PoolEntryEmpty : public SinglyLinkedListLowLevel<AlignedUnion<PoolEntry<T>, PoolEntryEmpty<T>>, PoolEntryEmpty<T>>::Entry {};
 
 template<typename T>
-using PoolEntryUnion = AlignedUnion<PoolEntry<T>, EntryEmpty>;
+using PoolEntryUnion = AlignedUnion<PoolEntry<T>, PoolEntryEmpty<T>>;
 
 template<typename T, std::size_t S>
 class Pool;
@@ -55,10 +56,21 @@ public:
 	using Entry = PoolEntry<T>;
 
 private:
+	using EntryEmpty = PoolEntryEmpty<T>;
+	using EntryUnion = PoolEntryUnion<T>;
 	using Common = PoolCommon<T, S>;
 
+	class DeallocatedList : public SinglyLinkedListLowLevel<EntryUnion, DeallocatedList>
+	{
+	public:
+		static constexpr SinglyLinkedListLowLevel<EntryUnion, EntryEmpty>::Entry& GetEntryFromHeldType(EntryUnion &held)
+		{
+			return reinterpret_cast<EntryEmpty&>(held);
+		}
+	};
+
 	DoublyLinkedList<Entry> allocated;
-	SinglyLinkedList<EntryEmpty> deallocated;
+	DeallocatedList deallocated;
 	std::array<PoolEntryUnion<T>, S> storage;
 
 	template<typename ...Ts>
@@ -66,7 +78,7 @@ private:
 	{
 		auto &entry = deallocated.pop_front();
 
-		entry.~EntryEmpty();
+		reinterpret_cast<EntryEmpty&>(entry).~EntryEmpty();
 
 		return *new(&entry) Entry(std::forward<Ts>(args)...);
 	}
@@ -75,7 +87,10 @@ public:
 	constexpr Pool()
 	{
 		for (auto &entry : storage)
-			deallocated.push_front(*new(std::data(entry.bytes)) EntryEmpty());
+		{
+			new(&reinterpret_cast<EntryEmpty&>(entry)) EntryEmpty();
+			deallocated.push_front(entry);
+		}
 	}
 
 	constexpr ~Pool()
@@ -115,7 +130,9 @@ public:
 		entry.~Entry();
 
 		// Add to deallocated object list.
-		deallocated.push_front(*new(&entry) EntryEmpty());
+		auto &entry_union = reinterpret_cast<EntryUnion&>(entry);
+		new(&entry_union) EntryEmpty();
+		deallocated.push_front(entry_union);
 
 		return next;
 	}
@@ -167,7 +184,7 @@ public:
 		return held;
 	}
 
-	static constexpr Entry& DereferenceHeldType(Entry &held)
+	static constexpr T& DereferenceHeldType(Entry &held)
 	{
 		return held;
 	}

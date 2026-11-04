@@ -48,14 +48,14 @@ public:
 
 	constexpr void push_front(HeldType &entry)
 	{
-		entry.next = head;
+		Derived::GetEntryFromHeldType(entry).next = head;
 		head = &entry;
 	}
 
 	constexpr HeldType& pop_front()
 	{
 		HeldType &entry = front();
-		head = entry.next;
+		head = Derived::GetEntryFromHeldType(entry).next;
 		return entry;
 	}
 
