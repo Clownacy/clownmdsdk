@@ -9,8 +9,20 @@
 #include "doubly-linked-list.h"
 #include "singly-linked-list.h"
 
+template<typename... Ts>
+struct AlignedUnion
+{
+	alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
+};
+
 template<typename T>
-struct PoolEntry : public DoublyLinkedList<PoolEntry<T>>::Entry, public T
+struct PoolEntry;
+
+template<typename T>
+struct PoolEntryEmpty;
+
+template<typename T>
+struct PoolEntry : public DoublyLinkedListLowLevel<AlignedUnion<PoolEntry<T>, PoolEntryEmpty<T>>, PoolEntry<T>>::Entry, public T
 {
 public:
 	using T::T;
@@ -31,12 +43,6 @@ public:
 	}
 };
 
-template<typename... Ts>
-struct AlignedUnion
-{
-	alignas(Ts...) std::array<std::byte, std::max(sizeof(Ts)...)> bytes;
-};
-
 template<typename T>
 class PoolEntryEmpty : public SinglyLinkedListLowLevel<AlignedUnion<PoolEntry<T>, PoolEntryEmpty<T>>, PoolEntryEmpty<T>>::Entry {};
 
@@ -47,7 +53,7 @@ template<typename T, std::size_t S>
 class Pool;
 
 template<typename T, std::size_t S>
-using PoolCommon = ListCommon<Pool<T, S>, PoolEntry<T>>;
+using PoolCommon = ListCommon<Pool<T, S>, PoolEntryUnion<T>>;
 
 template<typename T, std::size_t S>
 class Pool : protected PoolCommon<T, S>
@@ -60,6 +66,15 @@ private:
 	using EntryUnion = PoolEntryUnion<T>;
 	using Common = PoolCommon<T, S>;
 
+	class AllocatedList : public DoublyLinkedListLowLevel<EntryUnion, AllocatedList>
+	{
+	public:
+		static constexpr DoublyLinkedListLowLevel<EntryUnion, Entry>::Entry& GetEntryFromHeldType(EntryUnion &held)
+		{
+			return reinterpret_cast<Entry&>(held);
+		}
+	};
+
 	class DeallocatedList : public SinglyLinkedListLowLevel<EntryUnion, DeallocatedList>
 	{
 	public:
@@ -69,18 +84,22 @@ private:
 		}
 	};
 
-	DoublyLinkedList<Entry> allocated;
+	AllocatedList allocated;
 	DeallocatedList deallocated;
 	std::array<PoolEntryUnion<T>, S> storage;
 
 	template<typename ...Ts>
-	constexpr Entry& pop_from_deallocated(Ts &&...args)
+	constexpr EntryUnion& pop_from_deallocated(Ts &&...args)
 	{
-		auto &entry = deallocated.pop_front();
+		auto &entry_union = deallocated.pop_front();
 
-		reinterpret_cast<EntryEmpty&>(entry).~EntryEmpty();
+		auto &entry_empty = reinterpret_cast<EntryEmpty&>(entry_union);
+		entry_empty.~EntryEmpty();
 
-		return *new(&entry) Entry(std::forward<Ts>(args)...);
+		auto &entry = reinterpret_cast<Entry&>(entry_union);
+		new(&entry) Entry(std::forward<Ts>(args)...);
+
+		return entry_union;
 	}
 
 public:
@@ -107,7 +126,7 @@ public:
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_front(entry);
-		return entry;
+		return reinterpret_cast<Entry&>(entry);
 	}
 
 	template<typename ...Ts>
@@ -115,23 +134,25 @@ public:
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated.push_back(entry);
-		return entry;
+		return reinterpret_cast<Entry&>(entry);
 	}
 
 	constexpr Common::Iterator deallocate(Common::Iterator &thing)
 	{
-		auto &entry = static_cast<Entry&>(*thing);
+		auto next = thing;
+		++next;
 
-		typename Common::Iterator next = entry.GetNext();
+		EntryUnion &entry_union = *thing.GetHeldTypePointer();
 
 		// Remove from allocated object list.
-		allocated.erase(entry);
+		allocated.erase(entry_union);
 
+		auto &entry = reinterpret_cast<Entry&>(entry_union);
 		entry.~Entry();
 
 		// Add to deallocated object list.
-		auto &entry_union = reinterpret_cast<EntryUnion&>(entry);
-		new(&entry_union) EntryEmpty();
+		auto &entry_empty = reinterpret_cast<EntryEmpty&>(entry_union);
+		new(&entry_empty) EntryEmpty();
 		deallocated.push_front(entry_union);
 
 		return next;
@@ -179,14 +200,14 @@ public:
 		return deallocated.empty();
 	}
 
-	static constexpr Entry& GetEntryFromHeldType(Entry &held)
+	static constexpr Entry& GetEntryFromHeldType(EntryUnion &held)
 	{
-		return held;
+		return reinterpret_cast<Entry&>(held);
 	}
 
-	static constexpr T& DereferenceHeldType(Entry &held)
+	static constexpr T& DereferenceHeldType(EntryUnion &held)
 	{
-		return held;
+		return reinterpret_cast<Entry&>(held);
 	}
 };
 

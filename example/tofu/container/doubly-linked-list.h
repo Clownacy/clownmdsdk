@@ -64,10 +64,10 @@ public:
 		if (head == nullptr)
 			tail = &entry;
 		else
-			head->previous = &entry;
+			Derived::GetEntryFromHeldType(*head).previous = &entry;
 
-		entry.next = head;
-		entry.previous = nullptr;
+		Derived::GetEntryFromHeldType(entry).next = head;
+		Derived::GetEntryFromHeldType(entry).previous = nullptr;
 
 		head = &entry;
 	}
@@ -79,41 +79,41 @@ public:
 		if (tail == nullptr)
 			head = &entry;
 		else
-			tail->next = &entry;
+			Derived::GetEntryFromHeldType(*tail).next = &entry;
 
-		entry.next = nullptr;
-		entry.previous = tail;
+		Derived::GetEntryFromHeldType(entry).next = nullptr;
+		Derived::GetEntryFromHeldType(entry).previous = tail;
 
 		tail = &entry;
 	}
 
-	constexpr Entry* erase(HeldType &entry)
+	constexpr HeldType* erase(HeldType &entry)
 	{
 		--total_entries;
 
-		HeldType* const next = entry.next;
+		HeldType* const next = Derived::GetEntryFromHeldType(entry).next;
 
-		if (entry.previous == nullptr)
-			head = entry.next;
+		if (Derived::GetEntryFromHeldType(entry).previous == nullptr)
+			head = Derived::GetEntryFromHeldType(entry).next;
 		else
-			entry.previous->next = entry.next;
+			Derived::GetEntryFromHeldType(*Derived::GetEntryFromHeldType(entry).previous).next = Derived::GetEntryFromHeldType(entry).next;
 
-		if (entry.next == nullptr)
-			tail = entry.previous;
+		if (Derived::GetEntryFromHeldType(entry).next == nullptr)
+			tail = Derived::GetEntryFromHeldType(entry).previous;
 		else
-			entry.next->previous = entry.previous;
+			Derived::GetEntryFromHeldType(*Derived::GetEntryFromHeldType(entry).next).previous = Derived::GetEntryFromHeldType(entry).previous;
 
 		return next;
 	}
 
-	constexpr Entry& pop_front()
+	constexpr HeldType& pop_front()
 	{
 		auto &entry = front();
 		erase(entry);
 		return entry;
 	}
 
-	constexpr Entry& pop_back()
+	constexpr HeldType& pop_back()
 	{
 		auto &entry = back();
 		erase(entry);
