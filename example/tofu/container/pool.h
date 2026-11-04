@@ -122,7 +122,7 @@ public:
 
 	constexpr Common::Iterator begin()
 	{
-		return typename Common::Iterator(allocated.begin().GetEntryPointer());
+		return typename Common::Iterator(allocated.begin().GetHeldTypePointer());
 	}
 
 	constexpr Common::Iterator end()
@@ -162,7 +162,12 @@ public:
 		return deallocated.empty();
 	}
 
-	static constexpr Entry& GetEntry(Entry &held)
+	static constexpr Entry& GetEntryFromHeldType(Entry &held)
+	{
+		return held;
+	}
+
+	static constexpr Entry& DereferenceHeldType(Entry &held)
 	{
 		return held;
 	}

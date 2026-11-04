@@ -143,7 +143,12 @@ class DoublyLinkedList : public DoublyLinkedListBase<HeldType>
 public:
 	using Base = DoublyLinkedListBase<HeldType>;
 
-	static constexpr Base::Entry& GetEntry(HeldType &held)
+	static constexpr Base::Entry& GetEntryFromHeldType(HeldType &held)
+	{
+		return held;
+	}
+
+	static constexpr HeldType& DereferenceHeldType(HeldType &held)
 	{
 		return held;
 	}

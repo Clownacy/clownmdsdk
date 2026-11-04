@@ -77,7 +77,12 @@ class SinglyLinkedList : public SinglyLinkedListBase<HeldType>
 public:
 	using Base = SinglyLinkedListBase<HeldType>;
 
-	static constexpr Base::Entry& GetEntry(HeldType &held)
+	static constexpr Base::Entry& GetEntryFromHeldType(HeldType &held)
+	{
+		return held;
+	}
+
+	static constexpr HeldType& DereferenceHeldType(HeldType &held)
 	{
 		return held;
 	}

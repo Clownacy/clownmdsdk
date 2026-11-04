@@ -19,7 +19,7 @@ public:
 
 		constexpr Iterator& operator++()
 		{
-			entry = Derived::GetEntry(*entry).next;
+			entry = Derived::GetEntryFromHeldType(*entry).next;
 			return *this;
 		}
 
@@ -36,7 +36,7 @@ public:
 		}
 
 		template<typename Self>
-		constexpr auto* GetEntryPointer(this Self &&self)
+		constexpr auto* GetHeldTypePointer(this Self &&self)
 		{
 			return self.entry;
 		}
@@ -45,7 +45,7 @@ public:
 		constexpr auto* operator->(this Self &&self)
 		{
 			assert(self.entry != Derived::Entry::GetNull());
-			return self.GetEntryPointer();
+			return &Derived::DereferenceHeldType(*self.GetHeldTypePointer());
 		}
 
 		template<typename Self>
