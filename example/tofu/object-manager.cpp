@@ -12,7 +12,7 @@ void ObjectManager::Update()
 				if (!object.Update())
 				{
 					// Destruct object and move onto the next.
-					it = pool.deallocate(*it);
+					it = pool.deallocate(it);
 				}
 				else
 				{

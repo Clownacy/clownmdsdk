@@ -81,7 +81,7 @@ public:
 	constexpr ~Pool()
 	{
 		for (auto it = begin(); it != end(); )
-			it = deallocate(*it);
+			it = deallocate(it);
 	}
 
 	constexpr Pool(const Pool &other) = delete;
@@ -103,10 +103,9 @@ public:
 		return entry;
 	}
 
-	// TODO: Make this take an iterator, like a standard library container does.
-	constexpr Common::Iterator deallocate(T &thing)
+	constexpr Common::Iterator deallocate(Common::Iterator &thing)
 	{
-		auto &entry = static_cast<Entry&>(thing);
+		auto &entry = static_cast<Entry&>(*thing);
 
 		typename Common::Iterator next = entry.GetNext();
 
