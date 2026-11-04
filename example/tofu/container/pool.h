@@ -95,7 +95,7 @@ private:
 
 		entry_union.entry_empty.~EntryEmpty();
 
-		new(&entry_union.entry) Entry(std::forward<Ts>(args)...);
+		std::construct_at(&entry_union.entry, std::forward<Ts>(args)...);
 
 		return entry_union;
 	}
@@ -105,7 +105,7 @@ public:
 	{
 		for (auto &entry : storage)
 		{
-			new(&entry.entry_empty) EntryEmpty();
+			std::construct_at(&entry.entry_empty);
 			deallocated.push_front(entry);
 		}
 	}
@@ -148,7 +148,7 @@ public:
 		entry_union.entry.~Entry();
 
 		// Add to deallocated object list.
-		new(&entry_union.entry_empty) EntryEmpty();
+		std::construct_at(&entry_union.entry_empty);
 		deallocated.push_front(entry_union);
 
 		return next;
