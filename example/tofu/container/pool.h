@@ -21,7 +21,7 @@ union PoolEntryUnion
 	PoolEntry<T> entry;
 	PoolEntryEmpty<T> entry_empty;
 
-	PoolEntryUnion() {}
+	constexpr PoolEntryUnion() {}
 };
 
 template<typename T>
@@ -135,12 +135,11 @@ public:
 		return entry.entry;
 	}
 
-	constexpr Common::Iterator deallocate(Common::Iterator &thing)
+	constexpr Common::Iterator deallocate(Common::Iterator it)
 	{
-		auto next = thing;
-		++next;
+		EntryUnion &entry_union = *it.GetHeldTypePointer();
 
-		EntryUnion &entry_union = *thing.GetHeldTypePointer();
+		++it;
 
 		// Remove from allocated object list.
 		allocated.erase(entry_union);
@@ -151,7 +150,7 @@ public:
 		std::construct_at(&entry_union.entry_empty);
 		deallocated.push_front(entry_union);
 
-		return next;
+		return it;
 	}
 
 	constexpr Common::Iterator begin()
@@ -165,15 +164,15 @@ public:
 	}
 
 	template<typename Self>
-	constexpr auto& front(this Self &self)
+	constexpr T& front(this Self &self)
 	{
-		return self.allocated.front();
+		return self.allocated.front().entry;
 	}
 
 	template<typename Self>
-	constexpr auto& back(this Self &self)
+	constexpr T& back(this Self &self)
 	{
-		return self.allocated.back();
+		return self.allocated.back().entry;
 	}
 
 	constexpr std::size_t size() const
