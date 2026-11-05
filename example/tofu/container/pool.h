@@ -35,7 +35,7 @@ private:
 	public:
 		constexpr Dereferenced& Dereference()
 		{
-			return this->GetHeldPointer()->allocated;
+			return this->GetHeldPointer()->allocated.value;
 		}
 
 		constexpr Held* Advance()
@@ -53,7 +53,7 @@ private:
 	public:
 		constexpr Dereferenced& Dereference()
 		{
-			return this->GetHeldPointer()->allocated;
+			return this->GetHeldPointer()->allocated.value;
 		}
 
 		constexpr Held* Advance()
@@ -97,12 +97,13 @@ private:
 		}
 	};
 
-	struct EntryAllocated : public EntryAllocatedList::Entry, public T
+	struct EntryAllocated : public EntryAllocatedList::Entry
 	{
-		using T::T;
+		T value;
 
-		constexpr EntryAllocated(T &&other)
-			: T(std::move(other))
+		template<typename... Args>
+		constexpr EntryAllocated(Args &&...other)
+			: value(std::forward<Args>(other)...)
 		{}
 	};
 
@@ -266,13 +267,13 @@ public:
 	template<typename Self>
 	constexpr T& front(this Self &&self)
 	{
-		return self.allocated_list.front().allocated;
+		return self.allocated_list.front().allocated.value;
 	}
 
 	template<typename Self>
 	constexpr T& back(this Self &&self)
 	{
-		return self.allocated_list.back().allocated;
+		return self.allocated_list.back().allocated.value;
 	}
 
 	constexpr std::size_t size() const

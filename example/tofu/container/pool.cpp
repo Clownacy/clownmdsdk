@@ -4,20 +4,10 @@
 
 // Test suite
 
-class TestEntry
-{
-public:
-	int value;
-
-	constexpr TestEntry(const int value)
-		: value(value)
-	{}
-};
-
 template<std::size_t S>
 static constexpr auto MakeList(const auto &entries)
 {
-	Pool<TestEntry, S> list;
+	Pool<int, S> list;
 	for (auto &entry : entries)
 		list.allocate_front(entry);
 	return list;
@@ -33,7 +23,7 @@ static_assert(
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
 
-		Pool<TestEntry, 10> list;
+		Pool<int, 10> list;
 
 		list.allocate_front(entries[0]);
 		list.allocate_back(entries[1]);
@@ -42,10 +32,10 @@ static_assert(
 		list.allocate_back(entries[3]);
 		list.deallocate(list.rbegin());
 
-		if (list.front().value != 2)
+		if (list.front() != 2)
 			return false;
 
-		if (list.back().value != 1)
+		if (list.back() != 1)
 			return false;
 
 		return true;
@@ -69,7 +59,7 @@ static_assert(
 
 		for (const auto &value : const_list)
 		{
-			if (value.value != *iterator++)
+			if (value != *iterator++)
 				return false;
 
 			++count;
@@ -98,7 +88,7 @@ static_assert(
 		{
 			const auto &value = *it;
 
-			if (value.value != *iterator++)
+			if (value != *iterator++)
 				return false;
 
 			++count;
@@ -115,7 +105,7 @@ static_assert(
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
 		const auto list = MakeList<10>(entries);
-		return list.front().value == 3 && list.back().value == 0;
+		return list.front() == 3 && list.back() == 0;
 	}()
 );
 
@@ -140,14 +130,14 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		const Pool<TestEntry, 10> list;
+		const Pool<int, 10> list;
 		return list.empty() && !list.full();
 	}()
 );
 static_assert(
 	[]() constexpr
 	{
-		const Pool<TestEntry, 0> list;
+		const Pool<int, 0> list;
 		return list.empty() && list.full();
 	}()
 );
