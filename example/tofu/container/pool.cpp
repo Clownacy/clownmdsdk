@@ -14,10 +14,13 @@ public:
 	{}
 };
 
-static constexpr auto MakeList = []<std::size_t S>(Pool<TestEntry, S> &list, auto &entries) constexpr
+template<std::size_t S>
+static constexpr auto MakeList(const auto &entries)
 {
+	Pool<TestEntry, S> list;
 	for (auto &entry : entries)
 		list.allocate_front(entry);
+	return list;
 };
 
 // allocate_front
@@ -58,8 +61,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
-		Pool<TestEntry, 10> list;
-		MakeList(list, entries);
+		const auto list = MakeList<10>(entries);
 
 		const auto &const_list = list;
 		std::size_t count = 0;
@@ -86,8 +88,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
-		Pool<TestEntry, 10> list;
-		MakeList(list, entries);
+		const auto list = MakeList<10>(entries);
 
 		const auto &const_list = list;
 		std::size_t count = 0;
@@ -113,8 +114,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
-		Pool<TestEntry, 10> list;
-		MakeList(list, entries);
+		const auto list = MakeList<10>(entries);
 		return list.front().value == 3 && list.back().value == 0;
 	}()
 );
@@ -125,8 +125,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
-		Pool<TestEntry, 10> list;
-		MakeList(list, entries);
+		const auto list = MakeList<10>(entries);
 		return !list.empty() && !list.full();
 	}()
 );
@@ -134,8 +133,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
-		Pool<TestEntry, 4> list;
-		MakeList(list, entries);
+		const auto list = MakeList<4>(entries);
 		return !list.empty() && list.full();
 	}()
 );

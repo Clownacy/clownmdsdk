@@ -100,6 +100,10 @@ private:
 	struct EntryAllocated : public EntryAllocatedList::Entry, public T
 	{
 		using T::T;
+
+		constexpr EntryAllocated(T &&other)
+			: T(std::move(other))
+		{}
 	};
 
 	// EntryDeallocated
@@ -173,6 +177,23 @@ public:
 
 	constexpr Pool(const Pool &other) = delete;
 	constexpr Pool& operator=(const Pool &other) = delete;
+
+	constexpr Pool(Pool &&other)
+		: Pool()
+	{
+		*this = std::move(other);
+	}
+
+	constexpr Pool& operator=(Pool &&other)
+	{
+		for (auto it = other.begin(); it != other.end(); )
+		{
+			allocate_back(std::move(*it));
+			it = other.deallocate(it);
+		}
+
+		return *this;
+	}
 
 	template<typename ...Ts>
 	constexpr Iterator allocate_front(Ts &&...args)
