@@ -69,19 +69,14 @@ private:
 	class DeallocatedIteratorBase : public ListIterator<Held, Dereferenced>
 	{
 	public:
-		constexpr Dereferenced& Dereference()
-		{
-			return this->GetHeldPointer()->deallocated;
-		}
-
 		constexpr Held* Advance()
 		{
 			return this->GetHeldPointer()->deallocated.next;
 		}
 	};
 
-	using DeallocatedIterator = DeallocatedIteratorBase<EntryUnion, T>;
-	using DeallocatedConstIterator = DeallocatedIteratorBase<const EntryUnion, const T>;
+	using DeallocatedIterator = ListIterator<EntryUnion, T>;
+	using DeallocatedConstIterator = ListIterator<const EntryUnion, const T>;
 
 	// EntryAllocated
 	using EntryAllocatedListBase = DoublyLinkedListLowLevel<EntryUnion, AllocatedIterator, AllocatedConstIterator, AllocatedReverseIterator, AllocatedConstReverseIterator>;
