@@ -172,12 +172,14 @@ public:
 
 	constexpr ~Pool()
 	{
-		for (auto it = begin(); it != end(); )
-			it = deallocate(it);
+		clear();
 	}
 
-	constexpr Pool(const Pool &other) = delete;
-	constexpr Pool& operator=(const Pool &other) = delete;
+	constexpr Pool(const Pool &other)
+		: Pool()
+	{
+		*this = other;
+	}
 
 	constexpr Pool(Pool &&other)
 		: Pool()
@@ -185,8 +187,20 @@ public:
 		*this = std::move(other);
 	}
 
+	constexpr Pool& operator=(const Pool &other)
+	{
+		clear();
+
+		for (const auto &entry : other)
+			allocate_back(entry);
+
+		return *this;
+	}
+
 	constexpr Pool& operator=(Pool &&other)
 	{
+		clear();
+
 		for (auto it = other.begin(); it != other.end(); )
 		{
 			allocate_back(std::move(*it));
@@ -284,6 +298,12 @@ public:
 	constexpr std::size_t max_size() const
 	{
 		return S;
+	}
+
+	constexpr void clear()
+	{
+		for (auto it = begin(); it != end(); )
+			it = deallocate(it);
 	}
 
 	constexpr bool empty() const

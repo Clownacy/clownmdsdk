@@ -139,3 +139,33 @@ static_assert(
 		return pool.empty() && pool.full();
 	}()
 );
+
+// copy constructor
+static_assert(
+	[]() constexpr
+	{
+		auto pool_a = ToPool<10>({0, 1, 2, 3});
+		auto pool_b = pool_a;
+		return pool_a.size() == 4 && pool_b.size() == 4;
+	}()
+);
+static_assert(
+	[]() constexpr
+	{
+		auto pool_a = ToPool<10>({0, 1, 2, 3});
+		auto pool_b = pool_a;
+		pool_a.deallocate(pool_a.begin());
+		return pool_a.size() == 3 && pool_b.size() == 4;
+	}()
+);
+static_assert(
+	[]() constexpr
+	{
+		auto pool_a = ToPool<10>({0, 1, 2, 3});
+		auto pool_b = pool_a;
+		pool_a.deallocate(pool_a.begin());
+		pool_b = pool_a;
+		pool_b.deallocate(pool_b.rbegin());
+		return pool_a.size() == 3 && pool_b.size() == 2;
+	}()
+);
