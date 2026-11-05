@@ -103,3 +103,14 @@ static_assert(
 		return list.empty();
 	}()
 );
+
+// clear
+static_assert(
+	[]() constexpr
+	{
+		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
+		auto list = MakeList(entries);
+		list.clear();
+		return list.empty();
+	}()
+);

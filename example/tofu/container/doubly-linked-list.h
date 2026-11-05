@@ -177,6 +177,12 @@ public:
 	{
 		return head == nullptr;
 	}
+
+	constexpr void clear(this auto &&self)
+	{
+		while (!self.empty())
+			self.pop_front();
+	}
 };
 
 // High-level interface; `T` must derive from `DoublyLinkedListEntry<T>`.
