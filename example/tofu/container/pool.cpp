@@ -1,16 +1,17 @@
 #include "pool.h"
 
 #include <array>
+#include <initializer_list>
 
 // Test suite
 
 template<std::size_t S>
-static constexpr auto MakeList(const auto &entries)
+static constexpr auto ToPool(const std::initializer_list<int> &entries)
 {
-	Pool<int, S> list;
+	Pool<int, S> pool;
 	for (auto &entry : entries)
-		list.allocate_front(entry);
-	return list;
+		pool.allocate_front(entry);
+	return pool;
 };
 
 // allocate_front
@@ -23,19 +24,19 @@ static_assert(
 	{
 		std::array<int, 4> entries = {0, 1, 2, 3};
 
-		Pool<int, 10> list;
+		Pool<int, 10> pool;
 
-		list.allocate_front(entries[0]);
-		list.allocate_back(entries[1]);
-		list.deallocate(list.begin());
-		list.allocate_front(entries[2]);
-		list.allocate_back(entries[3]);
-		list.deallocate(list.rbegin());
+		pool.allocate_front(entries[0]);
+		pool.allocate_back(entries[1]);
+		pool.deallocate(pool.begin());
+		pool.allocate_front(entries[2]);
+		pool.allocate_back(entries[3]);
+		pool.deallocate(pool.rbegin());
 
-		if (list.front() != 2)
+		if (pool.front() != 2)
 			return false;
 
-		if (list.back() != 1)
+		if (pool.back() != 1)
 			return false;
 
 		return true;
@@ -50,12 +51,12 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<int, 4> entries = {0, 1, 2, 3};
-		const auto list = MakeList<10>(entries);
+		const auto entries = {0, 1, 2, 3};
+		const auto pool = ToPool<10>(entries);
 
-		const auto &const_list = list;
+		const auto &const_list = pool;
 		std::size_t count = 0;
-		auto iterator = entries.rbegin();
+		auto iterator = std::rbegin(entries);
 
 		for (const auto &value : const_list)
 		{
@@ -77,10 +78,10 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<int, 4> entries = {0, 1, 2, 3};
-		const auto list = MakeList<10>(entries);
+		const auto entries = {0, 1, 2, 3};
+		const auto pool = ToPool<10>(entries);
 
-		const auto &const_list = list;
+		const auto &const_list = pool;
 		std::size_t count = 0;
 		auto iterator = entries.begin();
 
@@ -103,9 +104,8 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<int, 4> entries = {0, 1, 2, 3};
-		const auto list = MakeList<10>(entries);
-		return list.front() == 3 && list.back() == 0;
+		const auto pool = ToPool<10>({0, 1, 2, 3});
+		return pool.front() == 3 && pool.back() == 0;
 	}()
 );
 
@@ -114,30 +114,28 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<int, 4> entries = {0, 1, 2, 3};
-		const auto list = MakeList<10>(entries);
-		return !list.empty() && !list.full();
+		const auto pool = ToPool<10>({0, 1, 2, 3});
+		return !pool.empty() && !pool.full();
 	}()
 );
 static_assert(
 	[]() constexpr
 	{
-		std::array<int, 4> entries = {0, 1, 2, 3};
-		const auto list = MakeList<4>(entries);
-		return !list.empty() && list.full();
+		const auto pool = ToPool<4>({0, 1, 2, 3});
+		return !pool.empty() && pool.full();
 	}()
 );
 static_assert(
 	[]() constexpr
 	{
-		const Pool<int, 10> list;
-		return list.empty() && !list.full();
+		const Pool<int, 10> pool;
+		return pool.empty() && !pool.full();
 	}()
 );
 static_assert(
 	[]() constexpr
 	{
-		const Pool<int, 0> list;
-		return list.empty() && list.full();
+		const Pool<int, 0> pool;
+		return pool.empty() && pool.full();
 	}()
 );

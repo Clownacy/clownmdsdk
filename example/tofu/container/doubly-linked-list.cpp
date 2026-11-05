@@ -14,7 +14,7 @@ public:
 	{}
 };
 
-static constexpr auto MakeList = [](auto &entries) constexpr
+static constexpr auto MakeList(auto &entries)
 {
 	DoublyLinkedList<TestEntry> list;
 	for (auto &entry : entries)
