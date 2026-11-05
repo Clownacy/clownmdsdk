@@ -7,22 +7,22 @@
 
 #include "list-common.h"
 
-template<typename HeldType, typename DerivedEntry>
-class DoublyLinkedListLowLevel : protected ListCommon<DerivedEntry, HeldType>
+template<typename Derived, typename T>
+class DoublyLinkedListLowLevel : protected ListCommon<Derived, T>
 {
 private:
-	using Common = ListCommon<DerivedEntry, HeldType>;
+	using Common = ListCommon<Derived, T>;
 
 public:
 	struct Entry
 	{
-		HeldType *next;
-		HeldType *previous;
+		T *next;
+		T *previous;
 	};
 
 private:
-	HeldType *head = nullptr;
-	HeldType *tail = nullptr;
+	T *head = nullptr;
+	T *tail = nullptr;
 	std::size_t total_entries = 0;
 
 public:
@@ -50,63 +50,69 @@ public:
 		return typename Common::Iterator();
 	}
 
-	constexpr void push_front(HeldType &entry)
+	constexpr void push_front(T &value)
 	{
 		++total_entries;
+
+		Entry &entry = Derived::GetEntryFromHeldType(value);
 
 		if (head == nullptr)
-			tail = &entry;
+			tail = &value;
 		else
-			DerivedEntry::GetEntryFromHeldType(*head).previous = &entry;
+			Derived::GetEntryFromHeldType(*head).previous = &value;
 
-		DerivedEntry::GetEntryFromHeldType(entry).next = head;
-		DerivedEntry::GetEntryFromHeldType(entry).previous = nullptr;
+		entry.next = head;
+		entry.previous = nullptr;
 
-		head = &entry;
+		head = &value;
 	}
 
-	constexpr void push_back(HeldType &entry)
+	constexpr void push_back(T &value)
 	{
 		++total_entries;
 
+		Entry &entry = Derived::GetEntryFromHeldType(value);
+
 		if (tail == nullptr)
-			head = &entry;
+			head = &value;
 		else
-			DerivedEntry::GetEntryFromHeldType(*tail).next = &entry;
+			Derived::GetEntryFromHeldType(*tail).next = &value;
 
-		DerivedEntry::GetEntryFromHeldType(entry).next = nullptr;
-		DerivedEntry::GetEntryFromHeldType(entry).previous = tail;
+		entry.next = nullptr;
+		entry.previous = tail;
 
-		tail = &entry;
+		tail = &value;
 	}
 
-	constexpr HeldType* erase(HeldType &entry)
+	constexpr T* erase(T &value)
 	{
 		--total_entries;
 
-		HeldType* const next = DerivedEntry::GetEntryFromHeldType(entry).next;
+		Entry &entry = Derived::GetEntryFromHeldType(value);
 
-		if (DerivedEntry::GetEntryFromHeldType(entry).previous == nullptr)
-			head = DerivedEntry::GetEntryFromHeldType(entry).next;
-		else
-			DerivedEntry::GetEntryFromHeldType(*DerivedEntry::GetEntryFromHeldType(entry).previous).next = DerivedEntry::GetEntryFromHeldType(entry).next;
+		T* const next = entry.next;
 
-		if (DerivedEntry::GetEntryFromHeldType(entry).next == nullptr)
-			tail = DerivedEntry::GetEntryFromHeldType(entry).previous;
+		if (entry.previous == nullptr)
+			head = entry.next;
 		else
-			DerivedEntry::GetEntryFromHeldType(*DerivedEntry::GetEntryFromHeldType(entry).next).previous = DerivedEntry::GetEntryFromHeldType(entry).previous;
+			Derived::GetEntryFromHeldType(*entry.previous).next = entry.next;
+
+		if (entry.next == nullptr)
+			tail = entry.previous;
+		else
+			Derived::GetEntryFromHeldType(*entry.next).previous = entry.previous;
 
 		return next;
 	}
 
-	constexpr HeldType& pop_front()
+	constexpr T& pop_front()
 	{
 		auto &entry = front();
 		erase(entry);
 		return entry;
 	}
 
-	constexpr HeldType& pop_back()
+	constexpr T& pop_back()
 	{
 		auto &entry = back();
 		erase(entry);
@@ -124,24 +130,24 @@ public:
 	}
 };
 
-template<typename HeldType>
+template<typename T>
 class DoublyLinkedList;
 
-template<typename HeldType>
-using DoublyLinkedListBase = DoublyLinkedListLowLevel<HeldType, DoublyLinkedList<HeldType>>;
+template<typename T>
+using DoublyLinkedListBase = DoublyLinkedListLowLevel<DoublyLinkedList<T>, T>;
 
-template<typename HeldType>
-class DoublyLinkedList : public DoublyLinkedListBase<HeldType>
+template<typename T>
+class DoublyLinkedList : public DoublyLinkedListBase<T>
 {
 public:
-	using Base = DoublyLinkedListBase<HeldType>;
+	using Base = DoublyLinkedListBase<T>;
 
-	static constexpr Base::Entry& GetEntryFromHeldType(HeldType &held)
+	static constexpr Base::Entry& GetEntryFromHeldType(T &held)
 	{
 		return held;
 	}
 
-	static constexpr HeldType& DereferenceHeldType(HeldType &held)
+	static constexpr T& DereferenceHeldType(T &held)
 	{
 		return held;
 	}

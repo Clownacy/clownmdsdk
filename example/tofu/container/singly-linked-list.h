@@ -7,20 +7,20 @@
 
 #include "list-common.h"
 
-template<typename HeldType, typename DerivedEntry>
-class SinglyLinkedListLowLevel : protected ListCommon<DerivedEntry, HeldType>
+template<typename Derived, typename T>
+class SinglyLinkedListLowLevel : protected ListCommon<Derived, T>
 {
 private:
-	using Common = ListCommon<DerivedEntry, HeldType>;
+	using Common = ListCommon<Derived, T>;
 
 public:
 	struct Entry
 	{
-		HeldType *next;
+		T *next;
 	};
 
 private:
-	HeldType *head = nullptr;
+	T *head = nullptr;
 
 public:
 	template<typename Self>
@@ -40,16 +40,16 @@ public:
 		return typename Common::Iterator();
 	}
 
-	constexpr void push_front(HeldType &entry)
+	constexpr void push_front(T &entry)
 	{
-		DerivedEntry::GetEntryFromHeldType(entry).next = head;
+		Derived::GetEntryFromHeldType(entry).next = head;
 		head = &entry;
 	}
 
-	constexpr HeldType& pop_front()
+	constexpr T& pop_front()
 	{
-		HeldType &entry = front();
-		head = DerivedEntry::GetEntryFromHeldType(entry).next;
+		T &entry = front();
+		head = Derived::GetEntryFromHeldType(entry).next;
 		return entry;
 	}
 
@@ -59,24 +59,24 @@ public:
 	}
 };
 
-template<typename HeldType>
+template<typename T>
 class SinglyLinkedList;
 
-template<typename HeldType>
-using SinglyLinkedListBase = SinglyLinkedListLowLevel<HeldType, SinglyLinkedList<HeldType>>;
+template<typename T>
+using SinglyLinkedListBase = SinglyLinkedListLowLevel<SinglyLinkedList<T>, T>;
 
-template<typename HeldType>
-class SinglyLinkedList : public SinglyLinkedListBase<HeldType>
+template<typename T>
+class SinglyLinkedList : public SinglyLinkedListBase<T>
 {
 public:
-	using Base = SinglyLinkedListBase<HeldType>;
+	using Base = SinglyLinkedListBase<T>;
 
-	static constexpr Base::Entry& GetEntryFromHeldType(HeldType &held)
+	static constexpr Base::Entry& GetEntryFromHeldType(T &held)
 	{
 		return held;
 	}
 
-	static constexpr HeldType& DereferenceHeldType(HeldType &held)
+	static constexpr T& DereferenceHeldType(T &held)
 	{
 		return held;
 	}

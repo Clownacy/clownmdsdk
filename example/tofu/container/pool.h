@@ -29,7 +29,7 @@ namespace PoolEntry
 
 	// Allocated
 	template<typename T>
-	using AllocatedList = DoublyLinkedListLowLevel<Union<T>, Allocated<T>>;
+	using AllocatedList = DoublyLinkedListLowLevel<Allocated<T>, Union<T>>;
 
 	template<typename T>
 	struct Allocated : public AllocatedList<T>::Entry, public T
@@ -44,7 +44,7 @@ namespace PoolEntry
 
 	// Deallocated
 	template<typename T>
-	using DeallocatedList = SinglyLinkedListLowLevel<Union<T>, Deallocated<T>>;
+	using DeallocatedList = SinglyLinkedListLowLevel<Deallocated<T>, Union<T>>;
 
 	template<typename T>
 	struct Deallocated : public DeallocatedList<T>::Entry

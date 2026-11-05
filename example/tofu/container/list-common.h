@@ -3,17 +3,17 @@
 
 #include <cassert>
 
-template<typename Derived, typename HeldType>
+template<typename Derived, typename T>
 class ListCommon
 {
 public:
 	class Iterator
 	{
 	private:
-		HeldType *entry;
+		T *entry;
 
 	public:
-		constexpr Iterator(HeldType* const entry = nullptr)
+		constexpr Iterator(T* const entry = nullptr)
 			: entry(entry)
 		{}
 
