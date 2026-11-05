@@ -1,6 +1,7 @@
 #include "doubly-linked-list.h"
 
 #include <array>
+#include <span>
 
 // Test suite
 
@@ -14,7 +15,7 @@ public:
 	{}
 };
 
-static constexpr auto MakeList(auto &entries)
+static constexpr auto MakeList(const std::span<TestEntry> &entries)
 {
 	DoublyLinkedList<TestEntry> list;
 	for (auto &entry : entries)
@@ -29,7 +30,7 @@ static constexpr auto MakeList(auto &entries)
 static_assert(
 	[]() constexpr
 	{
-		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
 
 		DoublyLinkedList<TestEntry> list;
 
@@ -56,7 +57,7 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
 		const auto list = MakeList(entries);
 
 		std::size_t count = 0;
@@ -80,7 +81,7 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
 		const auto list = MakeList(entries);
 
 		std::size_t count = 0;
@@ -105,7 +106,7 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
 		const auto list = MakeList(entries);
 		return list.front().value == 0 && list.back().value == 3;
 	}()
@@ -115,7 +116,7 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
 		const auto list = MakeList(entries);
 		return !list.empty();
 	}()
@@ -123,8 +124,7 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<TestEntry, 0> entries = {};
-		const auto list = MakeList(entries);
+		const DoublyLinkedList<TestEntry> list;
 		return list.empty();
 	}()
 );
@@ -133,7 +133,7 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
 		auto list = MakeList(entries);
 		list.clear();
 		return list.empty();
