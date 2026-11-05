@@ -77,25 +77,29 @@ private:
 	std::array<PoolEntry::Union<T>, S> storage;
 
 	template<typename ...Ts>
+	constexpr void push_to_deallocated(Union &entry, Ts &&...args)
+	{
+		std::construct_at(&entry.deallocated, std::forward<Ts>(args)...);
+		deallocated_list.push_front(entry);
+	}
+
+	template<typename ...Ts>
 	constexpr Union& pop_from_deallocated(Ts &&...args)
 	{
-		auto &entry_union = deallocated_list.pop_front();
+		auto &entry = deallocated_list.pop_front();
 
-		entry_union.deallocated.~Deallocated();
+		entry.deallocated.~Deallocated();
 
-		std::construct_at(&entry_union.allocated, std::forward<Ts>(args)...);
+		std::construct_at(&entry.allocated, std::forward<Ts>(args)...);
 
-		return entry_union;
+		return entry;
 	}
 
 public:
 	constexpr Pool()
 	{
 		for (auto &entry : storage)
-		{
-			std::construct_at(&entry.deallocated);
-			deallocated_list.push_front(entry);
-		}
+			push_to_deallocated(entry);
 	}
 
 	constexpr ~Pool()
@@ -125,18 +129,17 @@ public:
 
 	constexpr Common::Iterator deallocate(Common::Iterator it)
 	{
-		Union &entry_union = *it.GetHeldTypePointer();
+		Union &entry = *it.GetHeldTypePointer();
 
 		++it;
 
 		// Remove from allocated object list.
-		allocated_list.erase(entry_union);
+		allocated_list.erase(entry);
 
-		entry_union.allocated.~Allocated();
+		entry.allocated.~Allocated();
 
 		// Add to deallocated object list.
-		std::construct_at(&entry_union.deallocated);
-		deallocated_list.push_front(entry_union);
+		push_to_deallocated(entry);
 
 		return it;
 	}
