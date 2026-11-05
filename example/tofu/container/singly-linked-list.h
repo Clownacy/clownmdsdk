@@ -86,23 +86,23 @@ public:
 };
 
 // High-level interface; `T` must derive from `SinglyLinkedListEntry<T>`.
-template<typename T>
-class SinglyLinkedListIterator : public ListIterator<T, T>
+template<typename Base>
+class SinglyLinkedListIterator : public Base
 {
 public:
-	constexpr T& Dereference()
+	constexpr auto& Dereference()
 	{
 		return *this->GetHeldPointer();
 	}
 
-	constexpr T* Advance()
+	constexpr auto* Advance()
 	{
 		return this->GetHeldPointer()->next;
 	}
 };
 
 template<typename T>
-class SinglyLinkedList : public SinglyLinkedListLowLevel<T, SinglyLinkedListIterator<T>, SinglyLinkedListIterator<const T>>
+class SinglyLinkedList : public SinglyLinkedListLowLevel<T, SinglyLinkedListIterator<ListIterator<T, T>>, SinglyLinkedListIterator<ListConstIterator<T, T>>>
 {
 public:
 	static constexpr SinglyLinkedListEntry<T>& GetEntryFromHeldType(T &held)

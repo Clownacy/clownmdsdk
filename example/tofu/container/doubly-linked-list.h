@@ -186,40 +186,40 @@ public:
 };
 
 // High-level interface; `T` must derive from `DoublyLinkedListEntry<T>`.
-template<typename T>
-class DoublyLinkedListIteratorBase : public ListIterator<T, T>
+template<typename Base>
+class DoublyLinkedListIteratorBase : public Base
 {
 public:
-	using ListIterator<T, T>::ListIterator;
+	using Base::Base;
 
-	constexpr T& Dereference()
+	constexpr auto& Dereference()
 	{
 		return *this->GetHeldPointer();
 	}
 };
 
-template<typename T>
-class DoublyLinkedListIterator : public DoublyLinkedListIteratorBase<T>
+template<typename Base>
+class DoublyLinkedListIterator : public DoublyLinkedListIteratorBase<Base>
 {
 public:
-	constexpr T* Advance()
+	constexpr auto* Advance()
 	{
 		return this->GetHeldPointer()->next;
 	}
 };
 
-template<typename T>
-class DoublyLinkedListReverseIterator : public DoublyLinkedListIteratorBase<T>
+template<typename Base>
+class DoublyLinkedListReverseIterator : public DoublyLinkedListIteratorBase<Base>
 {
 public:
-	constexpr T* Advance()
+	constexpr auto* Advance()
 	{
 		return this->GetHeldPointer()->previous;
 	}
 };
 
 template<typename T>
-class DoublyLinkedList : public DoublyLinkedListLowLevel<T, DoublyLinkedListIterator<T>, DoublyLinkedListIterator<const T>, DoublyLinkedListReverseIterator<T>, DoublyLinkedListReverseIterator<const T>>
+class DoublyLinkedList : public DoublyLinkedListLowLevel<T, DoublyLinkedListIterator<ListIterator<T, T>>, DoublyLinkedListIterator<ListConstIterator<T, T>>, DoublyLinkedListReverseIterator<ListIterator<T, T>>, DoublyLinkedListReverseIterator<ListConstIterator<T, T>>>
 {
 public:
 	static constexpr DoublyLinkedListEntry<T>& GetEntryFromHeldType(T &held)

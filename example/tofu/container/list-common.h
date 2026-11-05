@@ -49,4 +49,7 @@ public:
 	}
 };
 
+template<typename Held, typename Dereferenced>
+using ListConstIterator = ListIterator<const Held, const Dereferenced>;
+
 #endif // LIST_COMMON_H

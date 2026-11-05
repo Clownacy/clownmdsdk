@@ -29,54 +29,54 @@ private:
 	};
 
 	// Iterators
-	template<typename Held, typename Dereferenced>
-	class AllocatedIteratorBase : public ListIterator<Held, Dereferenced>
+	template<typename Base>
+	class AllocatedIteratorBase : public Base
 	{
 	public:
-		constexpr Dereferenced& Dereference()
+		constexpr auto& Dereference()
 		{
 			return this->GetHeldPointer()->allocated.value;
 		}
 
-		constexpr Held* Advance()
+		constexpr auto* Advance()
 		{
 			return this->GetHeldPointer()->allocated.next;
 		}
 	};
 
-	using AllocatedIterator = AllocatedIteratorBase<EntryUnion, T>;
-	using AllocatedConstIterator = AllocatedIteratorBase<const EntryUnion, const T>;
+	using AllocatedIterator = AllocatedIteratorBase<ListIterator<EntryUnion, T>>;
+	using AllocatedConstIterator = AllocatedIteratorBase<ListConstIterator<EntryUnion, T>>;
 
-	template<typename Held, typename Dereferenced>
-	class AllocatedReverseIteratorBase : public ListIterator<Held, Dereferenced>
+	template<typename Base>
+	class AllocatedReverseIteratorBase : public Base
 	{
 	public:
-		constexpr Dereferenced& Dereference()
+		constexpr auto& Dereference()
 		{
 			return this->GetHeldPointer()->allocated.value;
 		}
 
-		constexpr Held* Advance()
+		constexpr auto* Advance()
 		{
 			return this->GetHeldPointer()->allocated.previous;
 		}
 	};
 
-	using AllocatedReverseIterator = AllocatedReverseIteratorBase<EntryUnion, T>;
-	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<const EntryUnion, const T>;
+	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListIterator<EntryUnion, T>>;
+	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstIterator<EntryUnion, T>>;
 
-	template<typename Held, typename Dereferenced>
-	class DeallocatedIteratorBase : public ListIterator<Held, Dereferenced>
+	template<typename Base>
+	class DeallocatedIteratorBase : public Base
 	{
 	public:
-		constexpr Held* Advance()
+		constexpr auto* Advance()
 		{
 			return this->GetHeldPointer()->deallocated.next;
 		}
 	};
 
-	using DeallocatedIterator = ListIterator<EntryUnion, T>;
-	using DeallocatedConstIterator = ListIterator<const EntryUnion, const T>;
+	using DeallocatedIterator = DeallocatedIteratorBase<ListIterator<EntryUnion, T>>;
+	using DeallocatedConstIterator = DeallocatedIteratorBase<ListConstIterator<EntryUnion, T>>;
 
 	// EntryAllocated
 	using EntryAllocatedListBase = DoublyLinkedListLowLevel<EntryUnion, AllocatedIterator, AllocatedConstIterator, AllocatedReverseIterator, AllocatedConstReverseIterator>;
