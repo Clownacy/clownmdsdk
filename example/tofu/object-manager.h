@@ -19,8 +19,8 @@ public:
 		if (pool.full())
 			return nullptr;
 
-		auto &entry = pool.allocate_front(std::in_place_type<T>, std::forward<Args>(args)...);
-		return std::get_if<T>(&entry);
+		auto it = pool.allocate_front(std::in_place_type<T>, std::forward<Args>(args)...);
+		return std::get_if<T>(&*it);
 	}
 
 	template<typename T, typename... Args>
@@ -29,8 +29,8 @@ public:
 		if (pool.full())
 			return nullptr;
 
-		auto &entry = pool.allocate_back(std::in_place_type<T>, std::forward<Args>(args)...);
-		return std::get_if<T>(&entry);
+		auto it = pool.allocate_back(std::in_place_type<T>, std::forward<Args>(args)...);
+		return std::get_if<T>(&*it);
 	}
 
 	void Update();

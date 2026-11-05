@@ -175,19 +175,19 @@ public:
 	constexpr Pool& operator=(const Pool &other) = delete;
 
 	template<typename ...Ts>
-	constexpr T& allocate_front(Ts &&...args)
+	constexpr Iterator allocate_front(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated_list.push_front(entry);
-		return entry.allocated;
+		return Iterator(&entry);
 	}
 
 	template<typename ...Ts>
-	constexpr T& allocate_back(Ts &&...args)
+	constexpr Iterator allocate_back(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated_list.push_back(entry);
-		return entry.allocated;
+		return Iterator(&entry);
 	}
 
 	template<typename IteratorT> requires std::is_same_v<IteratorT, Iterator> || std::is_same_v<IteratorT, ReverseIterator>
