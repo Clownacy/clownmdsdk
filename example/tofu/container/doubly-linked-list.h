@@ -6,67 +6,30 @@
 #include <type_traits>
 
 #include "list-common.h"
+#include "singly-linked-list.h"
 
 template<typename T>
-struct DoublyLinkedListEntry
+struct DoublyLinkedListEntry : public SinglyLinkedListEntry<T>
 {
-	T *next;
 	T *previous;
 };
 
 // Low-level interface; user decides how `T` contains `DoublyLinkedListEntry<T>` by specifying own `Iterator`.
 template<typename T, typename Iterator, typename ConstIterator, typename ReverseIterator, typename ConstReverseIterator>
-class DoublyLinkedListLowLevel
+class DoublyLinkedListLowLevel : public SinglyLinkedListLowLevel<T, Iterator, ConstIterator>
 {
 public:
 	using Entry = DoublyLinkedListEntry<T>;
 
-private:
-	T *head = nullptr;
+protected:
 	T *tail = nullptr;
 	std::size_t total_entries = 0;
 
 public:
-	constexpr auto& front(this auto &&self)
-	{
-		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
-		return *self.head;
-	}
-
 	constexpr auto& back(this auto &&self)
 	{
 		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
 		return *self.tail;
-	}
-
-	constexpr ConstIterator cbegin() const
-	{
-		return ConstIterator(head);
-	}
-
-	constexpr ConstIterator cend() const
-	{
-		return ConstIterator();
-	}
-
-	constexpr ConstIterator begin() const
-	{
-		return cbegin();
-	}
-
-	constexpr ConstIterator end() const
-	{
-		return cend();
-	}
-
-	constexpr Iterator begin()
-	{
-		return Iterator(head);
-	}
-
-	constexpr Iterator end()
-	{
-		return Iterator();
 	}
 
 	constexpr ConstReverseIterator crbegin() const
@@ -172,41 +135,14 @@ public:
 	{
 		return total_entries;
 	}
-
-	constexpr bool empty() const
-	{
-		return head == nullptr;
-	}
-
-	constexpr void clear(this auto &&self)
-	{
-		while (!self.empty())
-			self.pop_front();
-	}
 };
 
 // High-level interface; `T` must derive from `DoublyLinkedListEntry<T>`.
 template<typename Base>
-class DoublyLinkedListIteratorBase : public Base
-{
-public:
-	using Base::Base;
-
-	constexpr auto& Dereference()
-	{
-		return *this->GetHeldPointer();
-	}
-};
+using DoublyLinkedListIteratorBase = SinglyLinkedListIteratorBase<Base>;
 
 template<typename Base>
-class DoublyLinkedListIterator : public DoublyLinkedListIteratorBase<Base>
-{
-public:
-	constexpr auto* Advance()
-	{
-		return this->GetHeldPointer()->next;
-	}
-};
+using DoublyLinkedListIterator = SinglyLinkedListIterator<Base>;
 
 template<typename Base>
 class DoublyLinkedListReverseIterator : public DoublyLinkedListIteratorBase<Base>

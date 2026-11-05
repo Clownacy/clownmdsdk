@@ -20,7 +20,7 @@ class SinglyLinkedListLowLevel
 public:
 	using Entry = SinglyLinkedListEntry<T>;
 
-private:
+protected:
 	T *head = nullptr;
 
 public:
@@ -87,14 +87,21 @@ public:
 
 // High-level interface; `T` must derive from `SinglyLinkedListEntry<T>`.
 template<typename Base>
-class SinglyLinkedListIterator : public Base
+class SinglyLinkedListIteratorBase : public Base
 {
 public:
+	using Base::Base;
+
 	constexpr auto& Dereference()
 	{
 		return *this->GetHeldPointer();
 	}
+};
 
+template<typename Base>
+class SinglyLinkedListIterator : public SinglyLinkedListIteratorBase<Base>
+{
+public:
 	constexpr auto* Advance()
 	{
 		return this->GetHeldPointer()->next;
