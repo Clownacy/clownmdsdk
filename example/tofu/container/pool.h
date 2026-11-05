@@ -9,90 +9,153 @@
 #include "doubly-linked-list.h"
 #include "singly-linked-list.h"
 
-namespace PoolEntry
+// Pool
+template<typename T, std::size_t S>
+class Pool
 {
-	// Union
-	template<typename T>
-	struct Allocated;
+private:
+	// Define a bunch of internal classes.
 
-	template<typename T>
-	struct Deallocated;
+	// EntryUnion
+	struct EntryAllocated;
+	struct EntryDeallocated;
 
-	template<typename T>
-	union Union
+	union EntryUnion
 	{
-		Allocated<T> allocated;
-		Deallocated<T> deallocated;
+		EntryAllocated allocated;
+		EntryDeallocated deallocated;
 
-		constexpr Union() {}
+		constexpr EntryUnion() {}
 	};
 
-	// Allocated
-	template<typename T>
-	using AllocatedList = DoublyLinkedListLowLevel<Allocated<T>, Union<T>>;
-
-	template<typename T>
-	struct Allocated : public AllocatedList<T>::Entry, public T
+	// Iterators
+	template<typename Held, typename Dereferenced>
+	class AllocatedIteratorBase : public ListIterator<Held, Dereferenced>
 	{
-		using T::T;
+	public:
+		constexpr Dereferenced& Dereference()
+		{
+			return this->GetHeldPointer()->allocated;
+		}
 
-		static constexpr AllocatedList<T>::Entry& GetEntryFromHeldType(Union<T> &held)
+		constexpr Held* Advance()
+		{
+			return this->GetHeldPointer()->allocated.next;
+		}
+	};
+
+	using AllocatedIterator = AllocatedIteratorBase<EntryUnion, T>;
+	using AllocatedConstIterator = AllocatedIteratorBase<const EntryUnion, const T>;
+
+	template<typename Held, typename Dereferenced>
+	class AllocatedReverseIteratorBase : public ListIterator<Held, Dereferenced>
+	{
+	public:
+		constexpr Dereferenced& Dereference()
+		{
+			return this->GetHeldPointer()->allocated;
+		}
+
+		constexpr Held* Advance()
+		{
+			return this->GetHeldPointer()->allocated.previous;
+		}
+	};
+
+	using AllocatedReverseIterator = AllocatedReverseIteratorBase<EntryUnion, T>;
+	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<const EntryUnion, const T>;
+
+	template<typename Held, typename Dereferenced>
+	class DeallocatedIteratorBase : public ListIterator<Held, Dereferenced>
+	{
+	public:
+		constexpr Dereferenced& Dereference()
+		{
+			return this->GetHeldPointer()->deallocated;
+		}
+
+		constexpr Held* Iterate()
+		{
+			return this->GetHeldPointer()->deallocated.next;
+		}
+	};
+
+	using DeallocatedIterator = DeallocatedIteratorBase<EntryUnion, T>;
+	using DeallocatedConstIterator = DeallocatedIteratorBase<const EntryUnion, const T>;
+
+	// EntryAllocated
+	using EntryAllocatedListBase = DoublyLinkedListLowLevel<EntryUnion, AllocatedIterator, AllocatedConstIterator, AllocatedReverseIterator, AllocatedConstReverseIterator>;
+
+	class EntryAllocatedList : public EntryAllocatedListBase
+	{
+	public:
+		using Base = EntryAllocatedListBase;
+
+		static constexpr Base::Entry& GetEntryFromHeldType(EntryUnion &held)
 		{
 			return held.allocated;
 		}
 	};
 
-	// Deallocated
-	template<typename T>
-	using DeallocatedList = SinglyLinkedListLowLevel<Deallocated<T>, Union<T>>;
-
-	template<typename T>
-	struct Deallocated : public DeallocatedList<T>::Entry
+	struct EntryAllocated : public EntryAllocatedList::Entry, public T
 	{
-		static constexpr DeallocatedList<T>::Entry& GetEntryFromHeldType(Union<T> &held)
+		using T::T;
+	};
+
+	// EntryDeallocated
+	using EntryDeallocatedListBase = SinglyLinkedListLowLevel<EntryUnion, DeallocatedIterator, DeallocatedConstIterator>;
+
+	class EntryDeallocatedList : public EntryDeallocatedListBase
+	{
+	public:
+		using Base = EntryDeallocatedListBase;
+
+		static constexpr Base::Entry& GetEntryFromHeldType(EntryUnion &held)
 		{
 			return held.deallocated;
 		}
 	};
-}
 
-// Pool
-template<typename T, std::size_t S>
-class Pool;
+	struct EntryDeallocated : public EntryDeallocatedList::Entry {};
 
-template<typename T, std::size_t S>
-using PoolCommon = ListCommon<Pool<T, S>, PoolEntry::Union<T>>;
+	// Actual Pool stuff begins here.
+	using Iterator = AllocatedIterator;
+	using ConstIterator = AllocatedConstIterator;
+	using ReverseIterator = AllocatedReverseIterator;
+	using ConstReverseIterator = AllocatedConstReverseIterator;
 
-template<typename T, std::size_t S>
-class Pool : protected PoolCommon<T, S>
-{
-private:
-	using Common = PoolCommon<T, S>;
-	using Allocated = PoolEntry::Allocated<T>;
-	using Deallocated = PoolEntry::Deallocated<T>;
-	using Union = PoolEntry::Union<T>;
-
-	PoolEntry::AllocatedList<T> allocated_list;
-	PoolEntry::DeallocatedList<T> deallocated_list;
-	std::array<PoolEntry::Union<T>, S> storage;
+	EntryAllocatedList allocated_list;
+	EntryDeallocatedList deallocated_list;
+	std::array<EntryUnion, S> storage;
 
 	template<typename ...Ts>
-	constexpr void push_to_deallocated(Union &entry, Ts &&...args)
+	constexpr void push_to_deallocated(EntryUnion &entry, Ts &&...args)
 	{
 		std::construct_at(&entry.deallocated, std::forward<Ts>(args)...);
 		deallocated_list.push_front(entry);
 	}
 
 	template<typename ...Ts>
-	constexpr Union& pop_from_deallocated(Ts &&...args)
+	constexpr EntryUnion& pop_from_deallocated(Ts &&...args)
 	{
 		auto &entry = deallocated_list.pop_front();
 
-		entry.deallocated.~Deallocated();
+		entry.deallocated.~EntryDeallocated();
 
 		std::construct_at(&entry.allocated, std::forward<Ts>(args)...);
 
 		return entry;
+	}
+
+	constexpr void deallocate(EntryUnion &entry)
+	{
+		// Remove from allocated object list.
+		allocated_list.erase(entry);
+
+		entry.allocated.~EntryAllocated();
+
+		// Add to deallocated object list.
+		push_to_deallocated(entry);
 	}
 
 public:
@@ -127,41 +190,66 @@ public:
 		return entry.allocated;
 	}
 
-	constexpr Common::Iterator deallocate(Common::Iterator it)
+	template<typename IteratorT> requires std::is_same_v<IteratorT, Iterator> || std::is_same_v<IteratorT, ReverseIterator>
+	constexpr IteratorT deallocate(IteratorT it)
 	{
-		Union &entry = *it.GetHeldTypePointer();
+		EntryUnion &entry = *it.GetHeldPointer();
 
 		++it;
 
-		// Remove from allocated object list.
-		allocated_list.erase(entry);
-
-		entry.allocated.~Allocated();
-
-		// Add to deallocated object list.
-		push_to_deallocated(entry);
+		deallocate(entry);
 
 		return it;
 	}
 
-	constexpr Common::Iterator begin()
+	constexpr auto begin(this auto &&self)
 	{
-		return typename Common::Iterator(allocated_list.begin().GetHeldTypePointer());
+		return self.allocated_list.begin();
 	}
 
-	constexpr Common::Iterator end()
+	constexpr auto end(this auto &&self)
 	{
-		return typename Common::Iterator();
+		return self.allocated_list.end();
+	}
+
+	constexpr ConstIterator cbegin() const
+	{
+		return allocated_list.cbegin();
+	}
+
+	constexpr ConstIterator cend() const
+	{
+		return allocated_list.cend();
+	}
+
+	constexpr auto rbegin(this auto &&self)
+	{
+		return self.allocated_list.rbegin();
+	}
+
+	constexpr auto rend(this auto &&self)
+	{
+		return self.allocated_list.rend();
+	}
+
+	constexpr ConstReverseIterator crbegin() const
+	{
+		return allocated_list.crbegin();
+	}
+
+	constexpr ConstReverseIterator crend() const
+	{
+		return allocated_list.crend();
 	}
 
 	template<typename Self>
-	constexpr T& front(this Self &self)
+	constexpr T& front(this Self &&self)
 	{
 		return self.allocated_list.front().allocated;
 	}
 
 	template<typename Self>
-	constexpr T& back(this Self &self)
+	constexpr T& back(this Self &&self)
 	{
 		return self.allocated_list.back().allocated;
 	}
@@ -184,16 +272,6 @@ public:
 	constexpr bool full() const
 	{
 		return deallocated_list.empty();
-	}
-
-	static constexpr Allocated& GetEntryFromHeldType(Union &held)
-	{
-		return held.allocated;
-	}
-
-	static constexpr T& DereferenceHeldType(Union &held)
-	{
-		return held.allocated;
 	}
 };
 

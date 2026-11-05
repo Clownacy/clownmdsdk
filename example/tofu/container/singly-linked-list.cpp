@@ -59,7 +59,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
-		auto list = MakeList(entries);
+		const auto list = MakeList(entries);
 
 		std::size_t count = 0;
 		auto iterator = entries.rbegin();
@@ -81,7 +81,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
-		auto list = MakeList(entries);
+		const auto list = MakeList(entries);
 		return list.front().value == 3;
 	}()
 );
@@ -91,7 +91,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
-		auto list = MakeList(entries);
+		const auto list = MakeList(entries);
 		return !list.empty();
 	}()
 );
@@ -99,7 +99,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 0> entries = {};
-		auto list = MakeList(entries);
+		const auto list = MakeList(entries);
 		return list.empty();
 	}()
 );

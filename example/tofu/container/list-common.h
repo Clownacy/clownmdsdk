@@ -3,57 +3,50 @@
 
 #include <cassert>
 
-template<typename Derived, typename T>
-class ListCommon
+template<typename Held, typename Dereferenced>
+class ListIterator
 {
+private:
+	Held *entry;
+
 public:
-	class Iterator
+	constexpr ListIterator(Held* const entry = nullptr)
+		: entry(entry)
+	{}
+
+	constexpr ListIterator& operator++(this auto &&self)
 	{
-	private:
-		T *entry;
+		self.entry = self.Advance();
+		return self;
+	}
 
-	public:
-		constexpr Iterator(T* const entry = nullptr)
-			: entry(entry)
-		{}
+	constexpr ListIterator operator++(this auto &&self, int)
+	{
+		const auto old = self;
+		self.operator++();
+		return old;
+	}
 
-		constexpr Iterator& operator++()
-		{
-			entry = Derived::GetEntryFromHeldType(*entry).next;
-			return *this;
-		}
+	constexpr bool operator==(const ListIterator &other) const
+	{
+		return entry == other.entry;
+	}
 
-		constexpr Iterator operator++(int)
-		{
-			const auto old = *this;
-			operator++();
-			return old;
-		}
+	constexpr auto* GetHeldPointer()
+	{
+		return entry;
+	}
 
-		constexpr bool operator==(const Iterator &other) const
-		{
-			return entry == other.entry;
-		}
+	constexpr Dereferenced& operator*(this auto &&self)
+	{
+		assert(self.entry != nullptr);
+		return self.Dereference();
+	}
 
-		template<typename Self>
-		constexpr auto* GetHeldTypePointer(this Self &&self)
-		{
-			return self.entry;
-		}
-
-		template<typename Self>
-		constexpr auto* operator->(this Self &&self)
-		{
-			assert(self.entry != nullptr);
-			return &Derived::DereferenceHeldType(*self.GetHeldTypePointer());
-		}
-
-		template<typename Self>
-		constexpr auto& operator*(this Self &&self)
-		{
-			return *self.operator->();
-		}
-	};
+	constexpr Dereferenced* operator->(this auto &&self)
+	{
+		return &self.operator*();
+	}
 };
 
 #endif // LIST_COMMON_H

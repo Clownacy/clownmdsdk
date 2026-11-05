@@ -7,18 +7,19 @@
 
 #include "list-common.h"
 
-template<typename Derived, typename T>
-class DoublyLinkedListLowLevel : protected ListCommon<Derived, T>
+template<typename T>
+struct DoublyLinkedListEntry
 {
-private:
-	using Common = ListCommon<Derived, T>;
+	T *next;
+	T *previous;
+};
 
+// Low-level interface; user decides how `T` contains `DoublyLinkedListEntry<T>` by specifying own `Iterator`.
+template<typename T, typename Iterator, typename ConstIterator, typename ReverseIterator, typename ConstReverseIterator>
+class DoublyLinkedListLowLevel
+{
 public:
-	struct Entry
-	{
-		T *next;
-		T *previous;
-	};
+	using Entry = DoublyLinkedListEntry<T>;
 
 private:
 	T *head = nullptr;
@@ -26,96 +27,144 @@ private:
 	std::size_t total_entries = 0;
 
 public:
-	template<typename Self>
-	constexpr auto& front(this Self &&self)
+	constexpr auto& front(this auto &&self)
 	{
 		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
 		return *self.head;
 	}
 
-	template<typename Self>
-	constexpr auto& back(this Self &&self)
+	constexpr auto& back(this auto &&self)
 	{
 		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
 		return *self.tail;
 	}
 
-	constexpr Common::Iterator begin()
+	constexpr ConstIterator cbegin() const
 	{
-		return typename Common::Iterator(head);
+		return ConstIterator(head);
 	}
 
-	constexpr Common::Iterator end()
+	constexpr ConstIterator cend() const
 	{
-		return typename Common::Iterator();
+		return ConstIterator();
 	}
 
-	constexpr void push_front(T &value)
+	constexpr ConstIterator begin() const
 	{
-		++total_entries;
+		return cbegin();
+	}
 
-		Entry &entry = Derived::GetEntryFromHeldType(value);
+	constexpr ConstIterator end() const
+	{
+		return cend();
+	}
 
-		if (head == nullptr)
-			tail = &value;
+	constexpr Iterator begin()
+	{
+		return Iterator(head);
+	}
+
+	constexpr Iterator end()
+	{
+		return Iterator();
+	}
+
+	constexpr ConstReverseIterator crbegin() const
+	{
+		return ConstReverseIterator(tail);
+	}
+
+	constexpr ConstReverseIterator crend() const
+	{
+		return ConstReverseIterator();
+	}
+
+	constexpr ConstReverseIterator rbegin() const
+	{
+		return crbegin();
+	}
+
+	constexpr ConstReverseIterator rend() const
+	{
+		return crend();
+	}
+
+	constexpr ReverseIterator rbegin()
+	{
+		return ReverseIterator(tail);
+	}
+
+	constexpr ReverseIterator rend()
+	{
+		return ReverseIterator();
+	}
+
+	constexpr void push_front(this auto &&self, T &value)
+	{
+		++self.total_entries;
+
+		Entry &entry = self.GetEntryFromHeldType(value);
+
+		if (self.head == nullptr)
+			self.tail = &value;
 		else
-			Derived::GetEntryFromHeldType(*head).previous = &value;
+			self.GetEntryFromHeldType(*self.head).previous = &value;
 
-		entry.next = head;
+		entry.next = self.head;
 		entry.previous = nullptr;
 
-		head = &value;
+		self.head = &value;
 	}
 
-	constexpr void push_back(T &value)
+	constexpr void push_back(this auto &&self, T &value)
 	{
-		++total_entries;
+		++self.total_entries;
 
-		Entry &entry = Derived::GetEntryFromHeldType(value);
+		Entry &entry = self.GetEntryFromHeldType(value);
 
-		if (tail == nullptr)
-			head = &value;
+		if (self.tail == nullptr)
+			self.head = &value;
 		else
-			Derived::GetEntryFromHeldType(*tail).next = &value;
+			self.GetEntryFromHeldType(*self.tail).next = &value;
 
 		entry.next = nullptr;
-		entry.previous = tail;
+		entry.previous = self.tail;
 
-		tail = &value;
+		self.tail = &value;
 	}
 
-	constexpr T* erase(T &value)
+	constexpr T* erase(this auto &&self, T &value)
 	{
-		--total_entries;
+		--self.total_entries;
 
-		Entry &entry = Derived::GetEntryFromHeldType(value);
+		Entry &entry = self.GetEntryFromHeldType(value);
 
 		T* const next = entry.next;
 
 		if (entry.previous == nullptr)
-			head = entry.next;
+			self.head = entry.next;
 		else
-			Derived::GetEntryFromHeldType(*entry.previous).next = entry.next;
+			self.GetEntryFromHeldType(*entry.previous).next = entry.next;
 
 		if (entry.next == nullptr)
-			tail = entry.previous;
+			self.tail = entry.previous;
 		else
-			Derived::GetEntryFromHeldType(*entry.next).previous = entry.previous;
+			self.GetEntryFromHeldType(*entry.next).previous = entry.previous;
 
 		return next;
 	}
 
-	constexpr T& pop_front()
+	constexpr T& pop_front(this auto &&self)
 	{
-		auto &entry = front();
-		erase(entry);
+		auto &entry = self.front();
+		self.erase(entry);
 		return entry;
 	}
 
-	constexpr T& pop_back()
+	constexpr T& pop_back(this auto &&self)
 	{
-		auto &entry = back();
-		erase(entry);
+		auto &entry = self.back();
+		self.erase(entry);
 		return entry;
 	}
 
@@ -130,24 +179,44 @@ public:
 	}
 };
 
+// High-level interface; `T` must derive from `DoublyLinkedListEntry<T>`.
 template<typename T>
-class DoublyLinkedList;
-
-template<typename T>
-using DoublyLinkedListBase = DoublyLinkedListLowLevel<DoublyLinkedList<T>, T>;
-
-template<typename T>
-class DoublyLinkedList : public DoublyLinkedListBase<T>
+class DoublyLinkedListIteratorBase : public ListIterator<T, T>
 {
 public:
-	using Base = DoublyLinkedListBase<T>;
+	using ListIterator<T, T>::ListIterator;
 
-	static constexpr Base::Entry& GetEntryFromHeldType(T &held)
+	constexpr T& Dereference()
 	{
-		return held;
+		return *this->GetHeldPointer();
 	}
+};
 
-	static constexpr T& DereferenceHeldType(T &held)
+template<typename T>
+class DoublyLinkedListIterator : public DoublyLinkedListIteratorBase<T>
+{
+public:
+	constexpr T* Advance()
+	{
+		return this->GetHeldPointer()->next;
+	}
+};
+
+template<typename T>
+class DoublyLinkedListReverseIterator : public DoublyLinkedListIteratorBase<T>
+{
+public:
+	constexpr T* Advance()
+	{
+		return this->GetHeldPointer()->previous;
+	}
+};
+
+template<typename T>
+class DoublyLinkedList : public DoublyLinkedListLowLevel<T, DoublyLinkedListIterator<T>, DoublyLinkedListIterator<const T>, DoublyLinkedListReverseIterator<T>, DoublyLinkedListReverseIterator<const T>>
+{
+public:
+	static constexpr DoublyLinkedListEntry<T>& GetEntryFromHeldType(T &held)
 	{
 		return held;
 	}

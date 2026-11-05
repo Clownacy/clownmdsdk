@@ -23,6 +23,8 @@ static constexpr auto MakeList = []<std::size_t S>(Pool<TestEntry, S> &list, aut
 // allocate_front
 // allocate_back
 // deallocate
+// begin
+// rbegin
 static_assert(
 	[]() constexpr
 	{
@@ -35,11 +37,12 @@ static_assert(
 		list.deallocate(list.begin());
 		list.allocate_front(entries[2]);
 		list.allocate_back(entries[3]);
+		list.deallocate(list.rbegin());
 
 		if (list.front().value != 2)
 			return false;
 
-		if (list.back().value != 3)
+		if (list.back().value != 1)
 			return false;
 
 		return true;
@@ -58,10 +61,11 @@ static_assert(
 		Pool<TestEntry, 10> list;
 		MakeList(list, entries);
 
+		const auto &const_list = list;
 		std::size_t count = 0;
 		auto iterator = entries.rbegin();
 
-		for (const auto &value : list)
+		for (const auto &value : const_list)
 		{
 			if (value.value != *iterator++)
 				return false;
@@ -69,7 +73,37 @@ static_assert(
 			++count;
 		}
 
-		return count == entries.size() && count == list.size() && list.max_size() == 10;
+		return count == entries.size() && count == const_list.size() && const_list.max_size() == 10;
+	}()
+);
+
+// rbegin
+// rend
+// iterator
+// size
+// max_size
+static_assert(
+	[]() constexpr
+	{
+		std::array<int, 4> entries = {0, 1, 2, 3};
+		Pool<TestEntry, 10> list;
+		MakeList(list, entries);
+
+		const auto &const_list = list;
+		std::size_t count = 0;
+		auto iterator = entries.begin();
+
+		for (auto it = const_list.rbegin(); it != const_list.rend(); ++it)
+		{
+			const auto &value = *it;
+
+			if (value.value != *iterator++)
+				return false;
+
+			++count;
+		}
+
+		return count == entries.size() && count == const_list.size() && const_list.max_size() == 10;
 	}()
 );
 
@@ -108,14 +142,14 @@ static_assert(
 static_assert(
 	[]() constexpr
 	{
-		Pool<TestEntry, 10> list;
+		const Pool<TestEntry, 10> list;
 		return list.empty() && !list.full();
 	}()
 );
 static_assert(
 	[]() constexpr
 	{
-		Pool<TestEntry, 0> list;
+		const Pool<TestEntry, 0> list;
 		return list.empty() && list.full();
 	}()
 );
