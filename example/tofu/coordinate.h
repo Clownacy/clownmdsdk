@@ -6,15 +6,18 @@
 #include "mega-drive.h"
 
 #define COORDINATE_BASE_MAKE_OPERATOR(OPERATOR) \
-	template<typename Self> \
-	Self operator OPERATOR(this const Self &self, const Self &other) \
+	template<typename Self, typename Other> \
+	std::remove_cvref_t<Self> operator OPERATOR(this Self &&self, Other &&other) \
 	{ \
-		return {self.x OPERATOR other.x, self.y OPERATOR other.y}; \
+		if constexpr (std::is_integral_v<std::remove_cvref_t<Other>>) \
+			return {self.x OPERATOR other, self.y OPERATOR other}; \
+		else \
+			return {self.x OPERATOR other.x, self.y OPERATOR other.y}; \
 	} \
-	template<typename Self> \
-	Self operator OPERATOR(this const Self &self, const Integer value) \
+	template<typename Other> \
+	auto& operator OPERATOR##=(Other &&other) \
 	{ \
-		return {self.x OPERATOR value, self.y OPERATOR value}; \
+		return *this = *this OPERATOR std::forward<Other>(other); \
 	}
 
 namespace Coordinate

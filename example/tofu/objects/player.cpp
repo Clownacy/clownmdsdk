@@ -88,18 +88,21 @@ bool Objects::Player::Update()
 	y_velocity += 0x5000;
 
 	if (controller.pressed.b)
-		object_manager.EmplaceBack<Bullet>(position + Coordinate::Pixel(facing_left ? -6 : 6, -2).ToWorld(), facing_left ? -0x68000 : 0x68000);
+		object_manager.EmplaceBack<Bullet>(position + Coordinate::Pixel(facing_left ? -6 : 6, -2), facing_left ? -0x68000 : 0x68000);
 
 	// Updata camera.
 	level_manager.camera = Coordinate::Pixel(position);
 
+	const auto half_screen_size = Coordinate::screen_size.pixels / 2;
+
 	// Restrict camera to bounds of level.
-	level_manager.camera.x = std::clamp(level_manager.camera.x, Coordinate::screen_size.pixels.x / 2, Coordinate::level_size.blocks.x * Coordinate::block_size.pixels.x - Coordinate::screen_size.pixels.x / 2);
-	level_manager.camera.y = std::clamp(level_manager.camera.y, Coordinate::screen_size.pixels.y / 2, Coordinate::level_size.blocks.y * Coordinate::block_size.pixels.y - Coordinate::screen_size.pixels.y / 2);
+	const auto lower_camera_boundary = half_screen_size;
+	const auto upper_camera_boundary = Coordinate::level_size.pixels - half_screen_size;
+	level_manager.camera.x = std::clamp(level_manager.camera.x, lower_camera_boundary.x, upper_camera_boundary.x);
+	level_manager.camera.y = std::clamp(level_manager.camera.y, lower_camera_boundary.y, upper_camera_boundary.y);
 
 	// Centre camera on target.
-	level_manager.camera.x -= Coordinate::screen_size.pixels.x / 2;
-	level_manager.camera.y -= Coordinate::screen_size.pixels.y / 2;
+	level_manager.camera -= half_screen_size;
 
 	QueueForDisplay(facing_left ? -2 : 2, -2, 1, 3, {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = facing_left, .tile_index = 8});
 

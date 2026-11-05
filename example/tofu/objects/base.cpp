@@ -4,10 +4,6 @@
 
 void Objects::Base::QueueForDisplay(const int x_offset, const int y_offset, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
 {
-	static constexpr auto WorldCoordinateToScreen = [](const unsigned long coordinate) -> unsigned int
-	{
-		return 0x80 + coordinate / 0x10000;
-	};
-
-	sprite_manager.QueueSprite(WorldCoordinateToScreen(position.x) + x_offset, WorldCoordinateToScreen(position.y) + y_offset, width, height, tile_metadata);
+	const auto pixel_position = position.ToPixels();
+	sprite_manager.QueueSprite(0x80 + pixel_position.x + x_offset, 0x80 + pixel_position.y + y_offset, width, height, tile_metadata);
 }
