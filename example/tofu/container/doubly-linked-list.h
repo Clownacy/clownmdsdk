@@ -14,17 +14,10 @@ private:
 	using Common = ListCommon<DerivedEntry, HeldType>;
 
 public:
-	class Entry
+	struct Entry
 	{
-	public:
 		HeldType *next;
 		HeldType *previous;
-
-		// TODO: Get rid of this and just use nullptr `directly`.
-		static constexpr auto GetNull()
-		{
-			return static_cast<HeldType*>(nullptr);
-		}
 	};
 
 private:

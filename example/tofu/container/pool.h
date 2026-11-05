@@ -9,82 +9,81 @@
 #include "doubly-linked-list.h"
 #include "singly-linked-list.h"
 
-template<typename T>
-struct PoolEntry;
-
-template<typename T>
-struct PoolEntryEmpty;
-
-template<typename T>
-union PoolEntryUnion
+namespace PoolEntry
 {
-	PoolEntry<T> entry;
-	PoolEntryEmpty<T> entry_empty;
+	// Union
+	template<typename T>
+	struct Allocated;
 
-	constexpr PoolEntryUnion() {}
-};
+	template<typename T>
+	struct Deallocated;
 
-template<typename T>
-struct PoolEntry;
-
-template<typename T>
-using PoolEntryList = DoublyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntry<T>>;
-
-template<typename T>
-struct PoolEntry : public PoolEntryList<T>::Entry, public T
-{
-	using T::T;
-
-	static constexpr PoolEntryList<T>::Entry& GetEntryFromHeldType(PoolEntryUnion<T> &held)
+	template<typename T>
+	union Union
 	{
-		return held.entry;
-	}
-};
+		Allocated<T> allocated;
+		Deallocated<T> deallocated;
 
-template<typename T>
-struct PoolEntryEmpty;
+		constexpr Union() {}
+	};
 
-template<typename T>
-using PoolEntryEmptyList = SinglyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntryEmpty<T>>;
+	// Allocated
+	template<typename T>
+	using AllocatedList = DoublyLinkedListLowLevel<Union<T>, Allocated<T>>;
 
-template<typename T>
-struct PoolEntryEmpty : public PoolEntryEmptyList<T>::Entry
-{
-	static constexpr PoolEntryEmptyList<T>::Entry& GetEntryFromHeldType(PoolEntryUnion<T> &held)
+	template<typename T>
+	struct Allocated : public AllocatedList<T>::Entry, public T
 	{
-		return held.entry_empty;
-	}
-};
+		using T::T;
 
+		static constexpr AllocatedList<T>::Entry& GetEntryFromHeldType(Union<T> &held)
+		{
+			return held.allocated;
+		}
+	};
+
+	// Deallocated
+	template<typename T>
+	using DeallocatedList = SinglyLinkedListLowLevel<Union<T>, Deallocated<T>>;
+
+	template<typename T>
+	struct Deallocated : public DeallocatedList<T>::Entry
+	{
+		static constexpr DeallocatedList<T>::Entry& GetEntryFromHeldType(Union<T> &held)
+		{
+			return held.deallocated;
+		}
+	};
+}
+
+// Pool
 template<typename T, std::size_t S>
 class Pool;
 
 template<typename T, std::size_t S>
-using PoolCommon = ListCommon<Pool<T, S>, PoolEntryUnion<T>>;
+using PoolCommon = ListCommon<Pool<T, S>, PoolEntry::Union<T>>;
 
 template<typename T, std::size_t S>
 class Pool : protected PoolCommon<T, S>
 {
-public:
-	using Entry = PoolEntry<T>;
-
 private:
-	using EntryEmpty = PoolEntryEmpty<T>;
-	using EntryUnion = PoolEntryUnion<T>;
 	using Common = PoolCommon<T, S>;
+	using Allocated = PoolEntry::Allocated<T>;
+	using Deallocated = PoolEntry::Deallocated<T>;
+	using Union = PoolEntry::Union<T>;
 
-	PoolEntryList<T> allocated;
-	PoolEntryEmptyList<T> deallocated;
-	std::array<PoolEntryUnion<T>, S> storage;
+	PoolEntry::AllocatedList<T> allocated_list;
+	PoolEntry::DeallocatedList<T> deallocated_list;
+	std::array<PoolEntry::Union<T>, S> storage;
 
 	template<typename ...Ts>
-	constexpr EntryUnion& pop_from_deallocated(Ts &&...args)
+	constexpr Union& pop_from_deallocated(Ts &&...args)
 	{
-		auto &entry_union = deallocated.pop_front();
+		auto &entry_union = deallocated_list.pop_front();
 
-		entry_union.entry_empty.~EntryEmpty();
+		entry_union.deallocated.~Deallocated();
 
-		std::construct_at(&entry_union.entry, std::forward<Ts>(args)...);
+		std::construct_at(&entry_union.allocated, std::forward<Ts>(args)...);
 
 		return entry_union;
 	}
@@ -94,8 +93,8 @@ public:
 	{
 		for (auto &entry : storage)
 		{
-			std::construct_at(&entry.entry_empty);
-			deallocated.push_front(entry);
+			std::construct_at(&entry.deallocated);
+			deallocated_list.push_front(entry);
 		}
 	}
 
@@ -112,39 +111,39 @@ public:
 	constexpr T& allocate_front(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
-		allocated.push_front(entry);
-		return entry.entry;
+		allocated_list.push_front(entry);
+		return entry.allocated;
 	}
 
 	template<typename ...Ts>
 	constexpr T& allocate_back(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
-		allocated.push_back(entry);
-		return entry.entry;
+		allocated_list.push_back(entry);
+		return entry.allocated;
 	}
 
 	constexpr Common::Iterator deallocate(Common::Iterator it)
 	{
-		EntryUnion &entry_union = *it.GetHeldTypePointer();
+		Union &entry_union = *it.GetHeldTypePointer();
 
 		++it;
 
 		// Remove from allocated object list.
-		allocated.erase(entry_union);
+		allocated_list.erase(entry_union);
 
-		entry_union.entry.~Entry();
+		entry_union.allocated.~Allocated();
 
 		// Add to deallocated object list.
-		std::construct_at(&entry_union.entry_empty);
-		deallocated.push_front(entry_union);
+		std::construct_at(&entry_union.deallocated);
+		deallocated_list.push_front(entry_union);
 
 		return it;
 	}
 
 	constexpr Common::Iterator begin()
 	{
-		return typename Common::Iterator(allocated.begin().GetHeldTypePointer());
+		return typename Common::Iterator(allocated_list.begin().GetHeldTypePointer());
 	}
 
 	constexpr Common::Iterator end()
@@ -155,18 +154,18 @@ public:
 	template<typename Self>
 	constexpr T& front(this Self &self)
 	{
-		return self.allocated.front().entry;
+		return self.allocated_list.front().allocated;
 	}
 
 	template<typename Self>
 	constexpr T& back(this Self &self)
 	{
-		return self.allocated.back().entry;
+		return self.allocated_list.back().allocated;
 	}
 
 	constexpr std::size_t size() const
 	{
-		return allocated.size();
+		return allocated_list.size();
 	}
 
 	constexpr std::size_t max_size() const
@@ -176,22 +175,22 @@ public:
 
 	constexpr bool empty() const
 	{
-		return allocated.empty();
+		return allocated_list.empty();
 	}
 
 	constexpr bool full() const
 	{
-		return deallocated.empty();
+		return deallocated_list.empty();
 	}
 
-	static constexpr Entry& GetEntryFromHeldType(EntryUnion &held)
+	static constexpr Allocated& GetEntryFromHeldType(Union &held)
 	{
-		return held.entry;
+		return held.allocated;
 	}
 
-	static constexpr T& DereferenceHeldType(EntryUnion &held)
+	static constexpr T& DereferenceHeldType(Union &held)
 	{
-		return held.entry;
+		return held.allocated;
 	}
 };
 

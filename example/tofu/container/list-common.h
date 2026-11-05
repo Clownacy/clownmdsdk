@@ -13,7 +13,7 @@ public:
 		HeldType *entry;
 
 	public:
-		constexpr Iterator(HeldType* const entry = Derived::Entry::GetNull())
+		constexpr Iterator(HeldType* const entry = nullptr)
 			: entry(entry)
 		{}
 
@@ -44,7 +44,7 @@ public:
 		template<typename Self>
 		constexpr auto* operator->(this Self &&self)
 		{
-			assert(self.entry != Derived::Entry::GetNull());
+			assert(self.entry != nullptr);
 			return &Derived::DereferenceHeldType(*self.GetHeldTypePointer());
 		}
 
