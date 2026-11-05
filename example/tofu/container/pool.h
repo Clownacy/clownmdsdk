@@ -74,7 +74,7 @@ private:
 			return this->GetHeldPointer()->deallocated;
 		}
 
-		constexpr Held* Iterate()
+		constexpr Held* Advance()
 		{
 			return this->GetHeldPointer()->deallocated.next;
 		}
