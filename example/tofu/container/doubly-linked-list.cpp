@@ -18,7 +18,7 @@ static constexpr auto MakeList(auto &entries)
 {
 	DoublyLinkedList<TestEntry> list;
 	for (auto &entry : entries)
-		list.push_front(entry);
+		list.push_back(entry);
 	return list;
 };
 
@@ -60,7 +60,7 @@ static_assert(
 		const auto list = MakeList(entries);
 
 		std::size_t count = 0;
-		auto iterator = entries.rbegin();
+		auto iterator = entries.begin();
 
 		for (const auto &value : list)
 		{
@@ -84,7 +84,7 @@ static_assert(
 		const auto list = MakeList(entries);
 
 		std::size_t count = 0;
-		auto iterator = entries.begin();
+		auto iterator = entries.rbegin();
 
 		for (auto it = list.rbegin(); it != list.rend(); ++it)
 		{
@@ -107,7 +107,7 @@ static_assert(
 	{
 		std::array<TestEntry, 4> entries = {0, 1, 2, 3};
 		const auto list = MakeList(entries);
-		return list.front().value == 3 && list.back().value == 0;
+		return list.front().value == 0 && list.back().value == 3;
 	}()
 );
 

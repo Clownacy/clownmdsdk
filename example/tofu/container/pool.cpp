@@ -10,7 +10,7 @@ static constexpr auto ToPool(const std::initializer_list<int> &entries)
 {
 	Pool<int, S> pool;
 	for (auto &entry : entries)
-		pool.allocate_front(entry);
+		pool.allocate_back(entry);
 	return pool;
 };
 
@@ -56,7 +56,7 @@ static_assert(
 
 		const auto &const_list = pool;
 		std::size_t count = 0;
-		auto iterator = std::rbegin(entries);
+		auto iterator = std::begin(entries);
 
 		for (const auto &value : const_list)
 		{
@@ -83,7 +83,7 @@ static_assert(
 
 		const auto &const_list = pool;
 		std::size_t count = 0;
-		auto iterator = entries.begin();
+		auto iterator = std::rbegin(entries);
 
 		for (auto it = const_list.rbegin(); it != const_list.rend(); ++it)
 		{
@@ -105,7 +105,7 @@ static_assert(
 	[]() constexpr
 	{
 		const auto pool = ToPool<10>({0, 1, 2, 3});
-		return pool.front() == 3 && pool.back() == 0;
+		return pool.front() == 0 && pool.back() == 3;
 	}()
 );
 
