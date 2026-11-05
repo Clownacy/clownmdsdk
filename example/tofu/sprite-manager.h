@@ -8,7 +8,7 @@ class SpriteManager
 {
 private:
 	std::array<VDP::VRAM::Sprite, 80> table;
-	unsigned char total_sprites;
+	unsigned char total_sprites = 0;
 
 public:
 	void QueueSprite(unsigned int x, unsigned int y, unsigned int width, unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata);
