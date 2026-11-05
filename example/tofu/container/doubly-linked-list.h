@@ -7,11 +7,11 @@
 
 #include "list-common.h"
 
-template<typename HeldType, typename Derived>
-class DoublyLinkedListLowLevel : protected ListCommon<Derived, HeldType>
+template<typename HeldType, typename DerivedEntry>
+class DoublyLinkedListLowLevel : protected ListCommon<DerivedEntry, HeldType>
 {
 private:
-	using Common = ListCommon<Derived, HeldType>;
+	using Common = ListCommon<DerivedEntry, HeldType>;
 
 public:
 	class Entry
@@ -64,10 +64,10 @@ public:
 		if (head == nullptr)
 			tail = &entry;
 		else
-			Derived::GetEntryFromHeldType(*head).previous = &entry;
+			DerivedEntry::GetEntryFromHeldType(*head).previous = &entry;
 
-		Derived::GetEntryFromHeldType(entry).next = head;
-		Derived::GetEntryFromHeldType(entry).previous = nullptr;
+		DerivedEntry::GetEntryFromHeldType(entry).next = head;
+		DerivedEntry::GetEntryFromHeldType(entry).previous = nullptr;
 
 		head = &entry;
 	}
@@ -79,10 +79,10 @@ public:
 		if (tail == nullptr)
 			head = &entry;
 		else
-			Derived::GetEntryFromHeldType(*tail).next = &entry;
+			DerivedEntry::GetEntryFromHeldType(*tail).next = &entry;
 
-		Derived::GetEntryFromHeldType(entry).next = nullptr;
-		Derived::GetEntryFromHeldType(entry).previous = tail;
+		DerivedEntry::GetEntryFromHeldType(entry).next = nullptr;
+		DerivedEntry::GetEntryFromHeldType(entry).previous = tail;
 
 		tail = &entry;
 	}
@@ -91,17 +91,17 @@ public:
 	{
 		--total_entries;
 
-		HeldType* const next = Derived::GetEntryFromHeldType(entry).next;
+		HeldType* const next = DerivedEntry::GetEntryFromHeldType(entry).next;
 
-		if (Derived::GetEntryFromHeldType(entry).previous == nullptr)
-			head = Derived::GetEntryFromHeldType(entry).next;
+		if (DerivedEntry::GetEntryFromHeldType(entry).previous == nullptr)
+			head = DerivedEntry::GetEntryFromHeldType(entry).next;
 		else
-			Derived::GetEntryFromHeldType(*Derived::GetEntryFromHeldType(entry).previous).next = Derived::GetEntryFromHeldType(entry).next;
+			DerivedEntry::GetEntryFromHeldType(*DerivedEntry::GetEntryFromHeldType(entry).previous).next = DerivedEntry::GetEntryFromHeldType(entry).next;
 
-		if (Derived::GetEntryFromHeldType(entry).next == nullptr)
-			tail = Derived::GetEntryFromHeldType(entry).previous;
+		if (DerivedEntry::GetEntryFromHeldType(entry).next == nullptr)
+			tail = DerivedEntry::GetEntryFromHeldType(entry).previous;
 		else
-			Derived::GetEntryFromHeldType(*Derived::GetEntryFromHeldType(entry).next).previous = Derived::GetEntryFromHeldType(entry).previous;
+			DerivedEntry::GetEntryFromHeldType(*DerivedEntry::GetEntryFromHeldType(entry).next).previous = DerivedEntry::GetEntryFromHeldType(entry).previous;
 
 		return next;
 	}

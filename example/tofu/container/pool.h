@@ -25,29 +25,36 @@ union PoolEntryUnion
 };
 
 template<typename T>
-struct PoolEntry : public DoublyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntry<T>>::Entry, public T
+struct PoolEntry;
+
+template<typename T>
+using PoolEntryList = DoublyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntry<T>>;
+
+template<typename T>
+struct PoolEntry : public PoolEntryList<T>::Entry, public T
 {
-public:
 	using T::T;
 
-	constexpr PoolEntry* GetNext()
+	static constexpr PoolEntryList<T>::Entry& GetEntryFromHeldType(PoolEntryUnion<T> &held)
 	{
-		return DoublyLinkedList<PoolEntry<T>>::Entry::next;
-	}
-
-	constexpr const auto& GetPoolEntry() const
-	{
-		return *this;
-	}
-
-	constexpr void SetPoolEntry(const PoolEntry &other)
-	{
-		*this = other;
+		return held.entry;
 	}
 };
 
 template<typename T>
-class PoolEntryEmpty : public SinglyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntryEmpty<T>>::Entry {};
+struct PoolEntryEmpty;
+
+template<typename T>
+using PoolEntryEmptyList = SinglyLinkedListLowLevel<PoolEntryUnion<T>, PoolEntryEmpty<T>>;
+
+template<typename T>
+struct PoolEntryEmpty : public PoolEntryEmptyList<T>::Entry
+{
+	static constexpr PoolEntryEmptyList<T>::Entry& GetEntryFromHeldType(PoolEntryUnion<T> &held)
+	{
+		return held.entry_empty;
+	}
+};
 
 template<typename T, std::size_t S>
 class Pool;
@@ -66,26 +73,8 @@ private:
 	using EntryUnion = PoolEntryUnion<T>;
 	using Common = PoolCommon<T, S>;
 
-	class AllocatedList : public DoublyLinkedListLowLevel<EntryUnion, AllocatedList>
-	{
-	public:
-		static constexpr DoublyLinkedListLowLevel<EntryUnion, Entry>::Entry& GetEntryFromHeldType(EntryUnion &held)
-		{
-			return held.entry;
-		}
-	};
-
-	class DeallocatedList : public SinglyLinkedListLowLevel<EntryUnion, DeallocatedList>
-	{
-	public:
-		static constexpr SinglyLinkedListLowLevel<EntryUnion, EntryEmpty>::Entry& GetEntryFromHeldType(EntryUnion &held)
-		{
-			return held.entry_empty;
-		}
-	};
-
-	AllocatedList allocated;
-	DeallocatedList deallocated;
+	PoolEntryList<T> allocated;
+	PoolEntryEmptyList<T> deallocated;
 	std::array<PoolEntryUnion<T>, S> storage;
 
 	template<typename ...Ts>

@@ -7,11 +7,11 @@
 
 #include "list-common.h"
 
-template<typename HeldType, typename Derived>
-class SinglyLinkedListLowLevel : protected ListCommon<Derived, HeldType>
+template<typename HeldType, typename DerivedEntry>
+class SinglyLinkedListLowLevel : protected ListCommon<DerivedEntry, HeldType>
 {
 private:
-	using Common = ListCommon<Derived, HeldType>;
+	using Common = ListCommon<DerivedEntry, HeldType>;
 
 public:
 	class Entry
@@ -48,14 +48,14 @@ public:
 
 	constexpr void push_front(HeldType &entry)
 	{
-		Derived::GetEntryFromHeldType(entry).next = head;
+		DerivedEntry::GetEntryFromHeldType(entry).next = head;
 		head = &entry;
 	}
 
 	constexpr HeldType& pop_front()
 	{
 		HeldType &entry = front();
-		head = Derived::GetEntryFromHeldType(entry).next;
+		head = DerivedEntry::GetEntryFromHeldType(entry).next;
 		return entry;
 	}
 
