@@ -16,17 +16,7 @@ class Pool
 private:
 	// Define a bunch of internal classes.
 
-	// EntryUnion
-	struct EntryAllocated;
-	struct EntryDeallocated;
-
-	union EntryUnion
-	{
-		EntryAllocated allocated;
-		EntryDeallocated deallocated;
-
-		constexpr EntryUnion() {}
-	};
+	struct EntryUnion;
 
 	// Iterators
 	template<typename Base>
@@ -40,7 +30,7 @@ private:
 
 		constexpr auto* Advance()
 		{
-			return this->GetHeldPointer()->allocated.next;
+			return this->GetHeldPointer()->next;
 		}
 	};
 
@@ -58,7 +48,7 @@ private:
 
 		constexpr auto* Advance()
 		{
-			return this->GetHeldPointer()->allocated.previous;
+			return this->GetHeldPointer()->previous;
 		}
 	};
 
@@ -71,7 +61,7 @@ private:
 	public:
 		constexpr auto* Advance()
 		{
-			return this->GetHeldPointer()->deallocated.next;
+			return this->GetHeldPointer()->next;
 		}
 	};
 
@@ -88,11 +78,11 @@ private:
 
 		static constexpr Base::Entry& GetEntryFromHeldType(EntryUnion &held)
 		{
-			return held.allocated;
+			return held;
 		}
 	};
 
-	struct EntryAllocated : public EntryAllocatedList::Entry
+	struct EntryAllocated
 	{
 		T value;
 
@@ -112,11 +102,23 @@ private:
 
 		static constexpr Base::Entry& GetEntryFromHeldType(EntryUnion &held)
 		{
-			return held.deallocated;
+			return held;
 		}
 	};
 
-	struct EntryDeallocated : public EntryDeallocatedList::Entry {};
+	struct EntryDeallocated {};
+
+	// EntryUnion
+	struct EntryUnion : EntryAllocatedListBase::Entry
+	{
+		union
+		{
+			EntryAllocated allocated;
+			EntryDeallocated deallocated;
+		};
+
+		constexpr EntryUnion() {}
+	};
 
 	// Actual Pool stuff begins here.
 	using iterator = EntryAllocatedListBase::iterator;
