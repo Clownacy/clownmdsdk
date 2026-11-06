@@ -10,17 +10,20 @@ private:
 	Held *entry;
 
 public:
+	using difference_type = std::ptrdiff_t;
+	using value_type = Dereferenced;
+
 	constexpr ListIterator(Held* const entry = nullptr)
 		: entry(entry)
 	{}
 
-	constexpr ListIterator& operator++(this auto &&self)
+	constexpr auto& operator++(this auto &&self)
 	{
 		self.entry = self.Advance();
 		return self;
 	}
 
-	constexpr ListIterator operator++(this auto &&self, int)
+	constexpr auto operator++(this auto &&self, int)
 	{
 		const auto old = self;
 		self.operator++();

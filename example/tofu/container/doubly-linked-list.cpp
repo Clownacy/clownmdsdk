@@ -1,6 +1,7 @@
 #include "doubly-linked-list.h"
 
 #include <array>
+#include <iterator>
 #include <span>
 
 // Test suite
@@ -22,6 +23,12 @@ static constexpr auto MakeList(const std::span<TestEntry> &entries)
 		list.push_back(entry);
 	return list;
 };
+
+// Iterators
+static_assert(std::forward_iterator<DoublyLinkedList<TestEntry>::iterator>);
+static_assert(std::forward_iterator<DoublyLinkedList<TestEntry>::const_iterator>);
+static_assert(std::forward_iterator<DoublyLinkedList<TestEntry>::reverse_iterator>);
+static_assert(std::forward_iterator<DoublyLinkedList<TestEntry>::const_reverse_iterator>);
 
 // push_front
 // push_back

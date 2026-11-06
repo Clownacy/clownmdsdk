@@ -1,6 +1,7 @@
 #include "singly-linked-list.h"
 
 #include <array>
+#include <iterator>
 #include <span>
 
 // Test suite
@@ -22,6 +23,10 @@ static constexpr auto MakeList(const std::span<TestEntry> &entries)
 		list.push_front(entry);
 	return list;
 };
+
+// Iterators
+static_assert(std::forward_iterator<SinglyLinkedList<TestEntry>::iterator>);
+static_assert(std::forward_iterator<SinglyLinkedList<TestEntry>::const_iterator>);
 
 // push_front
 // pop_front
