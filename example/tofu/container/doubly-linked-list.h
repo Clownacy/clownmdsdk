@@ -119,14 +119,14 @@ public:
 
 	constexpr T& pop_front(this auto &&self)
 	{
-		auto &entry = self.front();
+		T &entry = self.front();
 		self.erase(entry);
 		return entry;
 	}
 
 	constexpr T& pop_back(this auto &&self)
 	{
-		auto &entry = self.back();
+		T &entry = self.back();
 		self.erase(entry);
 		return entry;
 	}

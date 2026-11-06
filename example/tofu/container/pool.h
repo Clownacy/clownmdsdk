@@ -225,11 +225,8 @@ public:
 	constexpr IteratorT deallocate(IteratorT it)
 	{
 		EntryUnion &entry = *it.GetHeldPointer();
-
 		++it;
-
 		deallocate(entry);
-
 		return it;
 	}
 
