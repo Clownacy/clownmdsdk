@@ -25,7 +25,7 @@ public:
 
 	constexpr auto operator++(this auto &&self, int)
 	{
-		const auto old = self;
+		auto old = self;
 		self.operator++();
 		return old;
 	}
