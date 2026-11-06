@@ -270,14 +270,12 @@ public:
 		return allocated_list.crend();
 	}
 
-	template<typename Self>
-	constexpr T& front(this Self &&self)
+	constexpr T& front(this auto &&self)
 	{
 		return self.allocated_list.front().allocated.value;
 	}
 
-	template<typename Self>
-	constexpr T& back(this Self &&self)
+	constexpr T& back(this auto &&self)
 	{
 		return self.allocated_list.back().allocated.value;
 	}
