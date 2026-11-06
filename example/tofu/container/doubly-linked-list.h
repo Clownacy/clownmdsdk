@@ -21,6 +21,11 @@ class DoublyLinkedListLowLevel : public SinglyLinkedListLowLevel<T, Iterator, Co
 public:
 	using Entry = DoublyLinkedListEntry<T>;
 
+	using iterator = Iterator;
+	using const_iterator = ConstIterator;
+	using reverse_iterator = ReverseIterator;
+	using const_reverse_iterator = ConstReverseIterator;
+
 protected:
 	T *tail = nullptr;
 	std::size_t total_entries = 0;
@@ -32,34 +37,34 @@ public:
 		return *self.tail;
 	}
 
-	constexpr ConstReverseIterator crbegin() const
+	constexpr const_reverse_iterator crbegin() const
 	{
-		return ConstReverseIterator(tail);
+		return const_reverse_iterator(tail);
 	}
 
-	constexpr ConstReverseIterator crend() const
+	constexpr const_reverse_iterator crend() const
 	{
-		return ConstReverseIterator();
+		return const_reverse_iterator();
 	}
 
-	constexpr ConstReverseIterator rbegin() const
+	constexpr const_reverse_iterator rbegin() const
 	{
 		return crbegin();
 	}
 
-	constexpr ConstReverseIterator rend() const
+	constexpr const_reverse_iterator rend() const
 	{
 		return crend();
 	}
 
-	constexpr ReverseIterator rbegin()
+	constexpr reverse_iterator rbegin()
 	{
-		return ReverseIterator(tail);
+		return reverse_iterator(tail);
 	}
 
-	constexpr ReverseIterator rend()
+	constexpr reverse_iterator rend()
 	{
-		return ReverseIterator();
+		return reverse_iterator();
 	}
 
 	constexpr void push_front(this auto &&self, T &value)

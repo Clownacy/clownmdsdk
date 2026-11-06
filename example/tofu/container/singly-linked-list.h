@@ -20,6 +20,9 @@ class SinglyLinkedListLowLevel
 public:
 	using Entry = SinglyLinkedListEntry<T>;
 
+	using iterator = Iterator;
+	using const_iterator = ConstIterator;
+
 protected:
 	T *head = nullptr;
 
@@ -30,32 +33,32 @@ public:
 		return *self.head;
 	}
 
-	constexpr Iterator begin()
+	constexpr iterator begin()
 	{
-		return Iterator(head);
+		return iterator(head);
 	}
 
-	constexpr Iterator end()
+	constexpr iterator end()
 	{
-		return Iterator();
+		return iterator();
 	}
 
-	constexpr ConstIterator begin() const
+	constexpr const_iterator begin() const
 	{
-		return ConstIterator(head);
+		return const_iterator(head);
 	}
 
-	constexpr ConstIterator end() const
+	constexpr const_iterator end() const
 	{
-		return ConstIterator();
+		return const_iterator();
 	}
 
-	constexpr ConstIterator cbegin() const
+	constexpr const_iterator cbegin() const
 	{
 		return begin();
 	}
 
-	constexpr ConstIterator cend() const
+	constexpr const_iterator cend() const
 	{
 		return end();
 	}

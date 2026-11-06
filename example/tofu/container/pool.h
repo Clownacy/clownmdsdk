@@ -119,10 +119,10 @@ private:
 	struct EntryDeallocated : public EntryDeallocatedList::Entry {};
 
 	// Actual Pool stuff begins here.
-	using Iterator = AllocatedIterator;
-	using ConstIterator = AllocatedConstIterator;
-	using ReverseIterator = AllocatedReverseIterator;
-	using ConstReverseIterator = AllocatedConstReverseIterator;
+	using iterator = EntryAllocatedListBase::iterator;
+	using const_iterator = EntryAllocatedListBase::const_iterator;
+	using reverse_iterator = EntryAllocatedListBase::reverse_iterator;
+	using const_reverse_iterator = EntryAllocatedListBase::const_reverse_iterator;
 
 	EntryAllocatedList allocated_list;
 	EntryDeallocatedList deallocated_list;
@@ -206,23 +206,23 @@ public:
 	}
 
 	template<typename ...Ts>
-	constexpr Iterator allocate_front(Ts &&...args)
+	constexpr iterator allocate_front(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated_list.push_front(entry);
-		return Iterator(&entry);
+		return iterator(&entry);
 	}
 
 	template<typename ...Ts>
-	constexpr Iterator allocate_back(Ts &&...args)
+	constexpr iterator allocate_back(Ts &&...args)
 	{
 		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
 		allocated_list.push_back(entry);
-		return Iterator(&entry);
+		return iterator(&entry);
 	}
 
-	template<typename IteratorT> requires std::is_same_v<IteratorT, Iterator> || std::is_same_v<IteratorT, ReverseIterator>
-	constexpr IteratorT deallocate(IteratorT it)
+	template<typename Iterator> requires std::is_same_v<Iterator, iterator> || std::is_same_v<Iterator, reverse_iterator>
+	constexpr Iterator deallocate(Iterator it)
 	{
 		EntryUnion &entry = *it.GetHeldPointer();
 		++it;
@@ -240,12 +240,12 @@ public:
 		return self.allocated_list.end();
 	}
 
-	constexpr ConstIterator cbegin() const
+	constexpr const_iterator cbegin() const
 	{
 		return allocated_list.cbegin();
 	}
 
-	constexpr ConstIterator cend() const
+	constexpr const_iterator cend() const
 	{
 		return allocated_list.cend();
 	}
@@ -260,12 +260,12 @@ public:
 		return self.allocated_list.rend();
 	}
 
-	constexpr ConstReverseIterator crbegin() const
+	constexpr const_reverse_iterator crbegin() const
 	{
 		return allocated_list.crbegin();
 	}
 
-	constexpr ConstReverseIterator crend() const
+	constexpr const_reverse_iterator crend() const
 	{
 		return allocated_list.crend();
 	}
