@@ -105,6 +105,8 @@ template<typename Base>
 class SinglyLinkedListIterator : public SinglyLinkedListIteratorBase<Base>
 {
 public:
+	using SinglyLinkedListIteratorBase<Base>::SinglyLinkedListIteratorBase;
+
 	constexpr auto* Advance()
 	{
 		return this->GetHeldPointer()->next;

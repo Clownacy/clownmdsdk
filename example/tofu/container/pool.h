@@ -23,6 +23,8 @@ private:
 	class AllocatedIteratorBase : public Base
 	{
 	public:
+		using Base::Base;
+
 		constexpr auto& Dereference()
 		{
 			return this->GetHeldPointer()->allocated.value;
@@ -41,6 +43,8 @@ private:
 	class AllocatedReverseIteratorBase : public Base
 	{
 	public:
+		using Base::Base;
+
 		constexpr auto& Dereference()
 		{
 			return this->GetHeldPointer()->allocated.value;
@@ -55,21 +59,8 @@ private:
 	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListIterator<EntryUnion, T>>;
 	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstIterator<EntryUnion, T>>;
 
-	template<typename Base>
-	class DeallocatedIteratorBase : public Base
-	{
-	public:
-		constexpr auto* Advance()
-		{
-			return this->GetHeldPointer()->next;
-		}
-	};
-
-	using DeallocatedIterator = DeallocatedIteratorBase<ListIterator<EntryUnion, T>>;
-	using DeallocatedConstIterator = DeallocatedIteratorBase<ListConstIterator<EntryUnion, T>>;
-
 	// EntryAllocated
-	using EntryAllocatedListBase = DoublyLinkedListLowLevel<EntryUnion, AllocatedIterator, AllocatedConstIterator, AllocatedReverseIterator, AllocatedConstReverseIterator>;
+	using EntryAllocatedListBase = DoublyLinkedList<EntryUnion>;
 
 	class EntryAllocatedList : public EntryAllocatedListBase
 	{
@@ -93,7 +84,7 @@ private:
 	};
 
 	// EntryDeallocated
-	using EntryDeallocatedListBase = SinglyLinkedListLowLevel<EntryUnion, DeallocatedIterator, DeallocatedConstIterator>;
+	using EntryDeallocatedListBase = SinglyLinkedList<EntryUnion>;
 
 	class EntryDeallocatedList : public EntryDeallocatedListBase
 	{
@@ -121,10 +112,10 @@ private:
 	};
 
 	// Actual Pool stuff begins here.
-	using iterator = EntryAllocatedListBase::iterator;
-	using const_iterator = EntryAllocatedListBase::const_iterator;
-	using reverse_iterator = EntryAllocatedListBase::reverse_iterator;
-	using const_reverse_iterator = EntryAllocatedListBase::const_reverse_iterator;
+	using iterator = AllocatedIterator;
+	using const_iterator = AllocatedConstIterator;
+	using reverse_iterator = AllocatedReverseIterator;
+	using const_reverse_iterator = AllocatedConstReverseIterator;
 
 	EntryAllocatedList allocated_list;
 	EntryDeallocatedList deallocated_list;
@@ -232,44 +223,64 @@ public:
 		return it;
 	}
 
-	constexpr auto begin(this auto &&self)
+	constexpr iterator begin()
 	{
-		return self.allocated_list.begin();
+		return allocated_list.begin().GetHeldPointer();
 	}
 
-	constexpr auto end(this auto &&self)
+	constexpr iterator end()
 	{
-		return self.allocated_list.end();
+		return allocated_list.end().GetHeldPointer();
+	}
+
+	constexpr const_iterator begin() const
+	{
+		return allocated_list.begin().GetHeldPointer();
+	}
+
+	constexpr const_iterator end() const
+	{
+		return allocated_list.end().GetHeldPointer();
 	}
 
 	constexpr const_iterator cbegin() const
 	{
-		return allocated_list.cbegin();
+		return allocated_list.cbegin().GetHeldPointer();
 	}
 
 	constexpr const_iterator cend() const
 	{
-		return allocated_list.cend();
+		return allocated_list.cend().GetHeldPointer();
 	}
 
-	constexpr auto rbegin(this auto &&self)
+	constexpr reverse_iterator rbegin()
 	{
-		return self.allocated_list.rbegin();
+		return allocated_list.rbegin().GetHeldPointer();
 	}
 
-	constexpr auto rend(this auto &&self)
+	constexpr reverse_iterator rend()
 	{
-		return self.allocated_list.rend();
+		return allocated_list.rend().GetHeldPointer();
+	}
+
+	constexpr const_reverse_iterator rbegin() const
+	{
+		return allocated_list.rbegin().GetHeldPointer();
+	}
+
+	constexpr const_reverse_iterator rend() const
+	{
+		return allocated_list.rend().GetHeldPointer();
 	}
 
 	constexpr const_reverse_iterator crbegin() const
 	{
-		return allocated_list.crbegin();
+		return allocated_list.crbegin().GetHeldPointer();
 	}
 
 	constexpr const_reverse_iterator crend() const
 	{
-		return allocated_list.crend();
+		return allocated_list.crend().GetHeldPointer();
 	}
 
 	constexpr T& front(this auto &&self)
