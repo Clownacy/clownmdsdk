@@ -60,19 +60,6 @@ private:
 	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstIterator<EntryUnion, T>>;
 
 	// EntryAllocated
-	using EntryAllocatedListBase = DoublyLinkedList<EntryUnion>;
-
-	class EntryAllocatedList : public EntryAllocatedListBase
-	{
-	public:
-		using Base = EntryAllocatedListBase;
-
-		static constexpr Base::Entry& GetEntryFromHeldType(EntryUnion &held)
-		{
-			return held;
-		}
-	};
-
 	struct EntryAllocated
 	{
 		T value;
@@ -84,23 +71,10 @@ private:
 	};
 
 	// EntryDeallocated
-	using EntryDeallocatedListBase = SinglyLinkedList<EntryUnion>;
-
-	class EntryDeallocatedList : public EntryDeallocatedListBase
-	{
-	public:
-		using Base = EntryDeallocatedListBase;
-
-		static constexpr Base::Entry& GetEntryFromHeldType(EntryUnion &held)
-		{
-			return held;
-		}
-	};
-
 	struct EntryDeallocated {};
 
 	// EntryUnion
-	struct EntryUnion : EntryAllocatedListBase::Entry
+	struct EntryUnion : DoublyLinkedList<EntryUnion>::Entry
 	{
 		union
 		{
@@ -117,8 +91,8 @@ private:
 	using reverse_iterator = AllocatedReverseIterator;
 	using const_reverse_iterator = AllocatedConstReverseIterator;
 
-	EntryAllocatedList allocated_list;
-	EntryDeallocatedList deallocated_list;
+	DoublyLinkedList<EntryUnion> allocated_list;
+	SinglyLinkedList<EntryUnion> deallocated_list;
 	std::array<EntryUnion, S> storage;
 
 	template<typename ...Ts>

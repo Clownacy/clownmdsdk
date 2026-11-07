@@ -8,20 +8,34 @@
 #include "list-common.h"
 
 template<typename T>
-struct SinglyLinkedListEntry
+class SinglyLinkedList
 {
-	T *next;
-};
+protected:
+	template<typename Base>
+	class IteratorBase : public Base
+	{
+	public:
+		using Base::Base;
 
-// Low-level interface; user decides how `T` contains `SinglyLinkedListEntry<T>` by specifying own `Iterator`.
-template<typename T, typename Iterator, typename ConstIterator>
-class SinglyLinkedListLowLevel
-{
+		constexpr auto& Dereference()
+		{
+			return *this->GetHeldPointer();
+		}
+
+		constexpr auto* Advance()
+		{
+			return this->GetHeldPointer()->next;
+		}
+	};
+
 public:
-	using Entry = SinglyLinkedListEntry<T>;
+	struct Entry
+	{
+		T *next;
+	};
 
-	using iterator = Iterator;
-	using const_iterator = ConstIterator;
+	using iterator = IteratorBase<ListIterator<T, T>>;
+	using const_iterator = IteratorBase<ListConstIterator<T, T>>;
 
 protected:
 	T *head = nullptr;
@@ -63,16 +77,16 @@ public:
 		return end();
 	}
 
-	constexpr void push_front(this auto &&self, T &entry)
+	constexpr void push_front(T &entry)
 	{
-		self.GetEntryFromHeldType(entry).next = self.head;
-		self.head = &entry;
+		entry.next = head;
+		head = &entry;
 	}
 
-	constexpr T& pop_front(this auto &&self)
+	constexpr T& pop_front()
 	{
-		T &entry = self.front();
-		self.head = self.GetEntryFromHeldType(entry).next;
+		T &entry = front();
+		head = entry.next;
 		return entry;
 	}
 
@@ -81,45 +95,10 @@ public:
 		return head == nullptr;
 	}
 
-	constexpr void clear(this auto &&self)
+	constexpr void clear()
 	{
-		while (!self.empty())
-			self.pop_front();
-	}
-};
-
-// High-level interface; `T` must derive from `SinglyLinkedListEntry<T>`.
-template<typename Base>
-class SinglyLinkedListIteratorBase : public Base
-{
-public:
-	using Base::Base;
-
-	constexpr auto& Dereference()
-	{
-		return *this->GetHeldPointer();
-	}
-};
-
-template<typename Base>
-class SinglyLinkedListIterator : public SinglyLinkedListIteratorBase<Base>
-{
-public:
-	using SinglyLinkedListIteratorBase<Base>::SinglyLinkedListIteratorBase;
-
-	constexpr auto* Advance()
-	{
-		return this->GetHeldPointer()->next;
-	}
-};
-
-template<typename T>
-class SinglyLinkedList : public SinglyLinkedListLowLevel<T, SinglyLinkedListIterator<ListIterator<T, T>>, SinglyLinkedListIterator<ListConstIterator<T, T>>>
-{
-public:
-	static constexpr SinglyLinkedListEntry<T>& GetEntryFromHeldType(T &held)
-	{
-		return held;
+		while (!empty())
+			pop_front();
 	}
 };
 
