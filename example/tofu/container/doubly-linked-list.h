@@ -147,16 +147,26 @@ public:
 
 // Type-specific.
 template<typename T>
-class DoublyLinkedList : public SinglyLinkedListLowLevel<T, DoublyLinkedListBase>
+class DoublyLinkedList : public DoublyLinkedListBase
 {
 protected:
-	using Base = SinglyLinkedListLowLevel<T, DoublyLinkedListBase>;
+	using Base = DoublyLinkedListBase;
 
 	template<typename IteratorBaseBase>
-	class IteratorBase : public Base::template IteratorBase<IteratorBaseBase>
+	class IteratorBase : public IteratorBaseBase
 	{
 	public:
-		using Base::template IteratorBase<IteratorBaseBase>::IteratorBase;
+		using IteratorBaseBase::IteratorBaseBase;
+
+		constexpr auto& Dereference()
+		{
+			return static_cast<IteratorBaseBase::value_type&>(*this->GetHeldPointer());
+		}
+
+		constexpr auto* Advance()
+		{
+			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->next);
+		}
 
 		constexpr auto* Regress()
 		{
@@ -195,6 +205,16 @@ public:
 public:
 	using Base::Base;
 
+	constexpr auto& front()
+	{
+		return static_cast<T&>(Base::front());
+	}
+
+	constexpr auto& front() const
+	{
+		return static_cast<const T&>(Base::front());
+	}
+
 	constexpr auto& back()
 	{
 		return static_cast<T&>(Base::back());
@@ -205,9 +225,19 @@ public:
 		return static_cast<const T&>(Base::back());
 	}
 
+	constexpr T& pop_front()
+	{
+		return static_cast<T&>(Base::pop_front());
+	}
+
 	constexpr T& pop_back()
 	{
 		return static_cast<T&>(Base::pop_back());
+	}
+
+	constexpr const_iterator cbegin() const
+	{
+		return const_iterator(static_cast<Base::Entry*>(this->root.next));
 	}
 
 	constexpr const_iterator cend() const
@@ -215,9 +245,19 @@ public:
 		return const_iterator(&this->root);
 	}
 
+	constexpr const_iterator begin() const
+	{
+		return cbegin();
+	}
+
 	constexpr const_iterator end() const
 	{
 		return cend();
+	}
+
+	constexpr iterator begin()
+	{
+		return iterator(static_cast<Base::Entry*>(this->root.next));
 	}
 
 	constexpr iterator end()
