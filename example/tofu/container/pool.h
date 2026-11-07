@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <iterator>
 #include <type_traits>
 
 #include "doubly-linked-list.h"
@@ -43,31 +44,8 @@ private:
 
 	using AllocatedIterator = AllocatedIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
 	using AllocatedConstIterator = AllocatedIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
-
-	template<typename Base, typename EntryUnion>
-	class AllocatedReverseIteratorBase : public Base
-	{
-	public:
-		using Base::Base;
-
-		constexpr auto& Dereference()
-		{
-			return static_cast<EntryUnion*>(this->entry)->allocated.value;
-		}
-
-		constexpr auto* Advance()
-		{
-			return static_cast<Base::held_type*>(this->entry->previous);
-		}
-
-		constexpr auto* Regress()
-		{
-			return static_cast<Base::held_type*>(this->entry->next);
-		}
-	};
-
-	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
-	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
+	using AllocatedReverseIterator = std::reverse_iterator<AllocatedIterator>;
+	using AllocatedConstReverseIterator = std::reverse_iterator<AllocatedConstIterator>;
 
 	// EntryAllocated
 	struct EntryAllocated
@@ -198,8 +176,7 @@ public:
 		return iterator(&entry);
 	}
 
-	template<typename Iterator> requires std::is_same_v<Iterator, iterator> || std::is_same_v<Iterator, reverse_iterator>
-	constexpr Iterator deallocate(Iterator it)
+	constexpr iterator deallocate(iterator it)
 	{
 		auto &entry = static_cast<EntryUnion&>(*it.GetHeldPointer());
 		++it;
@@ -239,12 +216,12 @@ public:
 
 	constexpr const_reverse_iterator crbegin() const
 	{
-		return allocated_list.crbegin().GetHeldPointer();
+		return const_reverse_iterator(cend());
 	}
 
 	constexpr const_reverse_iterator crend() const
 	{
-		return allocated_list.crend().GetHeldPointer();
+		return const_reverse_iterator(cbegin());
 	}
 
 	constexpr const_reverse_iterator rbegin() const
@@ -259,12 +236,12 @@ public:
 
 	constexpr reverse_iterator rbegin()
 	{
-		return allocated_list.rbegin().GetHeldPointer();
+		return reverse_iterator(end());
 	}
 
 	constexpr reverse_iterator rend()
 	{
-		return allocated_list.rend().GetHeldPointer();
+		return reverse_iterator(begin());
 	}
 
 	constexpr auto& front(this auto &&self)

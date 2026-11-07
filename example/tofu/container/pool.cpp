@@ -37,7 +37,7 @@ static_assert(
 		pool.deallocate(pool.begin());
 		pool.allocate_front(entries[2]);
 		pool.allocate_back(entries[3]);
-		pool.deallocate(pool.rbegin());
+		pool.deallocate((++pool.rbegin()).base());
 
 		if (pool.front() != 2)
 			return false;
@@ -171,7 +171,7 @@ static_assert(
 		auto pool_b = pool_a;
 		pool_a.deallocate(pool_a.begin());
 		pool_b = pool_a;
-		pool_b.deallocate(pool_b.rbegin());
+		pool_b.deallocate((++pool_b.rbegin()).base());
 		return pool_a.size() == 3 && pool_b.size() == 2;
 	}()
 );
