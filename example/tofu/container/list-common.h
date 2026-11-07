@@ -6,7 +6,7 @@
 template<typename Held, typename Dereferenced>
 class ListForwardIterator
 {
-private:
+protected:
 	Held *entry;
 
 public:

@@ -153,6 +153,18 @@ protected:
 	using Base = SinglyLinkedListLowLevel<T, DoublyLinkedListBase>;
 
 	template<typename IteratorBaseBase>
+	class IteratorBase : public Base::template IteratorBase<IteratorBaseBase>
+	{
+	public:
+		using Base::template IteratorBase<IteratorBaseBase>::IteratorBase;
+
+		constexpr auto* Regress()
+		{
+			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->previous);
+		}
+	};
+
+	template<typename IteratorBaseBase>
 	class ReverseIteratorBase : public IteratorBaseBase
 	{
 	public:
@@ -167,13 +179,18 @@ protected:
 		{
 			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->previous);
 		}
+
+		constexpr auto* Regress()
+		{
+			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->next);
+		}
 	};
 
 public:
-	using iterator = Base::iterator;
-	using const_iterator = Base::const_iterator;
-	using reverse_iterator = ReverseIteratorBase<ListForwardIterator<DoublyLinkedListBase::Entry, T>>;
-	using const_reverse_iterator = ReverseIteratorBase<ListConstForwardIterator<DoublyLinkedListBase::Entry, T>>;
+	using iterator = IteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
+	using const_iterator = IteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
+	using reverse_iterator = ReverseIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
+	using const_reverse_iterator = ReverseIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
 
 public:
 	using Base::Base;

@@ -34,10 +34,15 @@ private:
 		{
 			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->next);
 		}
+
+		constexpr auto* Regress()
+		{
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->previous);
+		}
 	};
 
-	using AllocatedIterator = AllocatedIteratorBase<ListForwardIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
-	using AllocatedConstIterator = AllocatedIteratorBase<ListConstForwardIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
+	using AllocatedIterator = AllocatedIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
+	using AllocatedConstIterator = AllocatedIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
 
 	template<typename Base, typename EntryUnion>
 	class AllocatedReverseIteratorBase : public Base
@@ -54,10 +59,15 @@ private:
 		{
 			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->previous);
 		}
+
+		constexpr auto* Regress()
+		{
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->next);
+		}
 	};
 
-	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListForwardIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
-	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstForwardIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
+	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
+	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
 
 	// EntryAllocated
 	struct EntryAllocated
@@ -86,11 +96,6 @@ private:
 	};
 
 	// Actual Pool stuff begins here.
-	using iterator = AllocatedIterator;
-	using const_iterator = AllocatedConstIterator;
-	using reverse_iterator = AllocatedReverseIterator;
-	using const_reverse_iterator = AllocatedConstReverseIterator;
-
 	DoublyLinkedList<EntryUnion> allocated_list;
 	SinglyLinkedList<EntryUnion> deallocated_list;
 	std::array<EntryUnion, S> storage;
@@ -126,6 +131,11 @@ private:
 	}
 
 public:
+	using iterator = AllocatedIterator;
+	using const_iterator = AllocatedConstIterator;
+	using reverse_iterator = AllocatedReverseIterator;
+	using const_reverse_iterator = AllocatedConstReverseIterator;
+
 	constexpr Pool()
 	{
 		for (auto &entry : storage)

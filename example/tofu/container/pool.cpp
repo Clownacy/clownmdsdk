@@ -14,6 +14,12 @@ static constexpr auto ToPool(const std::initializer_list<int> &entries)
 	return pool;
 };
 
+// Iterators
+static_assert(std::bidirectional_iterator<Pool<int, 4>::iterator>);
+static_assert(std::bidirectional_iterator<Pool<int, 4>::const_iterator>);
+static_assert(std::bidirectional_iterator<Pool<int, 4>::reverse_iterator>);
+static_assert(std::bidirectional_iterator<Pool<int, 4>::const_reverse_iterator>);
+
 // allocate_front
 // allocate_back
 // deallocate
