@@ -12,6 +12,7 @@ private:
 public:
 	using difference_type = std::ptrdiff_t;
 	using value_type = Dereferenced;
+	using held_type = Held;
 
 	constexpr ListIterator(Held* const entry = nullptr)
 		: entry(entry)

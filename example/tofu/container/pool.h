@@ -19,7 +19,7 @@ private:
 	struct EntryUnion;
 
 	// Iterators
-	template<typename Base>
+	template<typename Base, typename EntryUnion>
 	class AllocatedIteratorBase : public Base
 	{
 	public:
@@ -27,19 +27,19 @@ private:
 
 		constexpr auto& Dereference()
 		{
-			return this->GetHeldPointer()->allocated.value;
+			return static_cast<EntryUnion*>(this->GetHeldPointer())->allocated.value;
 		}
 
 		constexpr auto* Advance()
 		{
-			return this->GetHeldPointer()->next;
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->next);
 		}
 	};
 
-	using AllocatedIterator = AllocatedIteratorBase<ListIterator<EntryUnion, T>>;
-	using AllocatedConstIterator = AllocatedIteratorBase<ListConstIterator<EntryUnion, T>>;
+	using AllocatedIterator = AllocatedIteratorBase<ListIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
+	using AllocatedConstIterator = AllocatedIteratorBase<ListConstIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
 
-	template<typename Base>
+	template<typename Base, typename EntryUnion>
 	class AllocatedReverseIteratorBase : public Base
 	{
 	public:
@@ -47,17 +47,17 @@ private:
 
 		constexpr auto& Dereference()
 		{
-			return this->GetHeldPointer()->allocated.value;
+			return static_cast<EntryUnion*>(this->GetHeldPointer())->allocated.value;
 		}
 
 		constexpr auto* Advance()
 		{
-			return this->GetHeldPointer()->previous;
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->previous);
 		}
 	};
 
-	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListIterator<EntryUnion, T>>;
-	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstIterator<EntryUnion, T>>;
+	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
+	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
 
 	// EntryAllocated
 	struct EntryAllocated
@@ -191,7 +191,7 @@ public:
 	template<typename Iterator> requires std::is_same_v<Iterator, iterator> || std::is_same_v<Iterator, reverse_iterator>
 	constexpr Iterator deallocate(Iterator it)
 	{
-		EntryUnion &entry = *it.GetHeldPointer();
+		auto &entry = static_cast<EntryUnion&>(*it.GetHeldPointer());
 		++it;
 		deallocate(entry);
 		return it;
@@ -257,12 +257,12 @@ public:
 		return allocated_list.crend().GetHeldPointer();
 	}
 
-	constexpr T& front(this auto &&self)
+	constexpr auto& front(this auto &&self)
 	{
 		return self.allocated_list.front().allocated.value;
 	}
 
-	constexpr T& back(this auto &&self)
+	constexpr auto& back(this auto &&self)
 	{
 		return self.allocated_list.back().allocated.value;
 	}

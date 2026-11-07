@@ -7,49 +7,94 @@
 
 #include "list-common.h"
 
-template<typename T>
-class SinglyLinkedList
+// Type-agnostic.
+class SinglyLinkedListBase
 {
-protected:
-	template<typename Base>
-	class IteratorBase : public Base
-	{
-	public:
-		using Base::Base;
-
-		constexpr auto& Dereference()
-		{
-			return *this->GetHeldPointer();
-		}
-
-		constexpr auto* Advance()
-		{
-			return this->GetHeldPointer()->next;
-		}
-	};
-
 public:
 	struct Entry
 	{
-		T *next;
+		Entry *next;
 	};
 
-	using iterator = IteratorBase<ListIterator<T, T>>;
-	using const_iterator = IteratorBase<ListConstIterator<T, T>>;
-
 protected:
-	T *head = nullptr;
+	Entry root = {};
 
 public:
 	constexpr auto& front(this auto &&self)
 	{
-		_assertm(self.head != nullptr, "Tried to access first element of empty list.");
-		return *self.head;
+		_assertm(!empty(), "Tried to access first element of empty list.");
+		return *self.root.next;
+	}
+
+	constexpr void push_front(Entry &entry)
+	{
+		entry.next = root.next;
+		root.next = &entry;
+	}
+
+	constexpr Entry& pop_front()
+	{
+		Entry &entry = front();
+		root.next = entry.next;
+		return entry;
+	}
+
+	constexpr bool empty() const
+	{
+		return root.next == nullptr;
+	}
+
+	constexpr void clear()
+	{
+		while (!empty())
+			pop_front();
+	}
+};
+
+// Type-specific.
+template<typename T, typename Base>
+class SinglyLinkedListLowLevel : public Base
+{
+protected:
+	template<typename IteratorBaseBase>
+	class IteratorBase : public IteratorBaseBase
+	{
+	public:
+		using IteratorBaseBase::IteratorBaseBase;
+
+		constexpr auto& Dereference()
+		{
+			return static_cast<IteratorBaseBase::value_type&>(*this->GetHeldPointer());
+		}
+
+		constexpr auto* Advance()
+		{
+			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->next);
+		}
+	};
+
+public:
+	using iterator = IteratorBase<ListIterator<typename Base::Entry, T>>;
+	using const_iterator = IteratorBase<ListConstIterator<typename Base::Entry, T>>;
+
+	constexpr auto& front()
+	{
+		return static_cast<T&>(Base::front());
+	}
+
+	constexpr auto& front() const
+	{
+		return static_cast<const T&>(Base::front());
+	}
+
+	constexpr T& pop_front()
+	{
+		return static_cast<T&>(Base::pop_front());
 	}
 
 	constexpr iterator begin()
 	{
-		return iterator(head);
+		return iterator(static_cast<Base::Entry*>(this->root.next));
 	}
 
 	constexpr iterator end()
@@ -59,7 +104,7 @@ public:
 
 	constexpr const_iterator begin() const
 	{
-		return const_iterator(head);
+		return const_iterator(static_cast<Base::Entry*>(this->root.next));
 	}
 
 	constexpr const_iterator end() const
@@ -76,30 +121,9 @@ public:
 	{
 		return end();
 	}
-
-	constexpr void push_front(T &entry)
-	{
-		entry.next = head;
-		head = &entry;
-	}
-
-	constexpr T& pop_front()
-	{
-		T &entry = front();
-		head = entry.next;
-		return entry;
-	}
-
-	constexpr bool empty() const
-	{
-		return head == nullptr;
-	}
-
-	constexpr void clear()
-	{
-		while (!empty())
-			pop_front();
-	}
 };
+
+template<typename T>
+using SinglyLinkedList = SinglyLinkedListLowLevel<T, SinglyLinkedListBase>;
 
 #endif /* SINGLY_LINKED_LIST_H */

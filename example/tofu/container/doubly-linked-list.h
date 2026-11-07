@@ -8,52 +8,165 @@
 #include "list-common.h"
 #include "singly-linked-list.h"
 
+// Type-agnostic.
+class DoublyLinkedListBase
+{
+public:
+	struct Entry : SinglyLinkedListBase::Entry
+	{
+		Entry *previous;
+	};
+
+protected:
+	Entry root = {};
+	std::size_t total_entries = 0;
+
+public:
+	constexpr auto& front()
+	{
+		_assertm(!empty(), "Tried to access first element of empty list.");
+		return static_cast<Entry&>(*root.next);
+	}
+
+	constexpr auto& front() const
+	{
+		_assertm(!empty(), "Tried to access first element of empty list.");
+		return static_cast<const Entry&>(*root.next);
+	}
+
+	constexpr auto& back(this auto &&self)
+	{
+		_assertm(!empty(), "Tried to access last element of empty list.");
+		return *self.root.previous;
+	}
+
+	constexpr void push_front(Entry &entry)
+	{
+		++total_entries;
+
+		if (root.next == nullptr)
+			root.previous = &entry;
+		else
+			static_cast<Entry*>(root.next)->previous = &entry;
+
+		entry.next = root.next;
+		entry.previous = nullptr;
+
+		root.next = &entry;
+	}
+
+	constexpr void push_back(Entry &entry)
+	{
+		++total_entries;
+
+		if (root.previous == nullptr)
+			root.next = &entry;
+		else
+			root.previous->next = &entry;
+
+		entry.next = nullptr;
+		entry.previous = root.previous;
+
+		root.previous = &entry;
+	}
+
+	constexpr Entry* erase(Entry &entry)
+	{
+		--total_entries;
+
+		auto* const next = static_cast<Entry*>(entry.next);
+
+		if (entry.previous == nullptr)
+			root.next = entry.next;
+		else
+			entry.previous->next = entry.next;
+
+		if (entry.next == nullptr)
+			root.previous = entry.previous;
+		else
+			static_cast<Entry*>(entry.next)->previous = entry.previous;
+
+		return next;
+	}
+
+	constexpr Entry& pop_front()
+	{
+		Entry &entry = front();
+		erase(entry);
+		return entry;
+	}
+
+	constexpr Entry& pop_back()
+	{
+		Entry &entry = back();
+		erase(entry);
+		return entry;
+	}
+
+	constexpr std::size_t size() const
+	{
+		return total_entries;
+	}
+
+	constexpr bool empty() const
+	{
+		return root.next == nullptr;
+	}
+
+	constexpr void clear()
+	{
+		while (!empty())
+			pop_front();
+	}
+};
+
+// Type-specific.
 template<typename T>
-class DoublyLinkedList : public SinglyLinkedList<T>
+class DoublyLinkedList : public SinglyLinkedListLowLevel<T, DoublyLinkedListBase>
 {
 protected:
-	using Base = SinglyLinkedList<T>;
+	using Base = SinglyLinkedListLowLevel<T, DoublyLinkedListBase>;
 
-	template<typename Base>
-	class ReverseIteratorBase : public Base
+	template<typename IteratorBaseBase>
+	class ReverseIteratorBase : public IteratorBaseBase
 	{
 	public:
-		using Base::Base;
+		using IteratorBaseBase::IteratorBaseBase;
 
 		constexpr auto& Dereference()
 		{
-			return *this->GetHeldPointer();
+			return static_cast<IteratorBaseBase::value_type&>(*this->GetHeldPointer());
 		}
 
 		constexpr auto* Advance()
 		{
-			return this->GetHeldPointer()->previous;
+			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->previous);
 		}
 	};
 
 public:
-	struct Entry : public Base::Entry
-	{
-		T *previous;
-	};
-
-	using reverse_iterator = ReverseIteratorBase<ListIterator<T, T>>;
-	using const_reverse_iterator = ReverseIteratorBase<ListConstIterator<T, T>>;
-
-protected:
-	T *tail = nullptr;
-	std::size_t total_entries = 0;
+	using reverse_iterator = ReverseIteratorBase<ListIterator<DoublyLinkedListBase::Entry, T>>;
+	using const_reverse_iterator = ReverseIteratorBase<ListConstIterator<DoublyLinkedListBase::Entry, T>>;
 
 public:
-	constexpr auto& back(this auto &&self)
+	constexpr auto& back()
 	{
-		_assertm(self.tail != nullptr, "Tried to access last element of empty list.");
-		return *self.tail;
+		return static_cast<T&>(Base::back());
+	}
+
+	constexpr auto& back() const
+	{
+		return static_cast<const T&>(Base::back());
+	}
+
+	constexpr T& pop_back()
+	{
+		return static_cast<T&>(Base::pop_back());
 	}
 
 	constexpr const_reverse_iterator crbegin() const
 	{
-		return const_reverse_iterator(tail);
+		return const_reverse_iterator(this->root.previous);
 	}
 
 	constexpr const_reverse_iterator crend() const
@@ -73,80 +186,12 @@ public:
 
 	constexpr reverse_iterator rbegin()
 	{
-		return reverse_iterator(tail);
+		return reverse_iterator(this->root.previous);
 	}
 
 	constexpr reverse_iterator rend()
 	{
 		return reverse_iterator();
-	}
-
-	constexpr void push_front(T &entry)
-	{
-		++total_entries;
-
-		if (this->head == nullptr)
-			this->tail = &entry;
-		else
-			this->head->previous = &entry;
-
-		entry.next = this->head;
-		entry.previous = nullptr;
-
-		this->head = &entry;
-	}
-
-	constexpr void push_back(T &entry)
-	{
-		++total_entries;
-
-		if (this->tail == nullptr)
-			this->head = &entry;
-		else
-			this->tail->next = &entry;
-
-		entry.next = nullptr;
-		entry.previous = this->tail;
-
-		this->tail = &entry;
-	}
-
-	constexpr T* erase(T &entry)
-	{
-		--total_entries;
-
-		T* const next = entry.next;
-
-		if (entry.previous == nullptr)
-			this->head = entry.next;
-		else
-			entry.previous->next = entry.next;
-
-		if (entry.next == nullptr)
-			this->tail = entry.previous;
-		else
-			entry.next->previous = entry.previous;
-
-		return next;
-	}
-
-	constexpr T& pop_front()
-	{
-		T &entry = this->front();
-		erase(entry);
-		return entry;
-	}
-
-	constexpr T& pop_back()
-	{
-		T &entry = this->back();
-		erase(entry);
-		return entry;
-	}
-
-	constexpr std::size_t size() const
-	{
-		return total_entries;
 	}
 };
 
