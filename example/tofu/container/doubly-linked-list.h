@@ -204,12 +204,12 @@ public:
 		return static_cast<const T&>(Base::back());
 	}
 
-	constexpr T& pop_front()
+	constexpr auto& pop_front()
 	{
 		return static_cast<T&>(Base::pop_front());
 	}
 
-	constexpr T& pop_back()
+	constexpr auto& pop_back()
 	{
 		return static_cast<T&>(Base::pop_back());
 	}

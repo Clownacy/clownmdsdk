@@ -76,8 +76,8 @@ protected:
 public:
 	using Base = SinglyLinkedListBase;
 
-	using iterator = IteratorBase<ListForwardIterator<typename Base::Entry, T>>;
-	using const_iterator = IteratorBase<ListConstForwardIterator<typename Base::Entry, T>>;
+	using iterator = IteratorBase<ListForwardIterator<Base::Entry, T>>;
+	using const_iterator = IteratorBase<ListConstForwardIterator<Base::Entry, T>>;
 
 	using Base::Base;
 
@@ -91,7 +91,7 @@ public:
 		return static_cast<const T&>(Base::front());
 	}
 
-	constexpr T& pop_front()
+	constexpr auto& pop_front()
 	{
 		return static_cast<T&>(Base::pop_front());
 	}
