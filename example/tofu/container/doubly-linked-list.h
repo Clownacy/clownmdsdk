@@ -160,17 +160,17 @@ protected:
 
 		constexpr auto& Dereference()
 		{
-			return static_cast<IteratorBaseBase::value_type&>(*this->GetHeldPointer());
+			return static_cast<IteratorBaseBase::value_type&>(*this->entry);
 		}
 
 		constexpr auto* Advance()
 		{
-			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->next);
+			return static_cast<IteratorBaseBase::held_type*>(this->entry->next);
 		}
 
 		constexpr auto* Regress()
 		{
-			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->previous);
+			return static_cast<IteratorBaseBase::held_type*>(this->entry->previous);
 		}
 	};
 
@@ -182,17 +182,17 @@ protected:
 
 		constexpr auto& Dereference()
 		{
-			return static_cast<IteratorBaseBase::value_type&>(*this->GetHeldPointer());
+			return static_cast<IteratorBaseBase::value_type&>(*this->entry);
 		}
 
 		constexpr auto* Advance()
 		{
-			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->previous);
+			return static_cast<IteratorBaseBase::held_type*>(this->entry->previous);
 		}
 
 		constexpr auto* Regress()
 		{
-			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->next);
+			return static_cast<IteratorBaseBase::held_type*>(this->entry->next);
 		}
 	};
 

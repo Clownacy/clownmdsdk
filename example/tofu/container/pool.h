@@ -27,17 +27,17 @@ private:
 
 		constexpr auto& Dereference()
 		{
-			return static_cast<EntryUnion*>(this->GetHeldPointer())->allocated.value;
+			return static_cast<EntryUnion*>(this->entry)->allocated.value;
 		}
 
 		constexpr auto* Advance()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->next);
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->next);
 		}
 
 		constexpr auto* Regress()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->previous);
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->previous);
 		}
 	};
 
@@ -52,17 +52,17 @@ private:
 
 		constexpr auto& Dereference()
 		{
-			return static_cast<EntryUnion*>(this->GetHeldPointer())->allocated.value;
+			return static_cast<EntryUnion*>(this->entry)->allocated.value;
 		}
 
 		constexpr auto* Advance()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->previous);
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->previous);
 		}
 
 		constexpr auto* Regress()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->GetHeldPointer())->next);
+			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->next);
 		}
 	};
 

@@ -64,12 +64,12 @@ protected:
 
 		constexpr auto& Dereference()
 		{
-			return static_cast<IteratorBaseBase::value_type&>(*this->GetHeldPointer());
+			return static_cast<IteratorBaseBase::value_type&>(*this->entry);
 		}
 
 		constexpr auto* Advance()
 		{
-			return static_cast<IteratorBaseBase::held_type*>(this->GetHeldPointer()->next);
+			return static_cast<IteratorBaseBase::held_type*>(this->entry->next);
 		}
 	};
 
