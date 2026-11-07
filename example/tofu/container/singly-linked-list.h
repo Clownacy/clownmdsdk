@@ -77,6 +77,8 @@ public:
 	using iterator = IteratorBase<ListIterator<typename Base::Entry, T>>;
 	using const_iterator = IteratorBase<ListConstIterator<typename Base::Entry, T>>;
 
+	using Base::Base;
+
 	constexpr auto& front()
 	{
 		return static_cast<T&>(Base::front());

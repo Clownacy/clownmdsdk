@@ -65,7 +65,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		const auto list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
 
 		std::size_t count = 0;
 		auto iterator = entries.begin();
@@ -89,7 +89,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		const auto list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
 
 		std::size_t count = 0;
 		auto iterator = entries.rbegin();
@@ -114,7 +114,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		const auto list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
 		return list.front().value == 0 && list.back().value == 3;
 	}()
 );
@@ -124,7 +124,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		const auto list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
 		return !list.empty();
 	}()
 );
@@ -141,8 +141,153 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		auto list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
 		list.clear();
 		return list.empty();
+	}()
+);
+
+// Assorted iterator validity tests.
+static_assert(
+	[]() constexpr
+	{
+		std::array<TestEntry, 0> entries;
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		return list.empty();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		return !list.empty();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list_a;
+		for (auto &entry : entries)
+			list_a.push_back(entry);
+		[[maybe_unused]] DoublyLinkedList<TestEntry> list_b = std::move(list_a);
+		return list_a.begin() == list_a.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list_b;
+		{
+			const std::span<TestEntry> entries_span = entries;
+			DoublyLinkedList<TestEntry> list_a;
+			for (auto &entry : entries_span)
+				list_a.push_back(entry);
+			list_b = std::move(list_a);
+		}
+		auto it = list_b.begin();
+		return ++it == list_b.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list_b;
+		list_b = MakeList(entries);
+		auto it = list_b.begin();
+		return ++it == list_b.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list_b; list_b = MakeList(entries);
+		auto it = list_b.begin();
+		return ++it == list_b.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		return list.rbegin() == list.begin();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		return list.rend() == list.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		std::array<TestEntry, 0> entries;
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		auto it = list.begin();
+		return ++it == list.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		std::array<TestEntry, 0> entries;
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		return list.begin() == list.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		std::array<TestEntry, 0> entries;
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		return list.rbegin() == list.rend();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		auto it = list.begin();
+		return ++it == list.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0});
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		auto it = list.rbegin();
+		return ++it == list.rend();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0, 1});
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		list.pop_front();
+		return list.size() == entries.size() - 1;
 	}()
 );

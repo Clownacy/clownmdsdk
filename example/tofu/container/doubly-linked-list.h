@@ -18,10 +18,42 @@ public:
 	};
 
 protected:
-	Entry root = {};
+	Entry root = {&root, &root};
 	std::size_t total_entries = 0;
 
 public:
+	constexpr DoublyLinkedListBase() = default;
+
+	constexpr DoublyLinkedListBase(const DoublyLinkedListBase &other) = delete;
+	constexpr DoublyLinkedListBase(DoublyLinkedListBase &&other)
+	{
+		assert(root.next == &root);
+		assert(root.previous == &root);
+		assert(total_entries == 0);
+
+		*this = std::move(other);
+	}
+
+	constexpr DoublyLinkedListBase& operator=(const DoublyLinkedListBase &other) = delete;
+	constexpr DoublyLinkedListBase& operator=(DoublyLinkedListBase &&other)
+	{
+		// Point to our root node!
+		auto &prev_a = static_cast<Entry*>(this->root.next)->previous;
+		auto &prev_b = static_cast<Entry*>(other.root.next)->previous;
+		auto &next_a = this->root.previous->next;
+		auto &next_b = other.root.previous->next;
+		std::swap(prev_a, prev_b);
+		std::swap(next_a, next_b);
+
+		std::swap(this->root, other.root);
+		std::swap(this->total_entries, other.total_entries);
+
+		assert(static_cast<Entry*>(root.next)->previous == &root);
+		assert(root.previous->next == &root);
+
+		return *this;
+	}
+
 	constexpr auto& front()
 	{
 		_assertm(!empty(), "Tried to access first element of empty list.");
@@ -42,29 +74,27 @@ public:
 
 	constexpr void push_front(Entry &entry)
 	{
+		assert(&entry != &root);
+
 		++total_entries;
 
-		if (root.next == nullptr)
-			root.previous = &entry;
-		else
-			static_cast<Entry*>(root.next)->previous = &entry;
+		static_cast<Entry*>(root.next)->previous = &entry;
 
 		entry.next = root.next;
-		entry.previous = nullptr;
+		entry.previous = &root;
 
 		root.next = &entry;
 	}
 
 	constexpr void push_back(Entry &entry)
 	{
+		assert(&entry != &root);
+
 		++total_entries;
 
-		if (root.previous == nullptr)
-			root.next = &entry;
-		else
-			root.previous->next = &entry;
+		root.previous->next = &entry;
 
-		entry.next = nullptr;
+		entry.next = &root;
 		entry.previous = root.previous;
 
 		root.previous = &entry;
@@ -72,19 +102,14 @@ public:
 
 	constexpr Entry* erase(Entry &entry)
 	{
+		assert(&entry != &root);
+
 		--total_entries;
 
 		auto* const next = static_cast<Entry*>(entry.next);
 
-		if (entry.previous == nullptr)
-			root.next = entry.next;
-		else
-			entry.previous->next = entry.next;
-
-		if (entry.next == nullptr)
-			root.previous = entry.previous;
-		else
-			static_cast<Entry*>(entry.next)->previous = entry.previous;
+		entry.previous->next = entry.next;
+		static_cast<Entry*>(entry.next)->previous = entry.previous;
 
 		return next;
 	}
@@ -110,7 +135,7 @@ public:
 
 	constexpr bool empty() const
 	{
-		return root.next == nullptr;
+		return root.next == &root;
 	}
 
 	constexpr void clear()
@@ -145,10 +170,14 @@ protected:
 	};
 
 public:
+	using iterator = Base::iterator;
+	using const_iterator = Base::const_iterator;
 	using reverse_iterator = ReverseIteratorBase<ListIterator<DoublyLinkedListBase::Entry, T>>;
 	using const_reverse_iterator = ReverseIteratorBase<ListConstIterator<DoublyLinkedListBase::Entry, T>>;
 
 public:
+	using Base::Base;
+
 	constexpr auto& back()
 	{
 		return static_cast<T&>(Base::back());
@@ -164,6 +193,21 @@ public:
 		return static_cast<T&>(Base::pop_back());
 	}
 
+	constexpr const_iterator cend() const
+	{
+		return const_iterator(&this->root);
+	}
+
+	constexpr const_iterator end() const
+	{
+		return cend();
+	}
+
+	constexpr iterator end()
+	{
+		return iterator(&this->root);
+	}
+
 	constexpr const_reverse_iterator crbegin() const
 	{
 		return const_reverse_iterator(this->root.previous);
@@ -171,7 +215,7 @@ public:
 
 	constexpr const_reverse_iterator crend() const
 	{
-		return const_reverse_iterator();
+		return const_reverse_iterator(&this->root);
 	}
 
 	constexpr const_reverse_iterator rbegin() const
@@ -191,7 +235,7 @@ public:
 
 	constexpr reverse_iterator rend()
 	{
-		return reverse_iterator();
+		return reverse_iterator(&this->root);
 	}
 };
 

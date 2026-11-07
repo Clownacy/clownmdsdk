@@ -22,7 +22,7 @@ static constexpr auto MakeList(const std::span<TestEntry> &entries)
 	for (auto &entry : entries)
 		list.push_front(entry);
 	return list;
-};
+}
 
 // Iterators
 static_assert(std::forward_iterator<SinglyLinkedList<TestEntry>::iterator>);
