@@ -11,6 +11,8 @@ const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::le
 	#embed "assets/level.unc"
 };
 
+static constexpr Coordinate::Omni line_size(Coordinate::screen_size.blocks + 1);
+
 static constexpr auto SplitLength(const auto offset, const auto length, const auto limit)
 {
 	const auto second_length = std::saturating_sub(offset + length, limit);
@@ -26,7 +28,7 @@ void LevelManager::DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starti
 	const auto starting_tile_position_in_plane = starting_block_position.ToTiles() % Coordinate::plane_size.tiles;
 
 	// We split the transfer in two to handle wrapping around the plane.
-	constexpr unsigned int line_length_in_blocks = Coordinate::screen_size.pixels.Dimension(vertical) / Coordinate::block_size.pixels.Dimension(vertical) + 1;
+	constexpr unsigned int line_length_in_blocks = line_size.blocks.Dimension(vertical);
 	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size.tiles.Dimension(vertical);
 	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension(vertical), line_length_in_tiles, Coordinate::plane_size.tiles.Dimension(vertical));
 
@@ -109,9 +111,9 @@ void LevelManager::DrawWholeScreen(Z80::Bus &z80_bus)
 {
 	// Chooses whichever is more efficient for the screen resolution.
 	if constexpr (Coordinate::screen_size.blocks.x >= Coordinate::screen_size.blocks.y)
-		DrawRows(z80_bus, camera, Coordinate::screen_size.pixels.y / Coordinate::block_size.pixels.y + 1);
+		DrawRows(z80_bus, camera, line_size.blocks.y);
 	else
-		DrawColumns(z80_bus, camera, Coordinate::screen_size.pixels.x / Coordinate::block_size.pixels.x + 1);
+		DrawColumns(z80_bus, camera, line_size.blocks.x);
 
 	camera_block_position_previous = camera;
 }
