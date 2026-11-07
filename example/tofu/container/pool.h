@@ -207,26 +207,6 @@ public:
 		return it;
 	}
 
-	constexpr iterator begin()
-	{
-		return allocated_list.begin().GetHeldPointer();
-	}
-
-	constexpr iterator end()
-	{
-		return allocated_list.end().GetHeldPointer();
-	}
-
-	constexpr const_iterator begin() const
-	{
-		return allocated_list.begin().GetHeldPointer();
-	}
-
-	constexpr const_iterator end() const
-	{
-		return allocated_list.end().GetHeldPointer();
-	}
-
 	constexpr const_iterator cbegin() const
 	{
 		return allocated_list.cbegin().GetHeldPointer();
@@ -237,24 +217,24 @@ public:
 		return allocated_list.cend().GetHeldPointer();
 	}
 
-	constexpr reverse_iterator rbegin()
+	constexpr const_iterator begin() const
 	{
-		return allocated_list.rbegin().GetHeldPointer();
+		return cbegin();
 	}
 
-	constexpr reverse_iterator rend()
+	constexpr const_iterator end() const
 	{
-		return allocated_list.rend().GetHeldPointer();
+		return cend();
 	}
 
-	constexpr const_reverse_iterator rbegin() const
+	constexpr iterator begin()
 	{
-		return allocated_list.rbegin().GetHeldPointer();
+		return allocated_list.begin().GetHeldPointer();
 	}
 
-	constexpr const_reverse_iterator rend() const
+	constexpr iterator end()
 	{
-		return allocated_list.rend().GetHeldPointer();
+		return allocated_list.end().GetHeldPointer();
 	}
 
 	constexpr const_reverse_iterator crbegin() const
@@ -265,6 +245,26 @@ public:
 	constexpr const_reverse_iterator crend() const
 	{
 		return allocated_list.crend().GetHeldPointer();
+	}
+
+	constexpr const_reverse_iterator rbegin() const
+	{
+		return crbegin();
+	}
+
+	constexpr const_reverse_iterator rend() const
+	{
+		return crend();
+	}
+
+	constexpr reverse_iterator rbegin()
+	{
+		return allocated_list.rbegin().GetHeldPointer();
+	}
+
+	constexpr reverse_iterator rend()
+	{
+		return allocated_list.rend().GetHeldPointer();
 	}
 
 	constexpr auto& front(this auto &&self)
