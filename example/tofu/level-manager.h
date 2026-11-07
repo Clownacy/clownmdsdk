@@ -11,7 +11,7 @@ class LevelManager
 private:
 	static const std::array<unsigned char, Coordinate::level_size.blocks.x * Coordinate::level_size.blocks.y> blocks;
 
-	Coordinate::Block camera_previous;
+	Coordinate::Block camera_block_position_previous;
 
 	template<bool vertical>
 	void DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, unsigned int total_lines);

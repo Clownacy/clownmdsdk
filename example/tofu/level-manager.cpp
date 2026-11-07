@@ -113,7 +113,7 @@ void LevelManager::DrawWholeScreen(Z80::Bus &z80_bus)
 	else
 		DrawColumns(z80_bus, camera, Coordinate::screen_size.pixels.x / Coordinate::block_size.pixels.x + 1);
 
-	camera_previous = camera;
+	camera_block_position_previous = camera;
 }
 
 // Checks how much the camera has moved in this frame, and loads blocks at the edges of the screen.
@@ -122,15 +122,15 @@ void LevelManager::Draw(Z80::Bus &z80_bus)
 	const auto camera_block_position = camera.ToBlocks();
 
 	// TODO: This assumes that the camera cannot move more than one block per frame.
-	if (camera_block_position.x < camera_previous.x)
+	if (camera_block_position.x < camera_block_position_previous.x)
 		DrawColumns(z80_bus, camera_block_position, 1);
-	else if (camera_block_position.x > camera_previous.x)
+	else if (camera_block_position.x > camera_block_position_previous.x)
 		DrawColumns(z80_bus, camera_block_position + Coordinate::Block(Coordinate::screen_size.blocks.x, 0), 1);
 
-	if (camera_block_position.y < camera_previous.y)
+	if (camera_block_position.y < camera_block_position_previous.y)
 		DrawRows(z80_bus, camera_block_position, 1);
-	else if (camera_block_position.y > camera_previous.y)
+	else if (camera_block_position.y > camera_block_position_previous.y)
 		DrawRows(z80_bus, camera_block_position + Coordinate::Block(0, Coordinate::screen_size.blocks.y), 1);
 
-	camera_previous = camera_block_position;
+	camera_block_position_previous = camera_block_position;
 }
