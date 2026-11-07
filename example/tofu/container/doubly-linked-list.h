@@ -16,6 +16,16 @@ public:
 	struct Entry : SinglyLinkedListBase::Entry
 	{
 		Entry *previous;
+
+		constexpr auto* Next()
+		{
+			return static_cast<Entry*>(next);
+		}
+
+		constexpr auto* Next() const
+		{
+			return static_cast<const Entry*>(next);
+		}
 	};
 
 protected:
@@ -39,8 +49,8 @@ public:
 	constexpr DoublyLinkedListBase& operator=(DoublyLinkedListBase &&other)
 	{
 		// Point to our root node!
-		auto &prev_a = static_cast<Entry*>(this->root.next)->previous;
-		auto &prev_b = static_cast<Entry*>(other.root.next)->previous;
+		auto &prev_a = this->root.Next()->previous;
+		auto &prev_b = other.root.Next()->previous;
 		auto &next_a = this->root.previous->next;
 		auto &next_b = other.root.previous->next;
 		std::swap(prev_a, prev_b);
@@ -49,7 +59,7 @@ public:
 		std::swap(this->root, other.root);
 		std::swap(this->total_entries, other.total_entries);
 
-		assert(static_cast<Entry*>(root.next)->previous == &root);
+		assert(root.Next()->previous == &root);
 		assert(root.previous->next == &root);
 
 		return *this;
@@ -58,13 +68,13 @@ public:
 	constexpr auto& front()
 	{
 		_assertm(!empty(), "Tried to access first element of empty list.");
-		return static_cast<Entry&>(*root.next);
+		return *root.Next();
 	}
 
 	constexpr auto& front() const
 	{
 		_assertm(!empty(), "Tried to access first element of empty list.");
-		return static_cast<const Entry&>(*root.next);
+		return *root.Next();
 	}
 
 	constexpr auto& back(this auto &&self)
@@ -79,7 +89,7 @@ public:
 
 		++total_entries;
 
-		static_cast<Entry*>(root.next)->previous = &entry;
+		root.Next()->previous = &entry;
 
 		entry.next = root.next;
 		entry.previous = &root;
@@ -107,10 +117,10 @@ public:
 
 		--total_entries;
 
-		auto* const next = static_cast<Entry*>(entry.next);
+		auto* const next = entry.Next();
 
 		entry.previous->next = entry.next;
-		static_cast<Entry*>(entry.next)->previous = entry.previous;
+		entry.Next()->previous = entry.previous;
 
 		return next;
 	}
@@ -216,7 +226,7 @@ public:
 
 	constexpr const_iterator cbegin() const
 	{
-		return const_iterator(static_cast<Base::Entry*>(this->root.next));
+		return const_iterator(this->root.Next());
 	}
 
 	constexpr const_iterator cend() const
@@ -236,7 +246,7 @@ public:
 
 	constexpr iterator begin()
 	{
-		return iterator(static_cast<Base::Entry*>(this->root.next));
+		return iterator(this->root.Next());
 	}
 
 	constexpr iterator end()
