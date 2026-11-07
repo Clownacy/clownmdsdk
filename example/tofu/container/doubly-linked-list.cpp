@@ -65,6 +65,8 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
+		// There is some kind of god-awful bug in GCC right now that causes the move constructor
+		// to not work here, so avoid it by using the move assignment operator instead.
 		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
 
 		std::size_t count = 0;
