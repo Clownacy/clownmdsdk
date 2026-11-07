@@ -163,12 +163,12 @@ protected:
 			return static_cast<IteratorBaseBase::value_type&>(*this->entry);
 		}
 
-		constexpr auto* Advance()
+		constexpr IteratorBaseBase::held_type* Advance()
 		{
 			return static_cast<IteratorBaseBase::held_type*>(this->entry->next);
 		}
 
-		constexpr auto* Regress()
+		constexpr IteratorBaseBase::held_type* Regress()
 		{
 			return static_cast<IteratorBaseBase::held_type*>(this->entry->previous);
 		}

@@ -32,12 +32,12 @@ private:
 
 		constexpr auto* Advance()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->next);
+			return static_cast<Base::held_type*>(this->entry->next);
 		}
 
 		constexpr auto* Regress()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->previous);
+			return static_cast<Base::held_type*>(this->entry->previous);
 		}
 	};
 
@@ -57,12 +57,12 @@ private:
 
 		constexpr auto* Advance()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->previous);
+			return static_cast<Base::held_type*>(this->entry->previous);
 		}
 
 		constexpr auto* Regress()
 		{
-			return static_cast<Base::held_type*>(static_cast<EntryUnion*>(this->entry)->next);
+			return static_cast<Base::held_type*>(this->entry->next);
 		}
 	};
 
