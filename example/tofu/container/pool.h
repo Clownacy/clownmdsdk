@@ -17,8 +17,6 @@ class Pool
 private:
 	// Define a bunch of internal classes.
 
-	struct EntryUnion;
-
 	// Iterators
 	template<typename Base, typename EntryUnion>
 	class AllocatedIteratorBase : public Base
@@ -41,11 +39,6 @@ private:
 			return static_cast<Base::held_type*>(this->entry->previous);
 		}
 	};
-
-	using AllocatedIterator = AllocatedIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
-	using AllocatedConstIterator = AllocatedIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
-	using AllocatedReverseIterator = std::reverse_iterator<AllocatedIterator>;
-	using AllocatedConstReverseIterator = std::reverse_iterator<AllocatedConstIterator>;
 
 	// EntryAllocated
 	struct EntryAllocated
@@ -109,10 +102,10 @@ private:
 	}
 
 public:
-	using iterator = AllocatedIterator;
-	using const_iterator = AllocatedConstIterator;
-	using reverse_iterator = AllocatedReverseIterator;
-	using const_reverse_iterator = AllocatedConstReverseIterator;
+	using iterator = AllocatedIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
+	using const_iterator = AllocatedIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
+	using reverse_iterator = std::reverse_iterator<iterator>;
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 	constexpr Pool()
 	{
