@@ -192,8 +192,7 @@ static_assert(
 				list_a.push_back(entry);
 			list_b = std::move(list_a);
 		}
-		auto it = list_b.begin();
-		return ++it == list_b.end();
+		return ++list_b.begin() == list_b.end();
 	}()
 );
 
@@ -203,8 +202,7 @@ static_assert(
 		auto entries = std::to_array<TestEntry>({0});
 		DoublyLinkedList<TestEntry> list_b;
 		list_b = MakeList(entries);
-		auto it = list_b.begin();
-		return ++it == list_b.end();
+		return ++list_b.begin() == list_b.end();
 	}()
 );
 
@@ -213,8 +211,7 @@ static_assert(
 	{
 		auto entries = std::to_array<TestEntry>({0});
 		DoublyLinkedList<TestEntry> list_b; list_b = MakeList(entries);
-		auto it = list_b.begin();
-		return ++it == list_b.end();
+		return ++list_b.begin() == list_b.end();
 	}()
 );
 
@@ -241,8 +238,16 @@ static_assert(
 	{
 		std::array<TestEntry, 0> entries;
 		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
-		auto it = list.begin();
-		return ++it == list.end();
+		return ++list.begin() == list.end();
+	}()
+);
+
+static_assert(
+	[]() constexpr
+	{
+		std::array<TestEntry, 0> entries;
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		return --list.begin() == list.end();
 	}()
 );
 
@@ -269,8 +274,7 @@ static_assert(
 	{
 		auto entries = std::to_array<TestEntry>({0});
 		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
-		auto it = list.begin();
-		return ++it == list.end();
+		return ++list.begin() == list.end();
 	}()
 );
 
@@ -279,8 +283,7 @@ static_assert(
 	{
 		auto entries = std::to_array<TestEntry>({0});
 		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
-		auto it = list.rbegin();
-		return ++it == list.rend();
+		return ++list.rbegin() == list.rend();
 	}()
 );
 

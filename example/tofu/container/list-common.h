@@ -18,16 +18,17 @@ public:
 		: entry(entry)
 	{}
 
-	constexpr auto& operator++(this auto &&self)
+	template<typename Self>
+	constexpr Self&& operator++(this Self &&self)
 	{
 		self.entry = self.Advance();
-		return self;
+		return std::forward<Self>(self);
 	}
 
 	constexpr auto operator++(this auto &&self, int)
 	{
 		auto old = self;
-		self.operator++();
+		++self;
 		return old;
 	}
 
@@ -63,10 +64,11 @@ public:
 	using Base = ListForwardIterator<Held, Dereferenced>;
 	using Base::Base;
 
-	constexpr auto& operator--(this auto &&self)
+	template<typename Self>
+	constexpr Self&& operator--(this Self &&self)
 	{
 		self.entry = self.Regress();
-		return self;
+		return std::forward<Self>(self);
 	}
 
 	constexpr auto operator--(this auto &&self, int)
