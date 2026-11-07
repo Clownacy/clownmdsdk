@@ -121,7 +121,11 @@ void LevelManager::DrawWholeScreen(Z80::Bus &z80_bus)
 // Checks how much the camera has moved in this frame, and loads blocks at the edges of the screen.
 void LevelManager::Draw(Z80::Bus &z80_bus)
 {
-	const auto camera_block_position = camera.ToBlocks();
+	auto camera_block_position = camera.ToBlocks();
+
+	// Keep within level bounds, to prevent invalid level block array accesses.
+	camera_block_position.x = std::min(camera_block_position.x, Coordinate::level_size.blocks.x - line_size.blocks.x);
+	camera_block_position.y = std::min(camera_block_position.y, Coordinate::level_size.blocks.y - line_size.blocks.y);
 
 	// TODO: This assumes that the camera cannot move more than one block per frame.
 	if (camera_block_position.x < camera_block_position_previous.x)
