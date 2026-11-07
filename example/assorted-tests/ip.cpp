@@ -44,7 +44,7 @@ static std::variant<MainMenu, CDCTest, GraphicsTest, HVTest> mode;
 	MD::VDP::CRAM::Fill({7, 0, 0});
 
 	for (;;)
-		MD::M68k::WaitForInterrupt(7);
+		MD::M68k::WaitForInterrupt<7>();
 
 	std::unreachable();
 }
@@ -218,7 +218,7 @@ void _EntryPoint()
 	for (;;)
 	{
 		// Wait for vertical interrupt.
-		MD::M68k::WaitForInterrupt(0);
+		MD::M68k::WaitForInterrupt<0>();
 
 		const auto mode_id = std::visit(
 			[](auto &&mode)

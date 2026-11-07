@@ -117,7 +117,7 @@ static void WaitForVerticalInterrupt()
 {
 	waiting_for_vertical_interrupt = true;
 	do
-		M68k::WaitForInterrupt(0);
+		M68k::WaitForInterrupt<0>();
 	while (waiting_for_vertical_interrupt);
 }
 

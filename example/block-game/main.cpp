@@ -160,7 +160,7 @@ static void WaitForVInt()
 
 	do
 	{
-		MD::M68k::WaitForInterrupt(0);
+		MD::M68k::WaitForInterrupt<0>();
 	} while (waiting_for_v_int);
 }
 
@@ -321,7 +321,7 @@ void _EntryPoint()
 	MD::VDP::CRAM::Fill({7, 0, 0});
 
 	for (;;)
-		MD::M68k::WaitForInterrupt(7);
+		MD::M68k::WaitForInterrupt<7>();
 }
 
 void _BusErrorHandler()

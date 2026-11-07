@@ -167,7 +167,8 @@ namespace ClownMDSDK
 				return SetInterruptMaskTemporarily(7, callback);
 			}
 
-			inline void WaitForInterrupt(const unsigned int interrupt_mask)
+			template<unsigned int interrupt_mask>
+			inline void WaitForInterrupt()
 			{
 				asm(
 					"stop %0"
