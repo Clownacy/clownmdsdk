@@ -223,7 +223,7 @@ static_assert(
 	{
 		auto entries = std::to_array<TestEntry>({0});
 		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
-		return list.rbegin() == list.begin();
+		return (++list.rbegin()).base() == list.begin();
 	}()
 );
 
@@ -232,7 +232,7 @@ static_assert(
 	{
 		auto entries = std::to_array<TestEntry>({0});
 		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
-		return list.rend() == list.end();
+		return (++list.rend()).base() == list.end();
 	}()
 );
 

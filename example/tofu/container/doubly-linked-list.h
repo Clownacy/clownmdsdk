@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 #include <type_traits>
 
 #include "list-common.h"
@@ -163,44 +164,22 @@ protected:
 			return static_cast<IteratorBaseBase::value_type&>(*this->entry);
 		}
 
-		constexpr IteratorBaseBase::held_type* Advance()
-		{
-			return static_cast<IteratorBaseBase::held_type*>(this->entry->next);
-		}
-
-		constexpr IteratorBaseBase::held_type* Regress()
-		{
-			return static_cast<IteratorBaseBase::held_type*>(this->entry->previous);
-		}
-	};
-
-	template<typename IteratorBaseBase>
-	class ReverseIteratorBase : public IteratorBaseBase
-	{
-	public:
-		using IteratorBaseBase::IteratorBaseBase;
-
-		constexpr auto& Dereference()
-		{
-			return static_cast<IteratorBaseBase::value_type&>(*this->entry);
-		}
-
 		constexpr auto* Advance()
 		{
-			return static_cast<IteratorBaseBase::held_type*>(this->entry->previous);
+			return static_cast<IteratorBaseBase::held_type*>(this->entry->next);
 		}
 
 		constexpr auto* Regress()
 		{
-			return static_cast<IteratorBaseBase::held_type*>(this->entry->next);
+			return static_cast<IteratorBaseBase::held_type*>(this->entry->previous);
 		}
 	};
 
 public:
 	using iterator = IteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
 	using const_iterator = IteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
-	using reverse_iterator = ReverseIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
-	using const_reverse_iterator = ReverseIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
+	using reverse_iterator = std::reverse_iterator<iterator>;
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 public:
 	using Base::Base;
@@ -267,12 +246,12 @@ public:
 
 	constexpr const_reverse_iterator crbegin() const
 	{
-		return const_reverse_iterator(this->root.previous);
+		return const_reverse_iterator(cend());
 	}
 
 	constexpr const_reverse_iterator crend() const
 	{
-		return const_reverse_iterator(&this->root);
+		return const_reverse_iterator(cbegin());
 	}
 
 	constexpr const_reverse_iterator rbegin() const
@@ -287,12 +266,12 @@ public:
 
 	constexpr reverse_iterator rbegin()
 	{
-		return reverse_iterator(this->root.previous);
+		return reverse_iterator(end());
 	}
 
 	constexpr reverse_iterator rend()
 	{
-		return reverse_iterator(&this->root);
+		return reverse_iterator(begin());
 	}
 };
 
