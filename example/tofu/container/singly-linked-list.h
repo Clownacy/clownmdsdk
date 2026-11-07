@@ -22,7 +22,7 @@ protected:
 public:
 	constexpr auto& front(this auto &&self)
 	{
-		_assertm(!empty(), "Tried to access first element of empty list.");
+		_assertm(!self.empty(), "Tried to access first element of empty list.");
 		return *self.root.next;
 	}
 

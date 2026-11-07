@@ -36,7 +36,7 @@ public:
 
 	constexpr auto& back(this auto &&self)
 	{
-		_assertm(!empty(), "Tried to access last element of empty list.");
+		_assertm(!self.empty(), "Tried to access last element of empty list.");
 		return *self.root.previous;
 	}
 
