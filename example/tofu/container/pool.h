@@ -36,8 +36,8 @@ private:
 		}
 	};
 
-	using AllocatedIterator = AllocatedIteratorBase<ListIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
-	using AllocatedConstIterator = AllocatedIteratorBase<ListConstIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
+	using AllocatedIterator = AllocatedIteratorBase<ListForwardIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
+	using AllocatedConstIterator = AllocatedIteratorBase<ListConstForwardIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
 
 	template<typename Base, typename EntryUnion>
 	class AllocatedReverseIteratorBase : public Base
@@ -56,8 +56,8 @@ private:
 		}
 	};
 
-	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
-	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
+	using AllocatedReverseIterator = AllocatedReverseIteratorBase<ListForwardIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
+	using AllocatedConstReverseIterator = AllocatedReverseIteratorBase<ListConstForwardIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
 
 	// EntryAllocated
 	struct EntryAllocated

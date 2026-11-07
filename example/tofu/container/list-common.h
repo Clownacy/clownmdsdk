@@ -4,7 +4,7 @@
 #include <cassert>
 
 template<typename Held, typename Dereferenced>
-class ListIterator
+class ListForwardIterator
 {
 private:
 	Held *entry;
@@ -14,7 +14,7 @@ public:
 	using value_type = Dereferenced;
 	using held_type = Held;
 
-	constexpr ListIterator(Held* const entry = nullptr)
+	constexpr ListForwardIterator(Held* const entry = nullptr)
 		: entry(entry)
 	{}
 
@@ -31,7 +31,7 @@ public:
 		return old;
 	}
 
-	constexpr bool operator==(const ListIterator &other) const
+	constexpr bool operator==(const ListForwardIterator &other) const
 	{
 		return entry == other.entry;
 	}
@@ -54,6 +54,30 @@ public:
 };
 
 template<typename Held, typename Dereferenced>
-using ListConstIterator = ListIterator<const Held, const Dereferenced>;
+using ListConstForwardIterator = ListForwardIterator<const Held, const Dereferenced>;
+
+template<typename Held, typename Dereferenced>
+class ListBiDirectionalIterator : public ListForwardIterator<Held, Dereferenced>
+{
+public:
+	using Base = ListForwardIterator<Held, Dereferenced>;
+	using Base::Base;
+
+	constexpr auto& operator--(this auto &&self)
+	{
+		self.entry = self.Regress();
+		return self;
+	}
+
+	constexpr auto operator--(this auto &&self, int)
+	{
+		auto old = self;
+		self.operator--();
+		return old;
+	}
+};
+
+template<typename Held, typename Dereferenced>
+using ListConstBiDirectionalIterator = ListBiDirectionalIterator<const Held, const Dereferenced>;
 
 #endif // LIST_COMMON_H

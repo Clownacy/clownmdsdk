@@ -74,8 +74,8 @@ protected:
 	};
 
 public:
-	using iterator = IteratorBase<ListIterator<typename Base::Entry, T>>;
-	using const_iterator = IteratorBase<ListConstIterator<typename Base::Entry, T>>;
+	using iterator = IteratorBase<ListForwardIterator<typename Base::Entry, T>>;
+	using const_iterator = IteratorBase<ListConstForwardIterator<typename Base::Entry, T>>;
 
 	using Base::Base;
 

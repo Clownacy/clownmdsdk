@@ -172,8 +172,8 @@ protected:
 public:
 	using iterator = Base::iterator;
 	using const_iterator = Base::const_iterator;
-	using reverse_iterator = ReverseIteratorBase<ListIterator<DoublyLinkedListBase::Entry, T>>;
-	using const_reverse_iterator = ReverseIteratorBase<ListConstIterator<DoublyLinkedListBase::Entry, T>>;
+	using reverse_iterator = ReverseIteratorBase<ListForwardIterator<DoublyLinkedListBase::Entry, T>>;
+	using const_reverse_iterator = ReverseIteratorBase<ListConstForwardIterator<DoublyLinkedListBase::Entry, T>>;
 
 public:
 	using Base::Base;
