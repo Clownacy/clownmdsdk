@@ -18,6 +18,8 @@ private:
 	void DrawRows(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, unsigned int total_rows);
 	void DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &starting_block_position, unsigned int total_columns);
 
+	Coordinate::Block GetCameraBlockPosition() const;
+
 public:
 	Coordinate::Pixel camera;
 

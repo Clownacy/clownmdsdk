@@ -8,6 +8,22 @@
 #include "../object-manager.h"
 #include "../sprite-manager.h"
 
+void Objects::Player::UpdateCamera()
+{
+	level_manager.camera = Coordinate::Pixel(position);
+
+	const auto half_screen_size = Coordinate::screen_size.pixels / 2;
+
+	// Restrict camera to bounds of level.
+	const auto lower_camera_boundary = half_screen_size;
+	const auto upper_camera_boundary = Coordinate::level_size.pixels - half_screen_size;
+	level_manager.camera.x = std::clamp(level_manager.camera.x, lower_camera_boundary.x, upper_camera_boundary.x);
+	level_manager.camera.y = std::clamp(level_manager.camera.y, lower_camera_boundary.y, upper_camera_boundary.y);
+
+	// Centre camera on target.
+	level_manager.camera -= half_screen_size;
+}
+
 bool Objects::Player::Update()
 {
 	constexpr unsigned long hitbox_radius_x =  4 * 0x10000;
@@ -91,18 +107,7 @@ bool Objects::Player::Update()
 		object_manager.EmplaceBack<Bullet>(position + Coordinate::Pixel(facing_left ? -6 : 6, -2), facing_left ? -0x68000 : 0x68000);
 
 	// Updata camera.
-	level_manager.camera = Coordinate::Pixel(position);
-
-	const auto half_screen_size = Coordinate::screen_size.pixels / 2;
-
-	// Restrict camera to bounds of level.
-	const auto lower_camera_boundary = half_screen_size;
-	const auto upper_camera_boundary = Coordinate::level_size.pixels - half_screen_size;
-	level_manager.camera.x = std::clamp(level_manager.camera.x, lower_camera_boundary.x, upper_camera_boundary.x);
-	level_manager.camera.y = std::clamp(level_manager.camera.y, lower_camera_boundary.y, upper_camera_boundary.y);
-
-	// Centre camera on target.
-	level_manager.camera -= half_screen_size;
+	UpdateCamera();
 
 	QueueForDisplay(facing_left ? -2 : 2, -2, 1, 3, {.priority = false, .palette_line = 0, .y_flip = false, .x_flip = facing_left, .tile_index = 8});
 

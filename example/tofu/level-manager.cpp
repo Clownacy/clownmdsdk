@@ -107,25 +107,34 @@ void LevelManager::DrawColumns(Z80::Bus &z80_bus, const Coordinate::Block &start
 	VDP::SetAddressIncrement(2);
 }
 
-void LevelManager::DrawWholeScreen(Z80::Bus &z80_bus)
-{
-	// Chooses whichever is more efficient for the screen resolution.
-	if constexpr (Coordinate::screen_size.blocks.x >= Coordinate::screen_size.blocks.y)
-		DrawRows(z80_bus, camera, line_size.blocks.y);
-	else
-		DrawColumns(z80_bus, camera, line_size.blocks.x);
-
-	camera_block_position_previous = camera;
-}
-
-// Checks how much the camera has moved in this frame, and loads blocks at the edges of the screen.
-void LevelManager::Draw(Z80::Bus &z80_bus)
+Coordinate::Block LevelManager::GetCameraBlockPosition() const
 {
 	auto camera_block_position = camera.ToBlocks();
 
 	// Keep within level bounds, to prevent invalid level block array accesses.
 	camera_block_position.x = std::min(camera_block_position.x, Coordinate::level_size.blocks.x - line_size.blocks.x);
 	camera_block_position.y = std::min(camera_block_position.y, Coordinate::level_size.blocks.y - line_size.blocks.y);
+
+	return camera_block_position;
+}
+
+void LevelManager::DrawWholeScreen(Z80::Bus &z80_bus)
+{
+	const auto camera_block_position = GetCameraBlockPosition();
+
+	// Chooses whichever is more efficient for the screen resolution.
+	if constexpr (Coordinate::screen_size.blocks.x >= Coordinate::screen_size.blocks.y)
+		DrawRows(z80_bus, camera_block_position, line_size.blocks.y);
+	else
+		DrawColumns(z80_bus, camera_block_position, line_size.blocks.x);
+
+	camera_block_position_previous = camera_block_position;
+}
+
+// Checks how much the camera has moved in this frame, and loads blocks at the edges of the screen.
+void LevelManager::Draw(Z80::Bus &z80_bus)
+{
+	const auto camera_block_position = GetCameraBlockPosition();
 
 	// TODO: This assumes that the camera cannot move more than one block per frame.
 	if (camera_block_position.x < camera_block_position_previous.x)

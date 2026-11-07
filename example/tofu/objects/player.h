@@ -7,11 +7,19 @@ namespace Objects
 {
 	class Player : public Base
 	{
+	private:
+		void UpdateCamera();
+
 	public:
 		bool facing_left, on_ground;
 		long y_velocity;
 
-		using Base::Base;
+		Player(const Coordinate::World &position)
+			: Base(position)
+		{
+			UpdateCamera();
+		}
+
 		bool Update();
 	};
 }
