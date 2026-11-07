@@ -52,8 +52,8 @@ public:
 };
 
 // Type-specific.
-template<typename T, typename Base>
-class SinglyLinkedListLowLevel : public Base
+template<typename T>
+class SinglyLinkedList : public SinglyLinkedListBase
 {
 protected:
 	template<typename IteratorBaseBase>
@@ -74,6 +74,8 @@ protected:
 	};
 
 public:
+	using Base = SinglyLinkedListBase;
+
 	using iterator = IteratorBase<ListForwardIterator<typename Base::Entry, T>>;
 	using const_iterator = IteratorBase<ListConstForwardIterator<typename Base::Entry, T>>;
 
@@ -96,7 +98,7 @@ public:
 
 	constexpr iterator begin()
 	{
-		return iterator(static_cast<Base::Entry*>(this->root.next));
+		return iterator(root.next);
 	}
 
 	constexpr iterator end()
@@ -106,7 +108,7 @@ public:
 
 	constexpr const_iterator begin() const
 	{
-		return const_iterator(static_cast<Base::Entry*>(this->root.next));
+		return const_iterator(root.next);
 	}
 
 	constexpr const_iterator end() const
@@ -124,8 +126,5 @@ public:
 		return end();
 	}
 };
-
-template<typename T>
-using SinglyLinkedList = SinglyLinkedListLowLevel<T, SinglyLinkedListBase>;
 
 #endif /* SINGLY_LINKED_LIST_H */
