@@ -74,7 +74,7 @@ public:
 	constexpr auto operator--(this auto &&self, int)
 	{
 		auto old = self;
-		self.operator--();
+		--self;
 		return old;
 	}
 };
