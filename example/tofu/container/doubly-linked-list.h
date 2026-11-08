@@ -17,14 +17,9 @@ public:
 	{
 		Entry *previous;
 
-		constexpr auto* Next()
+		constexpr auto* Next(this auto &self)
 		{
-			return static_cast<Entry*>(next);
-		}
-
-		constexpr auto* Next() const
-		{
-			return static_cast<const Entry*>(next);
+			return static_cast<decltype(&self)>(self.next);
 		}
 	};
 
@@ -65,16 +60,10 @@ public:
 		return *this;
 	}
 
-	constexpr auto& front()
+	constexpr auto& front(this auto &&self)
 	{
-		_assertm(!empty(), "Tried to access first element of empty list.");
-		return *root.Next();
-	}
-
-	constexpr auto& front() const
-	{
-		_assertm(!empty(), "Tried to access first element of empty list.");
-		return *root.Next();
+		_assertm(!self.empty(), "Tried to access first element of empty list.");
+		return *self.root.Next();
 	}
 
 	constexpr auto& back(this auto &&self)
