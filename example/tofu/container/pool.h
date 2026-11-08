@@ -16,53 +16,53 @@ class Pool
 {
 private:
 	// Iterators
-	template<typename Base, typename EntryUnion>
-	class AllocatedIteratorBase : public Base
+	template<typename IteratorBaseBase, typename Entry>
+	class IteratorBase : public IteratorBaseBase
 	{
 	public:
-		using Base::Base;
+		using IteratorBaseBase::IteratorBaseBase;
 
 		constexpr auto& Dereference()
 		{
-			return static_cast<EntryUnion*>(this->entry)->value;
+			return static_cast<Entry*>(this->entry)->value;
 		}
 
-		constexpr Base::held_type* Advance()
+		constexpr IteratorBaseBase::held_type* Advance()
 		{
 			return this->entry->Next();
 		}
 
-		constexpr Base::held_type* Regress()
+		constexpr IteratorBaseBase::held_type* Regress()
 		{
 			return this->entry->previous;
 		}
 	};
 
-	// EntryUnion
-	struct EntryUnion : DoublyLinkedList<EntryUnion>::Entry
+	// Entry
+	struct Entry : DoublyLinkedList<Entry>::Entry
 	{
 		union
 		{
 			T value;
 		};
 
-		constexpr EntryUnion() {}
+		constexpr Entry() {}
 	};
 
 	// Actual Pool stuff begins here.
-	DoublyLinkedList<EntryUnion> allocated_list;
-	SinglyLinkedList<EntryUnion> deallocated_list;
-	std::array<EntryUnion, S> storage;
+	DoublyLinkedList<Entry> allocated_list;
+	SinglyLinkedList<Entry> deallocated_list;
+	std::array<Entry, S> storage;
 
 	template<typename ...Ts>
-	constexpr EntryUnion& pop_from_deallocated(Ts &&...args)
+	constexpr Entry& pop_from_deallocated(Ts &&...args)
 	{
 		auto &entry = deallocated_list.pop_front();
 		std::construct_at(&entry.value, std::forward<Ts>(args)...);
 		return entry;
 	}
 
-	constexpr void deallocate(EntryUnion &entry)
+	constexpr void deallocate(Entry &entry)
 	{
 		allocated_list.erase(entry);
 		entry.value.~T();
@@ -70,8 +70,8 @@ private:
 	}
 
 public:
-	using iterator = AllocatedIteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, EntryUnion>;
-	using const_iterator = AllocatedIteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const EntryUnion>;
+	using iterator = IteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, Entry>;
+	using const_iterator = IteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const Entry>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -139,7 +139,7 @@ public:
 
 	constexpr iterator deallocate(iterator it)
 	{
-		auto &entry = static_cast<EntryUnion&>(*it.GetHeldPointer());
+		auto &entry = static_cast<Entry&>(*it.GetHeldPointer());
 		++it;
 		deallocate(entry);
 		return it;
