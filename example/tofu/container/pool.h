@@ -15,8 +15,6 @@ template<typename T, std::size_t S>
 class Pool
 {
 private:
-	// Define a bunch of internal classes.
-
 	// Iterators
 	template<typename Base, typename EntryUnion>
 	class AllocatedIteratorBase : public Base
@@ -26,7 +24,7 @@ private:
 
 		constexpr auto& Dereference()
 		{
-			return static_cast<EntryUnion*>(this->entry)->allocated.value;
+			return static_cast<EntryUnion*>(this->entry)->value;
 		}
 
 		constexpr auto* Advance()
@@ -40,27 +38,12 @@ private:
 		}
 	};
 
-	// EntryAllocated
-	struct EntryAllocated
-	{
-		T value;
-
-		template<typename... Args>
-		constexpr EntryAllocated(Args &&...other)
-			: value(std::forward<Args>(other)...)
-		{}
-	};
-
-	// EntryDeallocated
-	struct EntryDeallocated {};
-
 	// EntryUnion
 	struct EntryUnion : DoublyLinkedList<EntryUnion>::Entry
 	{
 		union
 		{
-			EntryAllocated allocated;
-			EntryDeallocated deallocated;
+			T value;
 		};
 
 		constexpr EntryUnion() {}
@@ -72,33 +55,18 @@ private:
 	std::array<EntryUnion, S> storage;
 
 	template<typename ...Ts>
-	constexpr void push_to_deallocated(EntryUnion &entry, Ts &&...args)
-	{
-		std::construct_at(&entry.deallocated, std::forward<Ts>(args)...);
-		deallocated_list.push_front(entry);
-	}
-
-	template<typename ...Ts>
 	constexpr EntryUnion& pop_from_deallocated(Ts &&...args)
 	{
 		auto &entry = deallocated_list.pop_front();
-
-		entry.deallocated.~EntryDeallocated();
-
-		std::construct_at(&entry.allocated, std::forward<Ts>(args)...);
-
+		std::construct_at(&entry.value, std::forward<Ts>(args)...);
 		return entry;
 	}
 
 	constexpr void deallocate(EntryUnion &entry)
 	{
-		// Remove from allocated object list.
 		allocated_list.erase(entry);
-
-		entry.allocated.~EntryAllocated();
-
-		// Add to deallocated object list.
-		push_to_deallocated(entry);
+		entry.value.~T();
+		deallocated_list.push_front(entry);
 	}
 
 public:
@@ -110,7 +78,7 @@ public:
 	constexpr Pool()
 	{
 		for (auto &entry : storage)
-			push_to_deallocated(entry);
+			deallocated_list.push_front(entry);
 	}
 
 	constexpr ~Pool()
@@ -239,12 +207,12 @@ public:
 
 	constexpr auto& front(this auto &&self)
 	{
-		return self.allocated_list.front().allocated.value;
+		return self.allocated_list.front().value;
 	}
 
 	constexpr auto& back(this auto &&self)
 	{
-		return self.allocated_list.back().allocated.value;
+		return self.allocated_list.back().value;
 	}
 
 	constexpr std::size_t size() const
