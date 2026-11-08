@@ -895,16 +895,13 @@ namespace ClownMDSDK
 			{
 				struct Sprite
 				{
-					unsigned int : 6;
-					unsigned int y : 10;
-					unsigned int : 4;
-					unsigned int width : 2;
-					unsigned int height : 2;
-					unsigned int : 1;
-					unsigned int link : 7;
+					unsigned short y;
+					unsigned char : 4;
+					unsigned char width : 2;
+					unsigned char height : 2;
+					unsigned char link;
 					TileMetadata tile_metadata;
-					unsigned int : 7;
-					unsigned int x : 9;
+					unsigned short x;
 				};
 
 				static_assert(std::is_standard_layout_v<Sprite> && sizeof(Sprite) == 8); // Make sure that this has no hidden data.
