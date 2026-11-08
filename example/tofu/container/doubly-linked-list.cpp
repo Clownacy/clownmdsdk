@@ -91,7 +91,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 
 		std::size_t count = 0;
 		auto iterator = entries.rbegin();
@@ -116,7 +116,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return list.front().value == 0 && list.back().value == 3;
 	}()
 );
@@ -126,7 +126,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return !list.empty();
 	}()
 );
@@ -154,7 +154,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 0> entries;
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return list.empty();
 	}()
 );
@@ -163,7 +163,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0});
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return !list.empty();
 	}()
 );
@@ -219,7 +219,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0});
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return (++list.rbegin()).base() == list.begin();
 	}()
 );
@@ -237,7 +237,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 0> entries;
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return ++list.begin() == list.end();
 	}()
 );
@@ -246,7 +246,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 0> entries;
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return --list.begin() == list.end();
 	}()
 );
@@ -255,7 +255,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 0> entries;
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return list.begin() == list.end();
 	}()
 );
@@ -264,7 +264,7 @@ static_assert(
 	[]() constexpr
 	{
 		std::array<TestEntry, 0> entries;
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return list.rbegin() == list.rend();
 	}()
 );
@@ -282,7 +282,7 @@ static_assert(
 	[]() constexpr
 	{
 		auto entries = std::to_array<TestEntry>({0});
-		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		DoublyLinkedList<TestEntry> list = MakeList(entries);
 		return ++list.rbegin() == list.rend();
 	}()
 );
