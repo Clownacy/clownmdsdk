@@ -44,15 +44,15 @@ public:
 	constexpr DoublyLinkedListBase& operator=(DoublyLinkedListBase &&other)
 	{
 		// Point to our root node!
-		auto &prev_a = this->root.Next()->previous;
+		auto &prev_a = root.Next()->previous;
 		auto &prev_b = other.root.Next()->previous;
-		auto &next_a = this->root.previous->next;
+		auto &next_a = root.previous->next;
 		auto &next_b = other.root.previous->next;
 		std::swap(prev_a, prev_b);
 		std::swap(next_a, next_b);
 
-		std::swap(this->root, other.root);
-		std::swap(this->total_entries, other.total_entries);
+		std::swap(root, other.root);
+		std::swap(total_entries, other.total_entries);
 
 		assert(root.Next()->previous == &root);
 		assert(root.previous->next == &root);
@@ -215,12 +215,12 @@ public:
 
 	constexpr const_iterator cbegin() const
 	{
-		return const_iterator(this->root.Next());
+		return const_iterator(root.Next());
 	}
 
 	constexpr const_iterator cend() const
 	{
-		return const_iterator(&this->root);
+		return const_iterator(&root);
 	}
 
 	constexpr const_iterator begin() const
@@ -235,12 +235,12 @@ public:
 
 	constexpr iterator begin()
 	{
-		return iterator(this->root.Next());
+		return iterator(root.Next());
 	}
 
 	constexpr iterator end()
 	{
-		return iterator(&this->root);
+		return iterator(&root);
 	}
 
 	constexpr const_reverse_iterator crbegin() const
