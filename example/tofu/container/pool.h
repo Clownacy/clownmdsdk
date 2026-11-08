@@ -27,14 +27,14 @@ private:
 			return static_cast<EntryUnion*>(this->entry)->value;
 		}
 
-		constexpr auto* Advance()
+		constexpr Base::held_type* Advance()
 		{
-			return static_cast<Base::held_type*>(this->entry->next);
+			return this->entry->Next();
 		}
 
-		constexpr auto* Regress()
+		constexpr Base::held_type* Regress()
 		{
-			return static_cast<Base::held_type*>(this->entry->previous);
+			return this->entry->previous;
 		}
 	};
 
