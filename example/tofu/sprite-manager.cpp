@@ -35,16 +35,15 @@ void SpriteManager::UploadTable(Z80::Bus &z80_bus)
 {
 	if (total_sprites == 0)
 	{
-		// Blank the first sprite table entry, since the list cannot be 0 entries long.
-		table[0] = {};
-		total_sprites = 1;
+		// Write a dummy first sprite, since the list cannot be 0 entries long.
+		VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, VRAMAddresses::SpriteTable);
+		VDP::Write(VDP::DataValueLongword(0));
 	}
 	else
 	{
-		// Terminate the sprite list.
+		// Terminate the sprite list and upload it
 		table[total_sprites - 1].link = 0;
+		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VRAMAddresses::SpriteTable, std::data(table), total_sprites * sizeof(VDP::VRAM::Sprite) / 2);
+		total_sprites = 0;
 	}
-
-	z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VRAMAddresses::SpriteTable, std::data(table), total_sprites * sizeof(VDP::VRAM::Sprite) / 2);
-	total_sprites = 0;
 }
