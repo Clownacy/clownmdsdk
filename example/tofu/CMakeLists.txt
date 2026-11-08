@@ -27,6 +27,8 @@ add_cartridge_executable(tofu
 	"object-manager.h"
 	"sprite-manager.cpp"
 	"sprite-manager.h"
+	"sprite-table.cpp"
+	"sprite-table.h"
 	"vram-addresses.h"
 )
 

@@ -2,13 +2,11 @@
 
 #include "level-manager.h"
 
-#include "vram-addresses.h"
-
 SpriteManager sprite_manager;
 
 void SpriteManager::QueueSprite(const unsigned int x, const unsigned int y, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
 {
-	if (total_sprites == std::size(table))
+	if (sprite_table.Full())
 		return;
 
 	static constexpr auto OffsetCoordinate = [](const unsigned long position, const unsigned int size)
@@ -22,28 +20,5 @@ void SpriteManager::QueueSprite(const unsigned int x, const unsigned int y, cons
 	if (screen_x >= 0x200 || screen_y >= 0x200)
 		return;
 
-	auto &sprite = table[total_sprites++];
-	sprite.x = screen_x;
-	sprite.y = screen_y;
-	sprite.width = width;
-	sprite.height = height;
-	sprite.link = total_sprites;
-	sprite.tile_metadata = tile_metadata;	
-}
-
-void SpriteManager::UploadTable(Z80::Bus &z80_bus)
-{
-	if (total_sprites == 0)
-	{
-		// Write a dummy first sprite, since the list cannot be 0 entries long.
-		VDP::SendCommand(VDP::RAM::VRAM, VDP::Access::WRITE, VRAMAddresses::SpriteTable);
-		VDP::Write(VDP::DataValueLongword(0));
-	}
-	else
-	{
-		// Terminate the sprite list and upload it
-		table[total_sprites - 1].link = 0;
-		z80_bus.CopyWordsToVDPWithDMA(VDP::RAM::VRAM, VRAMAddresses::SpriteTable, std::data(table), total_sprites * sizeof(VDP::VRAM::Sprite) / 2);
-		total_sprites = 0;
-	}
+	sprite_table.QueueSprite(screen_x, screen_y, width, height, tile_metadata);
 }
