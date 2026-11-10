@@ -1,23 +1,23 @@
 #ifndef COORDINATE_H
 #define COORDINATE_H
 
-#include <type_traits>
+#include <cassert>
+#include <concepts>
 
 #include "mega-drive.h"
 
 #define COORDINATE_BASE_MAKE_OPERATOR(OPERATOR) \
-	template<typename Self, typename Other> \
-	constexpr std::remove_cvref_t<Self> operator OPERATOR(this Self &&self, Other &&other) \
+	constexpr auto operator OPERATOR(this auto &&self, std::integral auto &&other) -> std::remove_cvref_t<decltype(self)> \
 	{ \
-		if constexpr (std::is_integral_v<std::remove_cvref_t<Other>>) \
-			return {self.x OPERATOR other, self.y OPERATOR other}; \
-		else \
-			return {self.x OPERATOR other.x, self.y OPERATOR other.y}; \
+		return {self.x OPERATOR other, self.y OPERATOR other}; \
 	} \
-	template<typename Other> \
-	constexpr auto& operator OPERATOR##=(Other &&other) \
+	constexpr auto operator OPERATOR(this auto &&self, auto &&other) -> std::remove_cvref_t<decltype(self)> \
 	{ \
-		return *this = *this OPERATOR std::forward<Other>(other); \
+		return {self.x OPERATOR other.x, self.y OPERATOR other.y}; \
+	} \
+	constexpr auto& operator OPERATOR##=(auto &&other) \
+	{ \
+		return *this = *this OPERATOR std::forward<decltype(other)>(other); \
 	}
 
 namespace Coordinate
@@ -27,7 +27,7 @@ namespace Coordinate
 	class Tile;
 	class Block;
 
-	template<typename Integer>
+	template<std::integral Integer>
 	class Base
 	{
 	public:
@@ -148,25 +148,25 @@ namespace Coordinate
 		: Block(Pixel(world))
 	{}
 
-	template<typename Integer>
+	template<std::integral Integer>
 	constexpr inline World Base<Integer>::ToWorld(this auto &&self)
 	{
 		return self;
 	}
 
-	template<typename Integer>
+	template<std::integral Integer>
 	constexpr inline Pixel Base<Integer>::ToPixels(this auto &&self)
 	{
 		return self;
 	}
 
-	template<typename Integer>
+	template<std::integral Integer>
 	constexpr inline Tile Base<Integer>::ToTiles(this auto &&self)
 	{
 		return self;
 	}
 
-	template<typename Integer>
+	template<std::integral Integer>
 	constexpr inline Block Base<Integer>::ToBlocks(this auto &&self)
 	{
 		return self;
