@@ -38,14 +38,22 @@ namespace Coordinate
 			: x(x), y(y)
 		{}
 
-		constexpr auto& Dimension(this auto &&self, const std::size_t index)
+		template<std::size_t index>
+		constexpr auto& Dimension(this auto &&self)
 		{
-			if (index == 0)
-				return self.x;
-			else //if (index == 1)
-				return self.y;
+			static_assert(index < 2, "Out-of-bounds coordinate dimension index.");
 
-			_assertm(index < 2, "Out-of-bounds coordinate index.");
+			switch (index)
+			{
+				default:
+					std::unreachable();
+
+				case 0:
+					return self.x;
+
+				case 1:
+					return self.y;
+			}
 		}
 
 		constexpr World ToWorld(this auto &&self);

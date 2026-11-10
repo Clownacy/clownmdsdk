@@ -39,7 +39,7 @@ bool Objects::Player::Update()
 
 		const bool collision = [&]()
 		{
-			for (Coordinate::Block block_position = lower; block_position.Dimension(!vertical) <= upper.Dimension(!vertical); ++block_position.Dimension(!vertical))
+			for (Coordinate::Block block_position = lower; block_position.Dimension<!vertical>() <= upper.Dimension<!vertical>(); ++block_position.Dimension<!vertical>())
 				if (level_manager.GetBlock(block_position) != 0)
 					return true;
 
@@ -48,7 +48,7 @@ bool Objects::Player::Update()
 
 		if (collision)
 		{
-			position.Dimension(vertical) = Coordinate::World(lower + Coordinate::Block(vertical ? 0 : !flipped, vertical ? !flipped : 0)).Dimension(vertical) - offset;
+			position.Dimension<vertical>() = Coordinate::World(lower + Coordinate::Block(vertical ? 0 : !flipped, vertical ? !flipped : 0)).Dimension<vertical>() - offset;
 
 			if constexpr (vertical)
 			{

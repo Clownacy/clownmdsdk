@@ -28,9 +28,9 @@ void LevelManager::DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starti
 	const auto starting_tile_position_in_plane = starting_block_position.ToTiles() % Coordinate::plane_size.tiles;
 
 	// We split the transfer in two to handle wrapping around the plane.
-	constexpr unsigned int line_length_in_blocks = line_size.blocks.Dimension(vertical);
-	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size.tiles.Dimension(vertical);
-	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension(vertical), line_length_in_tiles, Coordinate::plane_size.tiles.Dimension(vertical));
+	constexpr unsigned int line_length_in_blocks = line_size.blocks.Dimension<vertical>();
+	constexpr unsigned int line_length_in_tiles = line_length_in_blocks * Coordinate::block_size.tiles.Dimension<vertical>();
+	const auto [first_transfer_length, second_transfer_length] = SplitLength(starting_tile_position_in_plane.Dimension<vertical>(), line_length_in_tiles, Coordinate::plane_size.tiles.Dimension<vertical>());
 
 	auto block_position = starting_block_position;
 	VDP::VRAM::TileMetadata tile_metadata{.priority = true, .palette_line = 0, .y_flip = false, .x_flip = false, .tile_index = 0};
@@ -42,11 +42,11 @@ void LevelManager::DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starti
 
 		for (unsigned int block_line_in_screen = 0; block_line_in_screen < total_lines; ++block_line_in_screen)
 		{
-			std::array<std::array<VDP::VRAM::TileMetadata, line_length_in_blocks * Coordinate::block_size.tiles.Dimension(vertical)>, Coordinate::block_size.tiles.Dimension(!vertical)> tile_metadata_lines;
+			std::array<std::array<VDP::VRAM::TileMetadata, line_length_in_blocks * Coordinate::block_size.tiles.Dimension<vertical>()>, Coordinate::block_size.tiles.Dimension<!vertical>()> tile_metadata_lines;
 
 			auto *block_pointer = &GetBlock(block_position);
 
-			++block_position.Dimension(!vertical);
+			++block_position.Dimension<!vertical>();
 
 			unsigned int tile_in_line = 0;
 
@@ -64,7 +64,7 @@ void LevelManager::DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starti
 					}
 				}
 
-				tile_in_line += Coordinate::block_size.tiles.Dimension(vertical);
+				tile_in_line += Coordinate::block_size.tiles.Dimension<vertical>();
 			}
 
 			for (const auto &tile_metadata_line : tile_metadata_lines)
@@ -82,7 +82,7 @@ void LevelManager::DrawBlocks(Z80::Bus &z80_bus, const Coordinate::Block &starti
 	};
 
 	// We split the lines we draw into two batches as well, also to handle plane wrapping.
-	const auto [first_line_length, second_line_length] = SplitLength(starting_tile_position_in_plane.ToBlocks().Dimension(!vertical), total_lines, Coordinate::plane_size.tiles.ToBlocks().Dimension(!vertical));
+	const auto [first_line_length, second_line_length] = SplitLength(starting_tile_position_in_plane.ToBlocks().Dimension<!vertical>(), total_lines, Coordinate::plane_size.tiles.ToBlocks().Dimension<!vertical>());
 
 	const auto vram_offset_x = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.x;
 	const auto vram_offset_y = sizeof(VDP::VRAM::TileMetadata) * starting_tile_position_in_plane.y * Coordinate::plane_size.tiles.x;
