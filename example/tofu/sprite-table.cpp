@@ -1,6 +1,6 @@
 #include "sprite-table.h"
 
-#include <assert.h>
+#include <cassert>
 
 void SpriteTable::QueueSprite(const unsigned int x, const unsigned int y, const unsigned int width, const unsigned int height, const VDP::VRAM::TileMetadata &tile_metadata)
 {

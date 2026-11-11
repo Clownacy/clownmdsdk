@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <concepts>
+#include <utility>
 
 #include "mega-drive.h"
 

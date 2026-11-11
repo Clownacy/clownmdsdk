@@ -1,8 +1,10 @@
 #include "level-manager.h"
 
+#include <array>
 #include <numeric>
 #include <utility>
 
+#include "level-manager.h"
 #include "vram-addresses.h"
 
 LevelManager level_manager;

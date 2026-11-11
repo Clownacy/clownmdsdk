@@ -1,6 +1,8 @@
 #ifndef SPRITE_TABLE_H
 #define SPRITE_TABLE_H
 
+#include <array>
+
 #include "mega-drive.h"
 
 class SpriteTable

@@ -13,7 +13,6 @@
 
 #include <array>
 #include <atomic>
-#include <initializer_list>
 
 #include "coordinate.h"
 #include "controller-manager.h"
