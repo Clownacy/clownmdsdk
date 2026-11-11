@@ -15,7 +15,6 @@ template<typename T, std::size_t S>
 class Pool
 {
 private:
-	// Iterators
 	template<typename IteratorBaseBase, typename Entry>
 	class IteratorBase : public IteratorBaseBase
 	{
@@ -38,7 +37,6 @@ private:
 		}
 	};
 
-	// Entry
 	struct Entry : DoublyLinkedList<Entry>::Entry
 	{
 		union
@@ -49,32 +47,27 @@ private:
 		constexpr Entry() {}
 	};
 
-	// Actual Pool stuff begins here.
-	DoublyLinkedList<Entry> allocated_list;
-	SinglyLinkedList<Entry> deallocated_list;
-	std::array<Entry, S> storage;
-
-	template<typename ...Ts>
-	constexpr Entry& pop_from_deallocated(Ts &&...args)
-	{
-		auto &entry = deallocated_list.pop_front();
-		std::construct_at(&entry.value, std::forward<Ts>(args)...);
-		return entry;
-	}
-
-	constexpr void deallocate(Entry &entry)
-	{
-		allocated_list.erase(entry);
-		entry.value.~T();
-		deallocated_list.push_front(entry);
-	}
-
 public:
 	using iterator = IteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, Entry>;
 	using const_iterator = IteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const Entry>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
+private:
+	DoublyLinkedList<Entry> allocated_list;
+	SinglyLinkedList<Entry> deallocated_list;
+	std::array<Entry, S> storage;
+
+	template<typename ...Ts>
+	constexpr iterator allocate(const auto &callback, Ts &&...args)
+	{
+		auto &entry = deallocated_list.pop_front();
+		std::construct_at(&entry.value, std::forward<Ts>(args)...);
+		callback(entry);
+		return iterator(&entry);
+	}
+
+public:
 	constexpr Pool()
 	{
 		for (auto &entry : storage)
@@ -124,24 +117,34 @@ public:
 	template<typename ...Ts>
 	constexpr iterator allocate_front(Ts &&...args)
 	{
-		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
-		allocated_list.push_front(entry);
-		return iterator(&entry);
+		return allocate(
+			[this](Entry &entry)
+			{
+				allocated_list.push_front(entry);
+			},
+			std::forward<Ts>(args)...
+		);
 	}
 
 	template<typename ...Ts>
 	constexpr iterator allocate_back(Ts &&...args)
 	{
-		auto &entry = pop_from_deallocated(std::forward<Ts>(args)...);
-		allocated_list.push_back(entry);
-		return iterator(&entry);
+		return allocate(
+			[this](Entry &entry)
+			{
+				allocated_list.push_back(entry);
+			},
+			std::forward<Ts>(args)...
+		);
 	}
 
 	constexpr iterator deallocate(iterator it)
 	{
 		auto &entry = static_cast<Entry&>(*it.GetHeldPointer());
 		++it;
-		deallocate(entry);
+		allocated_list.erase(entry);
+		entry.value.~T();
+		deallocated_list.push_front(entry);
 		return it;
 	}
 
