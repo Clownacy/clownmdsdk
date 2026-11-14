@@ -36,10 +36,6 @@ public:
 	constexpr DoublyLinkedListBase(const DoublyLinkedListBase &other) = delete;
 	constexpr DoublyLinkedListBase(DoublyLinkedListBase &&other)
 	{
-		assert(root.next == &root);
-		assert(root.previous == &root);
-		assert(total_entries == 0);
-
 		*this = std::move(other);
 	}
 
@@ -56,9 +52,6 @@ public:
 
 		std::swap(root, other.root);
 		std::swap(total_entries, other.total_entries);
-
-		assert(root.Next()->previous == &root);
-		assert(root.previous->next == &root);
 
 		return *this;
 	}

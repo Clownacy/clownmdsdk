@@ -10,7 +10,6 @@
 #include "doubly-linked-list.h"
 #include "singly-linked-list.h"
 
-// Pool
 template<typename T, std::size_t S>
 class Pool
 {
@@ -66,7 +65,7 @@ private:
 	std::array<Entry, S> storage;
 
 	template<typename ...Ts>
-	constexpr iterator allocate(const auto &callback, Ts &&...args)
+	constexpr iterator emplace(const auto &callback, Ts &&...args)
 	{
 		auto &entry = deallocated_list.pop_front();
 		std::construct_at(&entry.value, std::forward<Ts>(args)...);
@@ -124,7 +123,7 @@ public:
 	template<typename ...Ts>
 	constexpr iterator emplace_front(Ts &&...args)
 	{
-		return allocate(
+		return emplace(
 			[this](Entry &entry)
 			{
 				allocated_list.push_front(entry);
@@ -136,7 +135,7 @@ public:
 	template<typename ...Ts>
 	constexpr iterator emplace_back(Ts &&...args)
 	{
-		return allocate(
+		return emplace(
 			[this](Entry &entry)
 			{
 				allocated_list.push_back(entry);
