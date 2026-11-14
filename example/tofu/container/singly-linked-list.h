@@ -11,6 +11,9 @@
 class SinglyLinkedListBase
 {
 public:
+	using size_type = std::size_t;
+	using difference_type = std::ptrdiff_t;
+
 	struct Entry
 	{
 		Entry *next;
@@ -20,9 +23,6 @@ protected:
 	Entry root = {};
 
 public:
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
-
 	constexpr auto& front(this auto &&self)
 	{
 		_assertm(!self.empty(), "Tried to access first element of empty list.");
@@ -95,6 +95,11 @@ public:
 	constexpr const_reference front() const
 	{
 		return static_cast<const_reference>(Base::front());
+	}
+
+	constexpr void push_front(reference entry)
+	{
+		Base::push_front(entry);
 	}
 
 	constexpr reference pop_front()

@@ -10,7 +10,7 @@ static constexpr auto ToPool(const std::initializer_list<int> &entries)
 {
 	Pool<int, S> pool;
 	for (auto &entry : entries)
-		pool.allocate_back(entry);
+		pool.emplace_back(entry);
 	return pool;
 };
 
@@ -20,9 +20,9 @@ static_assert(std::bidirectional_iterator<Pool<int, 4>::const_iterator>);
 static_assert(std::bidirectional_iterator<Pool<int, 4>::reverse_iterator>);
 static_assert(std::bidirectional_iterator<Pool<int, 4>::const_reverse_iterator>);
 
-// allocate_front
-// allocate_back
-// deallocate
+// emplace_front
+// emplace_back
+// erase
 // begin
 // rbegin
 static_assert(
@@ -32,12 +32,12 @@ static_assert(
 
 		Pool<int, 10> pool;
 
-		pool.allocate_front(entries[0]);
-		pool.allocate_back(entries[1]);
-		pool.deallocate(pool.begin());
-		pool.allocate_front(entries[2]);
-		pool.allocate_back(entries[3]);
-		pool.deallocate((++pool.rbegin()).base());
+		pool.emplace_front(entries[0]);
+		pool.emplace_back(entries[1]);
+		pool.erase(pool.begin());
+		pool.emplace_front(entries[2]);
+		pool.emplace_back(entries[3]);
+		pool.erase((++pool.rbegin()).base());
 
 		if (pool.front() != 2)
 			return false;
@@ -160,7 +160,7 @@ static_assert(
 	{
 		auto pool_a = ToPool<10>({0, 1, 2, 3});
 		auto pool_b = pool_a;
-		pool_a.deallocate(pool_a.begin());
+		pool_a.erase(pool_a.begin());
 		return pool_a.size() == 3 && pool_b.size() == 4;
 	}()
 );
@@ -169,9 +169,9 @@ static_assert(
 	{
 		auto pool_a = ToPool<10>({0, 1, 2, 3});
 		auto pool_b = pool_a;
-		pool_a.deallocate(pool_a.begin());
+		pool_a.erase(pool_a.begin());
 		pool_b = pool_a;
-		pool_b.deallocate((++pool_b.rbegin()).base());
+		pool_b.erase((++pool_b.rbegin()).base());
 		return pool_a.size() == 3 && pool_b.size() == 2;
 	}()
 );

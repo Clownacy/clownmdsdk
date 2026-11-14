@@ -58,8 +58,11 @@ public:
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
-	DoublyLinkedList<Entry> allocated_list;
-	SinglyLinkedList<Entry> deallocated_list;
+	using AllocatedList = DoublyLinkedList<Entry>;
+	using DeallocatedList = SinglyLinkedList<Entry>;
+
+	AllocatedList allocated_list;
+	DeallocatedList deallocated_list;
 	std::array<Entry, S> storage;
 
 	template<typename ...Ts>
@@ -100,7 +103,7 @@ public:
 		clear();
 
 		for (const auto &entry : other)
-			allocate_back(entry);
+			emplace_back(entry);
 
 		return *this;
 	}
@@ -111,15 +114,15 @@ public:
 
 		for (auto it = other.begin(); it != other.end(); )
 		{
-			allocate_back(std::move(*it));
-			it = other.deallocate(it);
+			emplace_back(std::move(*it));
+			it = other.erase(it);
 		}
 
 		return *this;
 	}
 
 	template<typename ...Ts>
-	constexpr iterator allocate_front(Ts &&...args)
+	constexpr iterator emplace_front(Ts &&...args)
 	{
 		return allocate(
 			[this](Entry &entry)
@@ -131,7 +134,7 @@ public:
 	}
 
 	template<typename ...Ts>
-	constexpr iterator allocate_back(Ts &&...args)
+	constexpr iterator emplace_back(Ts &&...args)
 	{
 		return allocate(
 			[this](Entry &entry)
@@ -142,11 +145,11 @@ public:
 		);
 	}
 
-	constexpr iterator deallocate(iterator it)
+	constexpr iterator erase(iterator it)
 	{
 		auto &entry = static_cast<Entry&>(*it.GetHeldPointer());
 		++it;
-		allocated_list.erase(entry);
+		allocated_list.erase(typename AllocatedList::iterator(&entry));
 		entry.value.~T();
 		deallocated_list.push_front(entry);
 		return it;
@@ -154,12 +157,12 @@ public:
 
 	constexpr const_iterator cbegin() const
 	{
-		return allocated_list.cbegin().GetHeldPointer();
+		return const_iterator(allocated_list.cbegin().GetHeldPointer());
 	}
 
 	constexpr const_iterator cend() const
 	{
-		return allocated_list.cend().GetHeldPointer();
+		return const_iterator(allocated_list.cend().GetHeldPointer());
 	}
 
 	constexpr const_iterator begin() const
@@ -174,12 +177,12 @@ public:
 
 	constexpr iterator begin()
 	{
-		return allocated_list.begin().GetHeldPointer();
+		return iterator(allocated_list.begin().GetHeldPointer());
 	}
 
 	constexpr iterator end()
 	{
-		return allocated_list.end().GetHeldPointer();
+		return iterator(allocated_list.end().GetHeldPointer());
 	}
 
 	constexpr const_reverse_iterator crbegin() const
@@ -235,7 +238,7 @@ public:
 	constexpr void clear()
 	{
 		for (auto it = begin(); it != end(); )
-			it = deallocate(it);
+			it = erase(it);
 	}
 
 	constexpr bool empty() const

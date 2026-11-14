@@ -19,7 +19,7 @@ public:
 		if (pool.full())
 			return nullptr;
 
-		auto it = pool.allocate_front(std::in_place_type<T>, std::forward<Args>(args)...);
+		auto it = pool.emplace_front(std::in_place_type<T>, std::forward<Args>(args)...);
 		return std::get_if<T>(&*it);
 	}
 
@@ -29,7 +29,7 @@ public:
 		if (pool.full())
 			return nullptr;
 
-		auto it = pool.allocate_back(std::in_place_type<T>, std::forward<Args>(args)...);
+		auto it = pool.emplace_back(std::in_place_type<T>, std::forward<Args>(args)...);
 		return std::get_if<T>(&*it);
 	}
 

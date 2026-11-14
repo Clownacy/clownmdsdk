@@ -14,7 +14,7 @@ public:
 	using value_type = Dereferenced;
 	using held_type = Held;
 
-	constexpr ListForwardIterator(Held* const entry = nullptr)
+	explicit constexpr ListForwardIterator(Held* const entry = nullptr)
 		: entry(entry)
 	{}
 

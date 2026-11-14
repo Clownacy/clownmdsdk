@@ -13,6 +13,9 @@
 class DoublyLinkedListBase
 {
 public:
+	using size_type = std::size_t;
+	using difference_type = std::ptrdiff_t;
+
 	struct Entry : SinglyLinkedListBase::Entry
 	{
 		Entry *previous;
@@ -25,12 +28,9 @@ public:
 
 protected:
 	Entry root = {&root, &root};
-	std::size_t total_entries = 0;
+	size_type total_entries = 0;
 
 public:
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
-
 	constexpr DoublyLinkedListBase() = default;
 
 	constexpr DoublyLinkedListBase(const DoublyLinkedListBase &other) = delete;
@@ -206,6 +206,21 @@ public:
 	constexpr const_reference back() const
 	{
 		return static_cast<const_reference>(Base::back());
+	}
+
+	constexpr void push_front(reference entry)
+	{
+		Base::push_front(entry);
+	}
+
+	constexpr void push_back(reference entry)
+	{
+		Base::push_back(entry);
+	}
+
+	constexpr iterator erase(iterator entry)
+	{
+		return iterator(Base::erase(*entry));
 	}
 
 	constexpr reference pop_front()
