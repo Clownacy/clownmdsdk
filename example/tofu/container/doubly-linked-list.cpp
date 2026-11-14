@@ -149,6 +149,29 @@ static_assert(
 	}()
 );
 
+// insert
+// erase
+static_assert(
+	[]() constexpr
+	{
+		TestEntry entry4 = {4};
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
+		DoublyLinkedList<TestEntry> list; list = MakeList(entries);
+		list.insert(list.erase(++list.begin()), entry4);
+
+		const auto values = std::to_array<int>({0, 4, 2, 3});
+
+		auto it = std::begin(values);
+		for (auto &value : list)
+		{
+			if (value.value != *it++)
+				return false;
+		}
+
+		return it == std::end(values);
+	}()
+);
+
 // Assorted iterator validity tests.
 static_assert(
 	[]() constexpr

@@ -68,44 +68,47 @@ public:
 		return *self.root.previous;
 	}
 
-	constexpr void push_front(Entry &entry)
+	constexpr Entry* insert(const Entry &position, Entry &value)
 	{
-		assert(&entry != &root);
+		assert(&value != &root);
+
+		// Standard 'insert' methods accept const iterators, hence this nasty hack.
+		Entry &position_not_const = const_cast<Entry&>(position);
 
 		++total_entries;
 
-		root.Next()->previous = &entry;
+		position_not_const.previous->next = &value;
 
-		entry.next = root.next;
-		entry.previous = &root;
+		value.next = &position_not_const;
+		value.previous = position_not_const.previous;
 
-		root.next = &entry;
+		position_not_const.previous = &value;
+		return &value;
+	}
+
+	constexpr void push_front(Entry &entry)
+	{
+		insert(*root.Next(), entry);
 	}
 
 	constexpr void push_back(Entry &entry)
 	{
-		assert(&entry != &root);
-
-		++total_entries;
-
-		root.previous->next = &entry;
-
-		entry.next = &root;
-		entry.previous = root.previous;
-
-		root.previous = &entry;
+		insert(root, entry);
 	}
 
-	constexpr Entry* erase(Entry &entry)
+	constexpr Entry* erase(const Entry &position)
 	{
-		assert(&entry != &root);
+		assert(&position != &root);
+
+		// Standard 'erase' methods accept const iterators, hence this nasty hack.
+		Entry &position_not_const = const_cast<Entry&>(position);
 
 		--total_entries;
 
-		auto* const next = entry.Next();
+		auto* const next = position_not_const.Next();
 
-		entry.previous->next = entry.next;
-		entry.Next()->previous = entry.previous;
+		position_not_const.previous->next = position_not_const.next;
+		position_not_const.Next()->previous = position_not_const.previous;
 
 		return next;
 	}
@@ -201,6 +204,11 @@ public:
 		return static_cast<const_reference>(Base::back());
 	}
 
+	constexpr iterator insert(const_iterator position, reference value)
+	{
+		return iterator(Base::insert(*position.GetHeldPointer(), value));
+	}
+
 	constexpr void push_front(reference entry)
 	{
 		Base::push_front(entry);
@@ -211,9 +219,9 @@ public:
 		Base::push_back(entry);
 	}
 
-	constexpr iterator erase(iterator entry)
+	constexpr iterator erase(const_iterator position)
 	{
-		return iterator(Base::erase(*entry));
+		return iterator(Base::erase(*position.GetHeldPointer()));
 	}
 
 	constexpr reference pop_front()
