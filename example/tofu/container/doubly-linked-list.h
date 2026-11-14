@@ -28,6 +28,9 @@ protected:
 	std::size_t total_entries = 0;
 
 public:
+	using size_type = std::size_t;
+	using difference_type = std::ptrdiff_t;
+
 	constexpr DoublyLinkedListBase() = default;
 
 	constexpr DoublyLinkedListBase(const DoublyLinkedListBase &other) = delete;
@@ -128,7 +131,7 @@ public:
 		return entry;
 	}
 
-	constexpr std::size_t size() const
+	constexpr size_type size() const
 	{
 		return total_entries;
 	}
@@ -175,42 +178,44 @@ protected:
 	};
 
 public:
+	using value_type = T;
+	using reference = value_type&;
+	using const_reference = const value_type&;
 	using iterator = IteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
 	using const_iterator = IteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-public:
 	using Base::Base;
 
-	constexpr auto& front()
+	constexpr reference front()
 	{
-		return static_cast<T&>(Base::front());
+		return static_cast<reference>(Base::front());
 	}
 
-	constexpr auto& front() const
+	constexpr const_reference front() const
 	{
-		return static_cast<const T&>(Base::front());
+		return static_cast<const_reference>(Base::front());
 	}
 
-	constexpr auto& back()
+	constexpr reference back()
 	{
-		return static_cast<T&>(Base::back());
+		return static_cast<reference>(Base::back());
 	}
 
-	constexpr auto& back() const
+	constexpr const_reference back() const
 	{
-		return static_cast<const T&>(Base::back());
+		return static_cast<const_reference>(Base::back());
 	}
 
-	constexpr auto& pop_front()
+	constexpr reference pop_front()
 	{
-		return static_cast<T&>(Base::pop_front());
+		return static_cast<reference>(Base::pop_front());
 	}
 
-	constexpr auto& pop_back()
+	constexpr reference pop_back()
 	{
-		return static_cast<T&>(Base::pop_back());
+		return static_cast<reference>(Base::pop_back());
 	}
 
 	constexpr const_iterator cbegin() const

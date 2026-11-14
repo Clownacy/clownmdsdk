@@ -20,6 +20,9 @@ protected:
 	Entry root = {};
 
 public:
+	using size_type = std::size_t;
+	using difference_type = std::ptrdiff_t;
+
 	constexpr auto& front(this auto &&self)
 	{
 		_assertm(!self.empty(), "Tried to access first element of empty list.");
@@ -56,6 +59,8 @@ template<typename T>
 class SinglyLinkedList : public SinglyLinkedListBase
 {
 protected:
+	using Base = SinglyLinkedListBase;
+
 	template<typename IteratorBaseBase>
 	class IteratorBase : public IteratorBaseBase
 	{
@@ -74,26 +79,47 @@ protected:
 	};
 
 public:
-	using Base = SinglyLinkedListBase;
-
+	using value_type = T;
+	using reference = value_type&;
+	using const_reference = const value_type&;
 	using iterator = IteratorBase<ListForwardIterator<Base::Entry, T>>;
 	using const_iterator = IteratorBase<ListConstForwardIterator<Base::Entry, T>>;
 
 	using Base::Base;
 
-	constexpr auto& front()
+	constexpr reference front()
 	{
-		return static_cast<T&>(Base::front());
+		return static_cast<reference>(Base::front());
 	}
 
-	constexpr auto& front() const
+	constexpr const_reference front() const
 	{
-		return static_cast<const T&>(Base::front());
+		return static_cast<const_reference>(Base::front());
 	}
 
-	constexpr auto& pop_front()
+	constexpr reference pop_front()
 	{
-		return static_cast<T&>(Base::pop_front());
+		return static_cast<reference>(Base::pop_front());
+	}
+
+	constexpr const_iterator cbegin() const
+	{
+		return const_iterator(root.next);
+	}
+
+	constexpr const_iterator cend() const
+	{
+		return const_iterator();
+	}
+
+	constexpr const_iterator begin() const
+	{
+		return cbegin();
+	}
+
+	constexpr const_iterator end() const
+	{
+		return cend();
 	}
 
 	constexpr iterator begin()
@@ -104,26 +130,6 @@ public:
 	constexpr iterator end()
 	{
 		return iterator();
-	}
-
-	constexpr const_iterator begin() const
-	{
-		return const_iterator(root.next);
-	}
-
-	constexpr const_iterator end() const
-	{
-		return const_iterator();
-	}
-
-	constexpr const_iterator cbegin() const
-	{
-		return begin();
-	}
-
-	constexpr const_iterator cend() const
-	{
-		return end();
 	}
 };
 

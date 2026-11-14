@@ -48,6 +48,10 @@ private:
 	};
 
 public:
+	using value_type = T;
+	using size_type = std::size_t;
+	using reference = value_type&;
+	using const_reference = const value_type&;
 	using iterator = IteratorBase<ListBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, Entry>;
 	using const_iterator = IteratorBase<ListConstBiDirectionalIterator<DoublyLinkedListBase::Entry, T>, const Entry>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
@@ -218,12 +222,12 @@ public:
 		return self.allocated_list.back().value;
 	}
 
-	constexpr std::size_t size() const
+	constexpr size_type size() const
 	{
 		return allocated_list.size();
 	}
 
-	constexpr std::size_t max_size() const
+	constexpr size_type max_size() const
 	{
 		return S;
 	}
