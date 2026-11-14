@@ -77,8 +77,11 @@ private:
 public:
 	constexpr Pool()
 	{
+		// Store entries in the natural order within the deallocated list,
+		// so that the earliest entries are popped first.
+		auto iterator = deallocated_list.before_begin();
 		for (auto &entry : storage)
-			deallocated_list.push_front(entry);
+			iterator = deallocated_list.insert_after(iterator, entry);
 	}
 
 	constexpr ~Pool()
