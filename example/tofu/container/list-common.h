@@ -18,6 +18,10 @@ public:
 		: entry(entry)
 	{}
 
+	constexpr ListForwardIterator(const ListForwardIterator<std::remove_const_t<Held>, std::remove_const_t<Dereferenced>> &iterator)
+		: ListForwardIterator(iterator.GetHeldPointer())
+	{}
+
 	constexpr auto&& operator++(this auto &&self)
 	{
 		self.entry = self.Advance();
@@ -36,7 +40,7 @@ public:
 		return entry == other.entry;
 	}
 
-	constexpr auto* GetHeldPointer()
+	constexpr auto* GetHeldPointer() const
 	{
 		return entry;
 	}

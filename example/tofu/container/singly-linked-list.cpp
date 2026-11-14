@@ -19,8 +19,9 @@ public:
 static constexpr auto MakeList(const std::span<TestEntry> &entries)
 {
 	SinglyLinkedList<TestEntry> list;
+	auto it = list.before_begin();
 	for (auto &entry : entries)
-		list.push_front(entry);
+		it = list.insert_after(it, entry);
 	return list;
 }
 
@@ -68,7 +69,7 @@ static_assert(
 		const auto list = MakeList(entries);
 
 		std::size_t count = 0;
-		auto iterator = entries.rbegin();
+		auto iterator = entries.begin();
 
 		for (const auto &value : list)
 		{
@@ -88,7 +89,7 @@ static_assert(
 	{
 		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
 		const auto list = MakeList(entries);
-		return list.front().value == 3;
+		return list.front().value == 0;
 	}()
 );
 
@@ -117,5 +118,27 @@ static_assert(
 		auto list = MakeList(entries);
 		list.clear();
 		return list.empty();
+	}()
+);
+
+// erase_after
+// Implicit casting of iterator to const_iterator
+static_assert(
+	[]() constexpr
+	{
+		auto entries = std::to_array<TestEntry>({0, 1, 2, 3});
+		auto list = MakeList(entries);
+		list.erase_after(list.begin());
+
+		const auto values = std::to_array<int>({0, 2, 3});
+
+		auto it = std::begin(values);
+		for (auto &value : list)
+		{
+			if (value.value != *it++)
+				return false;
+		}
+
+		return it == std::end(values);
 	}()
 );

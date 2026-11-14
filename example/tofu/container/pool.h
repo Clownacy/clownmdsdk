@@ -67,7 +67,8 @@ private:
 	template<typename ...Ts>
 	constexpr iterator emplace(const auto &callback, Ts &&...args)
 	{
-		auto &entry = deallocated_list.pop_front();
+		auto &entry = deallocated_list.front();
+		deallocated_list.pop_front();
 		std::construct_at(&entry.value, std::forward<Ts>(args)...);
 		callback(entry);
 		return iterator(&entry);

@@ -29,17 +29,31 @@ public:
 		return *self.root.next;
 	}
 
-	constexpr void push_front(Entry &entry)
+	constexpr Entry* insert_after(const Entry &position, Entry &value)
 	{
-		entry.next = root.next;
-		root.next = &entry;
+		// Standard 'insert_after' methods accept const iterators, hence this nasty hack.
+		Entry &position_not_const = const_cast<Entry&>(position);
+		value.next = position_not_const.next;
+		position_not_const.next = &value;
+		return &value;
 	}
 
-	constexpr Entry& pop_front()
+	constexpr void push_front(Entry &entry)
 	{
-		Entry &entry = front();
-		root.next = entry.next;
-		return entry;
+		insert_after(root, entry);
+	}
+
+	constexpr Entry* erase_after(const Entry &position)
+	{
+		// Standard 'erase_after' methods accept const iterators, hence this nasty hack.
+		Entry &position_not_const = const_cast<Entry&>(position);
+		position_not_const.next = position_not_const.next->next;
+		return position_not_const.next;
+	}
+
+	constexpr void pop_front()
+	{
+		erase_after(root);
 	}
 
 	constexpr bool empty() const
@@ -97,14 +111,24 @@ public:
 		return static_cast<const_reference>(Base::front());
 	}
 
+	constexpr iterator insert_after(const_iterator position, reference value)
+	{
+		return iterator(Base::insert_after(*position.GetHeldPointer(), value));
+	}
+
 	constexpr void push_front(reference entry)
 	{
 		Base::push_front(entry);
 	}
 
-	constexpr reference pop_front()
+	constexpr iterator erase_after(const_iterator position)
 	{
-		return static_cast<reference>(Base::pop_front());
+		return iterator(Base::erase_after(*position.GetHeldPointer()));
+	}
+
+	constexpr const_iterator cbefore_begin() const
+	{
+		return const_iterator(&root);
 	}
 
 	constexpr const_iterator cbegin() const
@@ -117,6 +141,11 @@ public:
 		return const_iterator();
 	}
 
+	constexpr const_iterator before_begin() const
+	{
+		return cbefore_begin();
+	}
+
 	constexpr const_iterator begin() const
 	{
 		return cbegin();
@@ -125,6 +154,11 @@ public:
 	constexpr const_iterator end() const
 	{
 		return cend();
+	}
+
+	constexpr iterator before_begin()
+	{
+		return iterator(&root);
 	}
 
 	constexpr iterator begin()
