@@ -145,6 +145,26 @@ public:
 		);
 	}
 
+	constexpr iterator push_front(const T &value)
+	{
+		return emplace_front(value);
+	}
+
+	constexpr iterator push_front(T &&value)
+	{
+		return emplace_front(std::move(value));
+	}
+
+	constexpr iterator push_back(const T &value)
+	{
+		return emplace_back(value);
+	}
+
+	constexpr iterator push_back(T &&value)
+	{
+		return emplace_back(std::move(value));
+	}
+
 	constexpr iterator erase(iterator it)
 	{
 		auto &entry = static_cast<Entry&>(*it.GetHeldPointer());

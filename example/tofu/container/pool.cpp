@@ -32,8 +32,8 @@ static_assert(
 
 		Pool<int, 10> pool;
 
-		pool.emplace_front(entries[0]);
-		pool.emplace_back(entries[1]);
+		pool.push_front(entries[0]);
+		pool.push_back(entries[1]);
 		pool.erase(pool.begin());
 		pool.emplace_front(entries[2]);
 		pool.emplace_back(entries[3]);
