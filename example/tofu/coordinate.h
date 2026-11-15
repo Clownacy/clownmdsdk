@@ -12,7 +12,7 @@
 	{ \
 		return {self.x OPERATOR other, self.y OPERATOR other}; \
 	} \
-	constexpr auto operator OPERATOR(this auto &&self, auto &&other) -> std::remove_cvref_t<decltype(self)> \
+	constexpr auto operator OPERATOR(this auto &&self, const std::remove_cvref_t<decltype(self)> &other) -> std::remove_cvref_t<decltype(self)> \
 	{ \
 		return {self.x OPERATOR other.x, self.y OPERATOR other.y}; \
 	} \
@@ -74,9 +74,9 @@ namespace Coordinate
 	public:
 		using Base::Base;
 
-		constexpr World(const Pixel &pixel);
-		constexpr World(const Tile &tile);
-		constexpr World(const Block &block);
+		constexpr explicit World(const Pixel &pixel);
+		constexpr explicit World(const Tile &tile);
+		constexpr explicit World(const Block &block);
 	};
 
 	class Pixel : public Base<unsigned int>
@@ -84,9 +84,9 @@ namespace Coordinate
 	public:
 		using Base::Base;
 
-		constexpr Pixel(const World &world);
-		constexpr Pixel(const Tile &tile);
-		constexpr Pixel(const Block &block);
+		constexpr explicit Pixel(const World &world);
+		constexpr explicit Pixel(const Tile &tile);
+		constexpr explicit Pixel(const Block &block);
 	};
 
 	class Tile : public Base<unsigned int>
@@ -94,9 +94,9 @@ namespace Coordinate
 	public:
 		using Base::Base;
 
-		constexpr Tile(const World &world);
-		constexpr Tile(const Pixel &pixel);
-		constexpr Tile(const Block &block);
+		constexpr explicit Tile(const World &world);
+		constexpr explicit Tile(const Pixel &pixel);
+		constexpr explicit Tile(const Block &block);
 	};
 
 	class Block : public Base<unsigned int>
@@ -104,13 +104,13 @@ namespace Coordinate
 	public:
 		using Base::Base;
 
-		constexpr Block(const Tile &tile);
-		constexpr Block(const Pixel &pixel);
-		constexpr Block(const World &world);
+		constexpr explicit Block(const Tile &tile);
+		constexpr explicit Block(const Pixel &pixel);
+		constexpr explicit Block(const World &world);
 	};
 
 	constexpr inline World::World(const Pixel &pixel)
-		: Base(pixel.x * 0x10000, pixel.y * 0x10000)
+		: Base(pixel.x * 0x10000UL, pixel.y * 0x10000UL)
 	{}
 
 	constexpr inline World::World(const Tile &tile)
@@ -160,25 +160,25 @@ namespace Coordinate
 	template<std::integral Integer>
 	constexpr inline World Base<Integer>::ToWorld(this auto &&self)
 	{
-		return self;
+		return World(self);
 	}
 
 	template<std::integral Integer>
 	constexpr inline Pixel Base<Integer>::ToPixels(this auto &&self)
 	{
-		return self;
+		return Pixel(self);
 	}
 
 	template<std::integral Integer>
 	constexpr inline Tile Base<Integer>::ToTiles(this auto &&self)
 	{
-		return self;
+		return Tile(self);
 	}
 
 	template<std::integral Integer>
 	constexpr inline Block Base<Integer>::ToBlocks(this auto &&self)
 	{
-		return self;
+		return Block(self);
 	}
 
 	class Omni

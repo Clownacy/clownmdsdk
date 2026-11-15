@@ -13,7 +13,7 @@ bool Objects::Bullet::Update()
 		return false;
 
 	// Disappear upon touching a block.
-	if (level_manager.GetBlock(position) != 0)
+	if (level_manager.GetBlock(position.ToBlocks()) != 0)
 		return false;
 
 	return true;

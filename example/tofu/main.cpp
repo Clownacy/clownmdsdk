@@ -124,7 +124,7 @@ static void WaitForVerticalInterrupt()
 void _EntryPoint()
 {
 	// Spawn player. We do this first so that the camera is correct by the time the level is drawn.
-	object_manager.EmplaceFront<Objects::Player>(Coordinate::Block(7, 3));
+	object_manager.EmplaceFront<Objects::Player>(Coordinate::Block(7, 3).ToWorld());
 
 	VDP::Register01 vdp_register_01{.enable_display = false, .enable_vertical_interrupt = true, .enable_dma_transfer = true, .enable_v30_cell_mode = false, .enable_mega_drive_mode = true};
 	VDP::Write(vdp_register_01);
