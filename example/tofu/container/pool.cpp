@@ -20,6 +20,8 @@ static_assert(std::bidirectional_iterator<Pool<int, 4>::const_iterator>);
 static_assert(std::bidirectional_iterator<Pool<int, 4>::reverse_iterator>);
 static_assert(std::bidirectional_iterator<Pool<int, 4>::const_reverse_iterator>);
 
+// push_front
+// push_back
 // emplace_front
 // emplace_back
 // erase
@@ -173,5 +175,27 @@ static_assert(
 		pool_b = pool_a;
 		pool_b.erase((++pool_b.rbegin()).base());
 		return pool_a.size() == 3 && pool_b.size() == 2;
+	}()
+);
+
+// insert
+// emplace
+static_assert(
+	[]() constexpr
+	{
+		auto pool = ToPool<10>({0, 1, 2, 3});
+
+		pool.emplace(pool.insert(++pool.begin(), 4), 5);
+
+		const auto values = std::to_array<int>({0, 5, 4, 1, 2, 3});
+
+		auto it = std::begin(values);
+		for (auto &value : pool)
+		{
+			if (value != *it++)
+				return false;
+		}
+
+		return it == std::end(values);
 	}()
 );

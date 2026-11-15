@@ -65,7 +65,7 @@ private:
 	std::array<Entry, S> storage;
 
 	template<typename ...Ts>
-	constexpr iterator emplace(const auto &callback, Ts &&...args)
+	constexpr iterator emplace_common(const auto &callback, Ts &&...args)
 	{
 		auto &entry = deallocated_list.front();
 		deallocated_list.pop_front();
@@ -125,9 +125,24 @@ public:
 	}
 
 	template<typename ...Ts>
+	constexpr iterator emplace(const_iterator position, Ts &&...args)
+	{
+		return emplace_common(
+			[this, position](Entry &entry)
+			{
+				// Standard 'emplace' methods accept const iterators, hence this nasty hack.
+				auto allocated_list_position = typename AllocatedList::iterator(const_cast<AllocatedList::Entry*>(position.GetHeldPointer()));
+
+				allocated_list.insert(allocated_list_position, entry);
+			},
+			std::forward<Ts>(args)...
+		);
+	}
+
+	template<typename ...Ts>
 	constexpr iterator emplace_front(Ts &&...args)
 	{
-		return emplace(
+		return emplace_common(
 			[this](Entry &entry)
 			{
 				allocated_list.push_front(entry);
@@ -139,13 +154,23 @@ public:
 	template<typename ...Ts>
 	constexpr iterator emplace_back(Ts &&...args)
 	{
-		return emplace(
+		return emplace_common(
 			[this](Entry &entry)
 			{
 				allocated_list.push_back(entry);
 			},
 			std::forward<Ts>(args)...
 		);
+	}
+
+	constexpr iterator insert(const_iterator position, const T &value)
+	{
+		return emplace(position, value);
+	}
+
+	constexpr iterator insert(const_iterator position, T &&value)
+	{
+		return emplace(position, std::move(value));
 	}
 
 	constexpr iterator push_front(const T &value)
@@ -168,14 +193,14 @@ public:
 		return emplace_back(std::move(value));
 	}
 
-	constexpr iterator erase(iterator it)
+	constexpr iterator erase(const_iterator position)
 	{
-		auto &entry = static_cast<Entry&>(*it.GetHeldPointer());
-		++it;
-		allocated_list.erase(typename AllocatedList::iterator(&entry));
+		// Standard 'erase' methods accept const iterators, hence this nasty hack.
+		auto &entry = static_cast<Entry&>(const_cast<AllocatedList::Entry&>(*position.GetHeldPointer()));
+		auto next_iterator = allocated_list.erase(typename AllocatedList::iterator(&entry));
 		entry.value.~T();
 		deallocated_list.push_front(entry);
-		return it;
+		return iterator(static_cast<Entry*>(next_iterator.GetHeldPointer()));
 	}
 
 	constexpr const_iterator cbegin() const
