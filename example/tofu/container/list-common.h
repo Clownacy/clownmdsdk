@@ -58,7 +58,7 @@ public:
 };
 
 template<typename Held, typename Dereferenced>
-using ListConstForwardIterator = ListForwardIterator<const Held, const Dereferenced>;
+using ListConstForwardIterator = ListForwardIterator<Held, const Dereferenced>;
 
 template<typename Held, typename Dereferenced>
 class ListBiDirectionalIterator : public ListForwardIterator<Held, Dereferenced>
@@ -82,6 +82,6 @@ public:
 };
 
 template<typename Held, typename Dereferenced>
-using ListConstBiDirectionalIterator = ListBiDirectionalIterator<const Held, const Dereferenced>;
+using ListConstBiDirectionalIterator = ListBiDirectionalIterator<Held, const Dereferenced>;
 
 #endif // LIST_COMMON_H

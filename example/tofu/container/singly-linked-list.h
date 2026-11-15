@@ -29,12 +29,10 @@ public:
 		return *self.root.next;
 	}
 
-	constexpr Entry* insert_after(const Entry &position, Entry &value)
+	constexpr Entry* insert_after(Entry &position, Entry &value)
 	{
-		// Standard 'insert_after' methods accept const iterators, hence this nasty hack.
-		Entry &position_not_const = const_cast<Entry&>(position);
-		value.next = position_not_const.next;
-		position_not_const.next = &value;
+		value.next = position.next;
+		position.next = &value;
 		return &value;
 	}
 
@@ -43,12 +41,10 @@ public:
 		insert_after(root, entry);
 	}
 
-	constexpr Entry* erase_after(const Entry &position)
+	constexpr Entry* erase_after(Entry &position)
 	{
-		// Standard 'erase_after' methods accept const iterators, hence this nasty hack.
-		Entry &position_not_const = const_cast<Entry&>(position);
-		position_not_const.next = position_not_const.next->next;
-		return position_not_const.next;
+		position.next = position.next->next;
+		return position.next;
 	}
 
 	constexpr void pop_front()

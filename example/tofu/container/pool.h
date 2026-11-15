@@ -130,10 +130,7 @@ public:
 		return emplace_common(
 			[this, position](Entry &entry)
 			{
-				// Standard 'emplace' methods accept const iterators, hence this nasty hack.
-				auto allocated_list_position = typename AllocatedList::iterator(const_cast<AllocatedList::Entry*>(position.GetHeldPointer()));
-
-				allocated_list.insert(allocated_list_position, entry);
+				allocated_list.insert(typename AllocatedList::iterator(position.GetHeldPointer()), entry);
 			},
 			std::forward<Ts>(args)...
 		);
@@ -195,8 +192,7 @@ public:
 
 	constexpr iterator erase(const_iterator position)
 	{
-		// Standard 'erase' methods accept const iterators, hence this nasty hack.
-		auto &entry = static_cast<Entry&>(const_cast<AllocatedList::Entry&>(*position.GetHeldPointer()));
+		auto &entry = static_cast<Entry&>(*position.GetHeldPointer());
 		auto next_iterator = allocated_list.erase(typename AllocatedList::iterator(&entry));
 		entry.value.~T();
 		deallocated_list.push_front(entry);

@@ -20,9 +20,9 @@ public:
 	{
 		Entry *previous;
 
-		constexpr auto* Next(this auto &self)
+		constexpr Entry* Next() const
 		{
-			return static_cast<decltype(&self)>(self.next);
+			return static_cast<Entry*>(next);
 		}
 	};
 
@@ -68,21 +68,18 @@ public:
 		return *self.root.previous;
 	}
 
-	constexpr Entry* insert(const Entry &position, Entry &value)
+	constexpr Entry* insert(Entry &position, Entry &value)
 	{
 		assert(&value != &root);
 
-		// Standard 'insert' methods accept const iterators, hence this nasty hack.
-		Entry &position_not_const = const_cast<Entry&>(position);
-
 		++total_entries;
 
-		position_not_const.previous->next = &value;
+		position.previous->next = &value;
 
-		value.next = &position_not_const;
-		value.previous = position_not_const.previous;
+		value.next = &position;
+		value.previous = position.previous;
 
-		position_not_const.previous = &value;
+		position.previous = &value;
 		return &value;
 	}
 
@@ -96,19 +93,16 @@ public:
 		insert(root, entry);
 	}
 
-	constexpr Entry* erase(const Entry &position)
+	constexpr Entry* erase(Entry &position)
 	{
 		assert(&position != &root);
 
-		// Standard 'erase' methods accept const iterators, hence this nasty hack.
-		Entry &position_not_const = const_cast<Entry&>(position);
-
 		--total_entries;
 
-		auto* const next = position_not_const.Next();
+		auto* const next = position.Next();
 
-		position_not_const.previous->next = position_not_const.next;
-		position_not_const.Next()->previous = position_not_const.previous;
+		position.previous->next = position.next;
+		position.Next()->previous = position.previous;
 
 		return next;
 	}
@@ -241,7 +235,7 @@ public:
 
 	constexpr const_iterator cend() const
 	{
-		return const_iterator(&root);
+		return const_iterator(const_cast<Entry*>(&root));
 	}
 
 	constexpr const_iterator begin() const
