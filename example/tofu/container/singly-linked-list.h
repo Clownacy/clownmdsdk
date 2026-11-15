@@ -20,7 +20,7 @@ public:
 	};
 
 protected:
-	Entry root = {};
+	Entry root = {nullptr};
 
 public:
 	constexpr auto& front(this auto &&self)

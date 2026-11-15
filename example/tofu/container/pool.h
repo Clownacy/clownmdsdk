@@ -95,7 +95,7 @@ public:
 		*this = other;
 	}
 
-	constexpr Pool(Pool &&other)
+	constexpr Pool(Pool &&other) noexcept(std::is_nothrow_move_constructible_v<T>)
 		: Pool()
 	{
 		*this = std::move(other);
@@ -111,7 +111,7 @@ public:
 		return *this;
 	}
 
-	constexpr Pool& operator=(Pool &&other)
+	constexpr Pool& operator=(Pool &&other) noexcept(std::is_nothrow_move_constructible_v<T>)
 	{
 		clear();
 

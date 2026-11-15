@@ -34,13 +34,13 @@ public:
 	constexpr DoublyLinkedListBase() = default;
 
 	constexpr DoublyLinkedListBase(const DoublyLinkedListBase &other) = delete;
-	constexpr DoublyLinkedListBase(DoublyLinkedListBase &&other)
+	constexpr DoublyLinkedListBase(DoublyLinkedListBase &&other) noexcept
 	{
 		*this = std::move(other);
 	}
 
 	constexpr DoublyLinkedListBase& operator=(const DoublyLinkedListBase &other) = delete;
-	constexpr DoublyLinkedListBase& operator=(DoublyLinkedListBase &&other)
+	constexpr DoublyLinkedListBase& operator=(DoublyLinkedListBase &&other) noexcept
 	{
 		// Point to our root node!
 		auto &prev_a = root.Next()->previous;

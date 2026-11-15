@@ -45,7 +45,7 @@ public:
 		return entry;
 	}
 
-	constexpr Dereferenced& operator*(this auto &&self)
+	constexpr Dereferenced& operator*(this auto &&self) noexcept
 	{
 		assert(self.entry != nullptr);
 		return self.Dereference();
