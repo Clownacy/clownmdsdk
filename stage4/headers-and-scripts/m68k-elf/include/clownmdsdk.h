@@ -16,6 +16,11 @@ PERFORMANCE OF THIS SOFTWARE.
 #ifndef CLOWNSDK_MD_HEADER_GUARD
 #define CLOWNSDK_MD_HEADER_GUARD
 
+// Semantic versioning: major version changes are backwards-incompatible.
+#define CLOWNMDSDK_VERSION_MAJOR 4
+#define CLOWNMDSDK_VERSION_MINOR 0
+#define CLOWNMDSDK_VERSION_PATCH 0
+
 #ifdef __cplusplus
 #define __VISIBILITY extern "C"
 #else
