@@ -3,13 +3,12 @@
 
 #include <stdlib.h>
 
-#if defined(__cplusplus) && __cplusplus >= 202302L
+#if defined(__cplusplus) && __cplusplus >= 202302L && (defined(__CLOWNMDSDK_CARTRIDGE__) || defined(__CLOWNMDSDK_IP__))
 	#define _assert_internal(CONDITION, MESSAGE_PREFIX, MESSAGE, MESSAGE_SUFFIX) \
 		do \
 		{ \
 			if (!(CONDITION)) \
 			{ \
-				/* TODO: What do we do about the SubCPU? */ \
 				ClownMDSDK::MainCPU::Debug::PrintLine(__PRETTY_FUNCTION__, " at " __FILE__ ":", __LINE__); \
 				ClownMDSDK::MainCPU::Debug::PrintLine("    Assertion '" #CONDITION "' failed" MESSAGE_PREFIX MESSAGE MESSAGE_SUFFIX "."); \
 				abort(); \
@@ -24,7 +23,7 @@
 		} while(0)
 #endif
 
-/* TODO: Proper assert handling. */
+/* TODO: C++26 assert handling. */
 #ifdef NDEBUG
 	#define assert(CONDITION) ((void)0)
 	#define _assertm(CONDITION, MESSAGE) ((void)0)
