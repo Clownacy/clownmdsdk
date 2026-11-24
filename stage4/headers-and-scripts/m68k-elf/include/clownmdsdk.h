@@ -140,7 +140,7 @@ namespace ClownMDSDK
 				return SetInterruptMask(7);
 			}
 
-			inline auto SetInterruptMaskTemporarily(const unsigned int level, const auto &callback)
+			inline decltype(auto) SetInterruptMaskTemporarily(const unsigned int level, const auto &callback)
 			{
 				class InterruptManager
 				{
@@ -162,7 +162,7 @@ namespace ClownMDSDK
 				return callback();
 			}
 
-			inline auto DisableInterruptsTemporarily(const auto &callback)
+			inline decltype(auto) DisableInterruptsTemporarily(const auto &callback)
 			{
 				return SetInterruptMaskTemporarily(7, callback);
 			}
@@ -1027,14 +1027,14 @@ namespace ClownMDSDK
 				Bus& operator=(const Bus &other) = delete;
 
 			public:
-				static auto Lock(const auto &callback, const bool wait_for_bus = true)
+				static decltype(auto) Lock(const auto &callback, const bool wait_for_bus = true)
 				{
 					Bus bus(wait_for_bus);
 					return callback(bus);
 				}
 
 				template<typename... Ts>
-				static auto LockInterruptSafe(Ts &&...args)
+				static decltype(auto) LockInterruptSafe(Ts &&...args)
 				{
 					return M68k::DisableInterruptsTemporarily(
 						[&]()
