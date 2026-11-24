@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024-2025 Clownacy
+Copyright (c) 2024-2026 Clownacy
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted.
@@ -13,8 +13,8 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 */
 
-#ifndef CLOWNSDK_MD_HEADER_GUARD
-#define CLOWNSDK_MD_HEADER_GUARD
+#ifndef CLOWNMDSDK_HEADER_GUARD
+#define CLOWNMDSDK_HEADER_GUARD
 
 // Semantic versioning: major version changes are backwards-incompatible.
 #define CLOWNMDSDK_VERSION_MAJOR 4
@@ -2138,4 +2138,4 @@ __VISIBILITY _TRAP13HANDLER _TRAP13Handler;
 __VISIBILITY _TRAP14HANDLER _TRAP14Handler;
 __VISIBILITY _TRAP15HANDLER _TRAP15Handler;
 
-#endif /* CLOWNSDK_MD_HEADER_GUARD */
+#endif /* CLOWNMDSDK_HEADER_GUARD */
