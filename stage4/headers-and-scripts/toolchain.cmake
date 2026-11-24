@@ -43,8 +43,48 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
+function(add_executable)
+	# Select which type of executable to build from the arguments.
+	set(MODE UNDEFINED)
+
+	foreach(arg IN LISTS ARGV)
+		set(CURRENT_MODE UNDEFINED)
+
+		if(${arg} STREQUAL CARTRIDGE)
+			set(CURRENT_MODE CARTRIDGE)
+		elseif(${arg} STREQUAL IP)
+			set(CURRENT_MODE IP)
+		elseif(${arg} STREQUAL SP)
+			set(CURRENT_MODE SP)
+		endif()
+
+		if(NOT ${CURRENT_MODE} STREQUAL UNDEFINED)
+			if(NOT ${MODE} STREQUAL UNDEFINED)
+				message(FATAL_ERROR "'CARTRIDGE', 'IP', and 'SP' are mutually-exclusive.")
+			endif()
+
+			set(MODE ${CURRENT_MODE})
+		else()
+			set(NORMAL_ARGS ${NORMAL_ARGS} ${arg})
+		endif()
+	endforeach()
+
+	# Default to cartridge.
+	if(${MODE} STREQUAL UNDEFINED)
+		set(MODE CARTRIDGE)
+	endif()
+
+	if(${MODE} STREQUAL CARTRIDGE)
+		add_cartridge_executable(${NORMAL_ARGS})
+	elseif(${MODE} STREQUAL IP)
+		add_ip_executable(${NORMAL_ARGS})
+	elseif(${MODE} STREQUAL SP)
+		add_sp_executable(${NORMAL_ARGS})
+	endif()
+endfunction()
+
 function(clownmdsdk_add_executable name)
-	add_executable(${ARGV})
+	_add_executable(${ARGV})
 	# So we can study the generated assembly.
 	target_link_options(${name} PUBLIC -save-temps=obj -fverbose-asm "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/${name}.map")
 endfunction()
