@@ -61,11 +61,13 @@ function(add_executable name)
 			set(CURRENT_MODE IP)
 		elseif(${arg} STREQUAL SP)
 			set(CURRENT_MODE SP)
+		elseif(${arg} STREQUAL GENERIC)
+			set(CURRENT_MODE GENERIC)
 		endif()
 
 		if(NOT ${CURRENT_MODE} STREQUAL UNDEFINED)
 			if(NOT ${MODE} STREQUAL UNDEFINED)
-				message(FATAL_ERROR "'CARTRIDGE', 'IP', and 'SP' are mutually-exclusive.")
+				message(FATAL_ERROR "'CARTRIDGE', 'IP', 'SP', and 'GENERIC' are mutually-exclusive.")
 			endif()
 
 			set(MODE ${CURRENT_MODE})
@@ -94,6 +96,8 @@ function(add_executable name)
 	elseif(${MODE} STREQUAL SP)
 		target_compile_definitions(${name} PRIVATE __CLOWNMDSDK_SP__=1)
 		target_link_options(${name} PUBLIC "-T${CLOWNMDSDK_LOCATION}/sp.ld")
+	elseif(${MODE} STREQUAL GENERIC)
+		# Naked; user code handles this manually instead.
 	endif()
 endfunction()
 
