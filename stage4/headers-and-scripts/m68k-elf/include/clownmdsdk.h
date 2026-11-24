@@ -22,7 +22,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #define __VISIBILITY extern
 #endif
 
-#define __ENTRY_POINT __VISIBILITY  __attribute__((section(".text.entry"))) [[noreturn]]
+#define __ENTRY_POINT __VISIBILITY  __attribute__((section(".text.entry"))) __attribute__((noreturn))
 
 __ENTRY_POINT void _EntryPoint(void);
 
@@ -30,7 +30,7 @@ __ENTRY_POINT void _EntryPoint(void);
 __VISIBILITY __attribute__((section(".text.entry"))) void _SP_Init(void);
 
 // Run indefinitely; should not return. Handles the bulk of operations.
-__VISIBILITY [[noreturn]] void _SP_Main(void); /* TODO: This can return. */
+__VISIBILITY __attribute__((noreturn)) void _SP_Main(void); /* TODO: This can return. */
 
 // Runs once per frame, either 50 or 60 times a second for PAL or NTSC respectively.
 __VISIBILITY void _SP_VerticalInterrupt(void);
